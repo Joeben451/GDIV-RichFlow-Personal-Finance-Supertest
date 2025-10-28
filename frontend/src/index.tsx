@@ -2,6 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Landing from './pages/Landing/Landing';
 import Signup from './pages/Signup/Signup';
+import Login from './pages/Login/login';
+
 
 
 const container = document.getElementById('root');
@@ -11,6 +13,7 @@ if (container) {
     <React.StrictMode>
       <Landing />
       <Signup />
+      <Login />
     </React.StrictMode>
   );
 }

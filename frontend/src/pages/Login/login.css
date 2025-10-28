@@ -1,0 +1,95 @@
+/* Prevent page scrolling */
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Background Gradient */
+.login-container {
+  background: linear-gradient(135deg, #7345AF, #7345AF, #1E1E1E, #000000);
+  height: 100vh; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FFD86F;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Header */
+.login-header {
+  font-size: 1.5rem;
+  color: #bdbdbd;
+  margin-bottom: 20px;
+}
+
+/* Login Box */
+.login-box {
+  background-color: #111;
+  padding: 40px 50px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(115, 69, 175, 0.5);
+  width: 350px;
+  text-align: center;
+}
+
+/* Logo + Brand */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+}
+
+.brand-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #FFD86F;
+  margin-top: 10px;
+}
+
+/* Form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-form label {
+  color: #FFD86F;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.login-form input {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+/* Button */
+.login-btn {
+  background-color: #7345AF;
+  color: #FFD86F;
+  border: none;
+  padding: 12px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #5a2e8a;
+  transform: scale(1.05);
+}
