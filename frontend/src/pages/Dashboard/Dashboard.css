@@ -33,6 +33,32 @@ html, body {
   background-color: #1E1E1E;
 }
 
+/* Custom Scrollbar Styling */
+.dashboard-content::-webkit-scrollbar {
+  width: 12px;
+}
+
+.dashboard-content::-webkit-scrollbar-track {
+  background: #0f0f0f;
+  border-radius: 10px;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #7345AF 0%, #EDCA69 100%);
+  border-radius: 10px;
+  border: 2px solid #0f0f0f;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #f2d06b 100%);
+}
+
+/* Firefox scrollbar styling */
+.dashboard-content {
+  scrollbar-width: thin;
+  scrollbar-color: #7345AF #0f0f0f;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
