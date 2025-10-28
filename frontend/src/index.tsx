@@ -9,6 +9,7 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
+      <Landing />
       <Signup />
     </React.StrictMode>
   );

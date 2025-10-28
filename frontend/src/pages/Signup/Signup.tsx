@@ -44,7 +44,7 @@ const Signup: React.FC = () => {
         
         {/* Button */}
         <div className="flex justify-center pt-4">
-          <button className="bg-purple text-gold px-8 py-3 rounded font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect">
+          <button className="bg-purple text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect">
             Sign up
           </button>
         </div>
