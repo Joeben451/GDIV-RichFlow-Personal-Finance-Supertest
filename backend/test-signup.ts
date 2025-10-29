@@ -1,6 +1,17 @@
 import fetch from 'node-fetch';
 
-async function testSignup() {
+interface SignupResponse {
+  message?: string;
+  user?: {
+    id: number;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  error?: string;
+}
+
+async function testSignup(): Promise<void> {
   try {
     const response = await fetch('http://localhost:3000/api/auth/signup', {
       method: 'POST',
@@ -13,10 +24,10 @@ async function testSignup() {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as SignupResponse;
     console.log('Response:', data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error instanceof Error ? error.message : 'Unknown error occurred');
   }
 }
 
