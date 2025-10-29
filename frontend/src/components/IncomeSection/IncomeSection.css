@@ -1,117 +1,191 @@
 .income-container {
-  background-color: #1a1a1a;
-  border-radius: 8px;
+  background-color: transparent;
   color: white;
-  min-height: 100vh;
-  padding: 40px;
-  font-family: 'Inter', sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;
 }
 
-.income-title {
-  text-align: center;
-  background: #7345af;
-  color: white;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 2rem;
+.income-header {
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 40px;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(115, 69, 175, 0.3);
 }
 
 .income-sections {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  max-width: 900px;
-  margin: 0 auto;
+  gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for income sections */
+.income-sections::-webkit-scrollbar {
+  width: 8px;
+}
+
+.income-sections::-webkit-scrollbar-track {
+  background: #0f0f0f;
+  border-radius: 10px;
+}
+
+.income-sections::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #7345AF 0%, #EDCA69 100%);
+  border-radius: 10px;
 }
 
 .income-card {
-  background-color: #0f0f0f;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.income-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(115, 69, 175, 0.2);
 }
 
 .income-card-header {
-  background-color: #e8e8f8;
-  color: #1a1a1a;
+  background: linear-gradient(135deg, #9d6dd4 0%, #b794e0 100%);
+  color: #ffffff;
   font-weight: 700;
   text-align: center;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 1.3rem;
-  margin-bottom: 15px;
+  padding: 0.75rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(157, 109, 212, 0.3);
+}
+
+.income-empty {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.income-list {
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Scrollbar for income list */
+.income-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.income-list::-webkit-scrollbar-track {
+  background: #0f0f0f;
+  border-radius: 10px;
+}
+
+.income-list::-webkit-scrollbar-thumb {
+  background: #9d6dd4;
+  border-radius: 10px;
 }
 
 .income-item {
-  background-color: #111;
-  border-radius: 6px;
-  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 0.95rem;
+  color: #b794e0;
+  transition: background-color 0.2s;
 }
 
-.income-name {
+.income-item:hover {
+  background-color: rgba(115, 69, 175, 0.1);
+  border-radius: 6px;
+}
+
+.income-item span:first-child {
+  flex: 1;
   font-weight: 500;
 }
 
-.income-amount {
-  color: #ffd86f;
-  margin-left: auto;
-  margin-right: 12px;
+.income-item span:nth-child(2) {
+  font-weight: 600;
+  color: #b794e0;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: #ffd86f;
+  color: #b794e0;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  padding: 0.25rem;
+  border-radius: 4px;
 }
 
 .delete-btn:hover {
-  color: #ff4b4b;
-}
-
-.income-empty {
-  color: #888;
-  font-style: italic;
-  text-align: center;
-  margin-bottom: 15px;
+  color: #9d6dd4;
+  background-color: rgba(157, 109, 212, 0.1);
 }
 
 .income-inputs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .income-inputs input {
   flex: 1;
-  background-color: #222;
-  border: none;
-  padding: 8px;
-  border-radius: 6px;
+  background-color: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
   color: white;
+  font-size: 0.95rem;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.income-inputs input:focus {
+  border-color: #9d6dd4;
+  box-shadow: 0 0 0 2px rgba(157, 109, 212, 0.2);
+}
+
+.income-inputs input::placeholder {
+  color: #666;
 }
 
 .add-btn {
-  background: linear-gradient(to right, #7345af, #ffd86f);
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
   width: 100%;
-  transition: opacity 0.2s;
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-size: 0.95rem;
 }
 
 .add-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 109, 212, 0.4);
+}
+
+.add-btn:active {
+  transform: translateY(0);
 }
