@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const Signup: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -42,7 +44,7 @@ const Signup: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await fetch('http://localhost:3000/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,7 +52,6 @@ const Signup: React.FC = () => {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          // Note: Your User model doesn't have username field, using email as identifier
         }),
       });
 
@@ -62,8 +63,9 @@ const Signup: React.FC = () => {
 
       // Success - redirect or show success message
       console.log('User created successfully:', data.user);
+      navigate('/login')
       alert('Account created successfully! You can now log in.');
-      
+
       // Redirect to login page or clear form
       setFormData({
         username: '',
