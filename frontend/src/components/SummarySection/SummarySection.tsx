@@ -3,19 +3,19 @@ import './SummarySection.css';
 
 type Props = {
   passiveIncome?: number;
-  targetPassiveIncome?: number;
+  totalExpenses?: number;
   cashSavings?: number;
 };
 
 const SummarySection: React.FC<Props> = ({
   passiveIncome = 1200,
-  targetPassiveIncome = 5000,
-  cashSavings = 8500,
+  totalExpenses = 5000,
+  cashSavings = 10000,
 }) => {
   // compute percentage (clamp between 0 and 100)
   const percent = Math.min(
     100,
-    Math.max(0, Math.round((passiveIncome / targetPassiveIncome) * 100))
+    Math.max(0, Math.round((passiveIncome / totalExpenses) * 100))
   );
 
   return (
@@ -52,7 +52,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-footer">
             <span className="progress-percent">{percent}%</span>
             <span className="progress-target">
-              of ${targetPassiveIncome.toLocaleString()} target
+              of ${totalExpenses.toLocaleString()} Total Expenses
             </span>
           </div>
         </div>
