@@ -53,7 +53,7 @@ const Signup: React.FC = () => {
         
         {/* Button */}
         <button className="bg-purple w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect">
-          Log in
+          Sign Up
         </button>
       </div>
     </div>
