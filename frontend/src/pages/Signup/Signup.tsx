@@ -158,7 +158,7 @@ const Signup: React.FC = () => {
               disabled={loading}
               className="bg-purple w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Account...' : 'Sign Up'}
+              {loading ? 'Creating...' : 'Sign Up'}
             </button>
           </div>
         </form>

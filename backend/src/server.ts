@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { signup } from './signup/route';
+import { signup } from '../signup/route';
 
 dotenv.config();
 
