@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "devStart": "nodemon ./backend/server.js",
+    "devStart": "nodemon ./backend/server.ts",
     "dev": "nodemon ./src/server.ts"
   },
   "dependencies": {
@@ -22,13 +22,12 @@
     "@types/express": "^5.0.5",
     "@types/pg": "^8.15.6",
     "@types/react-router-dom": "^5.3.3",
+    "bcryptjs": "^3.0.2",
+    "node-fetch": "^3.3.2",
     "prisma": "^6.18.0"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "@types/express": "^5.0.5"
-  }
+  "description": ""
 }
