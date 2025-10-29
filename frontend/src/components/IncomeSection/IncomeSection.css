@@ -1,74 +1,79 @@
 .income-container {
-  background-color: #1a1a1a;
-  border-radius: 8px;
+  background-color: #0d0d0d;
   color: white;
   min-height: 100vh;
-  padding: 40px;
-  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 3rem;
+  font-family: "Inter", sans-serif;
 }
 
-.income-title {
-  text-align: center;
-  background: #7345af;
-  color: white;
-  padding: 15px;
-  border-radius: 10px;
-  font-size: 2rem;
+.income-header {
+  background-color: #7c3aed;
+  padding: 1rem 4rem;
+  border-radius: 12px;
+  font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 40px;
+  text-align: center;
 }
 
 .income-sections {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  max-width: 900px;
-  margin: 0 auto;
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
 .income-card {
-  background-color: #0f0f0f;
-  border-radius: 10px;
-  padding: 20px;
+  background-color: #111;
+  border-radius: 16px;
+  width: 400px;
+  padding: 1.5rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .income-card-header {
-  background-color: #e8e8f8;
-  color: #1a1a1a;
+  background-color: #eceaff;
+  color: #111;
   font-weight: 700;
   text-align: center;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 1.3rem;
-  margin-bottom: 15px;
+  padding: 0.8rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.income-empty {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.income-list {
+  margin-bottom: 1rem;
 }
 
 .income-item {
-  background-color: #111;
-  border-radius: 6px;
-  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #222;
+  font-size: 1rem;
+  color: rgb(5, 255, 5);
 }
 
-.income-name {
-  font-weight: 500;
-}
-
-.income-amount {
-  color: #ffd86f;
-  margin-left: auto;
-  margin-right: 12px;
+.income-item span {
+  flex: 1;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: #ffd86f;
-  font-size: 1.1rem;
+  color: #fbbf24;
+  font-size: 1rem;
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -77,38 +82,32 @@
   color: #ff4b4b;
 }
 
-.income-empty {
-  color: #888;
-  font-style: italic;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
 .income-inputs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .income-inputs input {
   flex: 1;
-  background-color: #222;
+  background-color: #1a1a1a;
   border: none;
-  padding: 8px;
+  padding: 0.6rem 0.75rem;
   border-radius: 6px;
   color: white;
+  font-size: 0.95rem;
   outline: none;
 }
 
 .add-btn {
-  background: linear-gradient(to right, #7345af, #ffd86f);
-  border: none;
-  padding: 10px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
   width: 100%;
+  background: linear-gradient(to right, #8b5cf6, #fbbf24);
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
   transition: opacity 0.2s;
 }
 

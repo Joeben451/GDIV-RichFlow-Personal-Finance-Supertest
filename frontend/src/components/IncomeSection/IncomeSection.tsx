@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import './IncomeSection.css';
+import React, { useState } from "react";
+import "./IncomeSection.css";
 
 interface IncomeItem {
   id: number;
@@ -9,28 +9,35 @@ interface IncomeItem {
 
 const IncomeSection: React.FC = () => {
   const [earnedIncome, setEarnedIncome] = useState<IncomeItem[]>([]);
-  const [portfolio, setPortfolio] = useState<IncomeItem[]>([]);
-  const [passive, setPassive] = useState<IncomeItem[]>([]);
+  const [portfolioIncome, setPortfolioIncome] = useState<IncomeItem[]>([]);
+  const [passiveIncome, setPassiveIncome] = useState<IncomeItem[]>([]);
 
+  // handle add income
   const handleAddIncome = (
-    section: 'earned' | 'portfolio' | 'passive',
+    section: "earned" | "portfolio" | "passive",
     name: string,
     amount: string
   ) => {
     if (!name.trim() || !amount.trim()) return;
-    const newItem: IncomeItem = { id: Date.now(), name, amount };
+    const newItem: IncomeItem = {
+      id: Date.now(),
+      name,
+      amount: parseFloat(amount).toFixed(2),
+    };
 
-    if (section === 'earned') setEarnedIncome([...earnedIncome, newItem]);
-    else if (section === 'portfolio') setPortfolio([...portfolio, newItem]);
-    else setPassive([...passive, newItem]);
+    if (section === "earned") setEarnedIncome([...earnedIncome, newItem]);
+    if (section === "portfolio") setPortfolioIncome([...portfolioIncome, newItem]);
+    if (section === "passive") setPassiveIncome([...passiveIncome, newItem]);
   };
 
-  const handleDelete = (section: 'earned' | 'portfolio' | 'passive', id: number) => {
-    if (section === 'earned') setEarnedIncome(earnedIncome.filter(i => i.id !== id));
-    else if (section === 'portfolio') setPortfolio(portfolio.filter(i => i.id !== id));
-    else setPassive(passive.filter(i => i.id !== id));
+  // handle delete income
+  const handleDelete = (section: "earned" | "portfolio" | "passive", id: number) => {
+    if (section === "earned") setEarnedIncome(earnedIncome.filter((i) => i.id !== id));
+    if (section === "portfolio") setPortfolioIncome(portfolioIncome.filter((i) => i.id !== id));
+    if (section === "passive") setPassiveIncome(passiveIncome.filter((i) => i.id !== id));
   };
 
+  // reusable income card
   const IncomeCard = ({
     title,
     items,
@@ -38,41 +45,43 @@ const IncomeSection: React.FC = () => {
   }: {
     title: string;
     items: IncomeItem[];
-    section: 'earned' | 'portfolio' | 'passive';
+    section: "earned" | "portfolio" | "passive";
   }) => {
-    const [name, setName] = useState('');
-    const [amount, setAmount] = useState('');
+    const [source, setSource] = useState("");
+    const [amount, setAmount] = useState("");
 
     return (
       <div className="income-card">
         <div className="income-card-header">{title}</div>
 
-        {items.map((item) => (
-          <div className="income-item" key={item.id}>
-            <span className="income-name">{item.name}:</span>
-            <span className="income-amount">{item.amount}</span>
-            <button
-              className="delete-btn"
-              onClick={() => handleDelete(section, item.id)}
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-
-        {items.length === 0 && (
+        {items.length === 0 ? (
           <p className="income-empty">No {title.toLowerCase()} added yet.</p>
+        ) : (
+          <div className="income-list">
+            {items.map((item) => (
+              <div key={item.id} className="income-item">
+                <span>{item.name}</span>
+                <span>${item.amount}</span>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(section, item.id)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
         )}
 
         <div className="income-inputs">
           <input
             type="text"
             placeholder="Source name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
           />
           <input
-            type="text"
+            type="number"
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
@@ -82,9 +91,9 @@ const IncomeSection: React.FC = () => {
         <button
           className="add-btn"
           onClick={() => {
-            handleAddIncome(section, name, amount);
-            setName('');
-            setAmount('');
+            handleAddIncome(section, source, amount);
+            setSource("");
+            setAmount("");
           }}
         >
           + Add {title}
@@ -95,11 +104,12 @@ const IncomeSection: React.FC = () => {
 
   return (
     <div className="income-container">
-      <h1 className="income-title">Income</h1>
+      <div className="income-header">Income</div>
+
       <div className="income-sections">
         <IncomeCard title="Earned Income" items={earnedIncome} section="earned" />
-        <IncomeCard title="Portfolio Income" items={portfolio} section="portfolio" />
-        <IncomeCard title="Passive Income" items={passive} section="passive" />
+        <IncomeCard title="Portfolio Income" items={portfolioIncome} section="portfolio" />
+        <IncomeCard title="Passive Income" items={passiveIncome} section="passive" />
       </div>
     </div>
   );
