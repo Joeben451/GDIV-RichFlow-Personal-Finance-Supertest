@@ -37,8 +37,19 @@ const Signup: React.FC = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      setLoading(false);
+      return;
+    }
+
+    // Check password complexity
+    const hasUpperCase = /[A-Z]/.test(formData.password);
+    const hasLowerCase = /[a-z]/.test(formData.password);
+    const hasNumber = /\d/.test(formData.password);
+    
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      setError('Password must contain uppercase, lowercase, and numbers');
       setLoading(false);
       return;
     }
