@@ -4,6 +4,7 @@ import { comparePassword } from '../utils/password.utils';
 import { generateToken, generateSessionExpiry } from '../utils/jwt.utils';
 import prisma from '../config/database.config';
 import { User } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 /**
  * Handle user signup
@@ -114,5 +115,38 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     return res.status(500).json({
       error: 'Internal server error'
     });
+  }
+}
+
+/**
+ * Verify if token is valid
+ * @route GET /api/auth/verify
+ */
+export async function verifyToken(req: Request, res: Response) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production') as { userId: number };
+    
+    // Check if session exists and is valid
+    const session = await prisma.session.findFirst({
+      where: {
+        token,
+        isValid: true,
+        expiresAt: { gte: new Date() }
+      }
+    });
+
+    if (!session) {
+      return res.status(401).json({ error: 'Invalid or expired session' });
+    }
+
+    return res.status(200).json({ valid: true, userId: decoded.userId });
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }

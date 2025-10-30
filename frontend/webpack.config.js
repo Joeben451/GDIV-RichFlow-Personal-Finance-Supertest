@@ -1,7 +1,7 @@
-const path = require('path');
+import path from 'path';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = {
+export default {
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -38,5 +38,6 @@ module.exports = {
     port: 3000,
     hot: true,
     open: true,
+    historyApiFallback: true,
   },
 };
