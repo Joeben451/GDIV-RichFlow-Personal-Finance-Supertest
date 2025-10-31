@@ -1,15 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../utils/jwt.utils';
-import prisma from '../config/database.config';
+import { verifyAccessToken } from '../utils/jwt.utils';
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: number;
-  };
+// Extend Express Request to include user data
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: number;
+        email: string;
+      };
+    }
+  }
 }
 
-export async function authenticateToken(
-  req: AuthRequest,
+/**
+ * Middleware to verify access token from Authorization header
+ */
+export function authenticateToken(
+  req: Request,
   res: Response,
   next: NextFunction
 ) {
@@ -18,35 +26,18 @@ export async function authenticateToken(
     const token = authHeader?.split(' ')[1];  // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({ error: 'Access token required' });
     }
 
-    // Verify JWT token
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
+    // Verify JWT access token
+    const payload = verifyAccessToken(token);
+    
+    if (!payload) {
+      return res.status(403).json({ error: 'Invalid or expired access token' });
     }
 
-    // Check if session exists and is valid
-    const session = await prisma.session.findFirst({
-      where: {
-        token,
-        userId: decoded.userId,
-        isValid: true,
-        expiresAt: {
-          gt: new Date()
-        }
-      }
-    });
-
-    if (!session) {
-      return res.status(401).json({ error: 'Session expired or invalid' });
-    }
-
-    // Add user ID to request object
-    req.user = {
-      id: decoded.userId
-    };
+    // Add user data to request object
+    req.user = payload;
 
     next();
   } catch (error) {

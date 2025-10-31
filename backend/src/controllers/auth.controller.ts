@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { createUser, findExistingUser, findUserByEmail } from '../services/auth.service';
-import { comparePassword } from '../utils/password.utils';
-import { generateToken, generateSessionExpiry } from '../utils/jwt.utils';
+import { 
+  createUser, 
+  findExistingUser, 
+  loginUser,
+  createSession,
+  findValidSession,
+  invalidateSession,
+  invalidateAllUserSessions
+} from '../services/auth.service';
+import { generateAccessToken } from '../utils/jwt.utils';
 import prisma from '../config/database.config';
-import { User } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
 /**
@@ -53,100 +59,132 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
-    const foundUser = await findUserByEmail(email);
-    if (!foundUser) {
-      return res.status(401).json({
-        error: 'Invalid email or password'
-      });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Verify password
-    const isValidPassword = await comparePassword(password, foundUser.password);
-    if (!isValidPassword) {
-      return res.status(401).json({
-        error: 'Invalid email or password'
-      });
+    // Authenticate user
+    const user = await loginUser(email, password);
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generate JWT token and session expiry
-    const token = generateToken(foundUser.id);
-    const expiresAt = generateSessionExpiry();
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email
+    });
 
-    try {
-      // Create session record
-      await prisma.session.create({
-        data: {
-          token,
-          userId: foundUser.id,
-          expiresAt,
-          isValid: true
-        }
-      });
+    // Create session with refresh token
+    const session = await createSession(user.id);
 
-      // Update user's last login
-      await prisma.user.update({
-        where: { id: foundUser.id },
-        data: { lastLogin: new Date() }
-      });
+    // Set refresh token as httpOnly cookie
+    res.cookie('refreshToken', session.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
 
-      // Return success response with token and user info
-      const safeUser = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name
-      };
+    return res.status(200).json({
+      message: 'Login successful',
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      }
+    });
 
-      return res.status(200).json({
-        success: true,
-        message: 'Login successful',
-        token,
-        expiresAt,
-        user: safeUser
-      });
-    } catch (sessionError) {
-      console.error('Session creation error:', sessionError);
-      return res.status(500).json({
-        error: 'Failed to complete login process'
-      });
-    }
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({
-      error: 'Internal server error'
-    });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
 /**
- * Verify if token is valid
- * @route GET /api/auth/verify
+ * Refresh access token using refresh token
+ * @route POST /api/auth/refresh
  */
-export async function verifyToken(req: Request, res: Response) {
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token required' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production') as { userId: number };
-    
-    // Check if session exists and is valid
-    const session = await prisma.session.findFirst({
-      where: {
-        token,
-        isValid: true,
-        expiresAt: { gte: new Date() }
+    const session = await findValidSession(refreshToken);
+
+    if (!session) {
+      return res.status(403).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    // Generate new access token
+    const accessToken = generateAccessToken({
+      userId: session.User.id,
+      email: session.User.email
+    });
+
+    return res.status(200).json({
+      accessToken,
+      user: {
+        id: session.User.id,
+        email: session.User.email,
+        name: session.User.name
       }
     });
 
-    if (!session) {
-      return res.status(401).json({ error: 'Invalid or expired session' });
-    }
-
-    return res.status(200).json({ valid: true, userId: decoded.userId });
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
+    console.error('Token refresh error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+/**
+ * Handle user logout
+ * @route POST /api/auth/logout
+ */
+export async function logout(req: Request, res: Response, next: NextFunction) {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      await invalidateSession(refreshToken);
+    }
+
+    res.clearCookie('refreshToken');
+
+    return res.status(200).json({ message: 'Logout successful' });
+
+  } catch (error) {
+    console.error('Logout error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+/**
+ * Handle logout from all devices
+ * @route POST /api/auth/logout-all
+ */
+export async function logoutAll(req: Request, res: Response, next: NextFunction) {
+  try {
+    // Get user ID from authenticated request
+    const userId = (req as any).user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    await invalidateAllUserSessions(userId);
+    res.clearCookie('refreshToken');
+
+    return res.status(200).json({ message: 'Logged out from all devices' });
+
+  } catch (error) {
+    console.error('Logout all error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+

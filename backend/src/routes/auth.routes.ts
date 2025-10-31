@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { signup, login, verifyToken } from '../controllers/auth.controller';
+import { signup, login, refreshToken, logout, logoutAll } from '../controllers/auth.controller';
 import { validateSignup, validateLogin } from '../middleware/validation.middleware';
 import { signupLimiter, loginLimiter } from '../middleware/rateLimit.middleware';
+import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -19,16 +20,30 @@ router.post('/signup', signupLimiter, validateSignup, signup);
 
 /**
  * @route POST /api/auth/login
- * @desc Login user
+ * @desc Login user and create session
  * @access Public
  */
 router.post('/login', loginLimiter, validateLogin, login);
 
 /**
- * @route GET /api/auth/verify
- * @desc Verify user token
+ * @route POST /api/auth/refresh
+ * @desc Refresh access token using refresh token cookie
+ * @access Public (requires refresh token cookie)
+ */
+router.post('/refresh', refreshToken);
+
+/**
+ * @route POST /api/auth/logout
+ * @desc Logout user and invalidate session
  * @access Public
  */
-router.get('/verify', verifyToken);
+router.post('/logout', logout);
+
+/**
+ * @route POST /api/auth/logout-all
+ * @desc Logout user from all devices
+ * @access Private (requires authentication)
+ */
+router.post('/logout-all', authenticateToken, logoutAll);
 
 export default router;

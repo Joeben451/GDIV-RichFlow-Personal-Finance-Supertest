@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import * as path from 'path';
 import routes from './routes';
 import authRoutes from './routes/auth.routes';
@@ -22,8 +23,12 @@ app.use((req, _res, next) => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend URL
+  credentials: true // Allow cookies to be sent
+}));
 app.use(express.json());
+app.use(cookieParser()); // Parse cookies
 
 // Debug middleware to log all registered routes
 app.use((req, res, next) => {
