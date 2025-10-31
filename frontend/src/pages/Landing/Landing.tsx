@@ -2,9 +2,9 @@ import React from 'react';
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const Landing: React.FC = () => {
   const navigate = useNavigate();
+
   return (
     <div className="text-white" style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)', minHeight: '100vh' }}>
       {/* Header */}

@@ -2,12 +2,15 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0; /* Allow proper flexbox shrinking */
+  overflow: hidden; /* Prevent overflow into other sections */
 }
 
 .section-header {
   background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
   padding: 1rem 2rem;
   border-radius: 8px 8px 0 0;
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .section-title {
@@ -22,7 +25,8 @@
   flex: 1;
   background-color: #1E1E1E;
   padding: 2rem;
-  border-radius: 0 0 8px 8px;
+  min-height: 0; /* Allow proper scrolling if needed */
+  overflow-y: auto; /* Add scroll if content is too tall */
 }
 
 /* New styles for progress bar and savings row */
@@ -103,6 +107,8 @@
   color: #f6f6fb;
   font-weight: 700;
   font-size: 1rem;
+  flex-shrink: 0; /* Prevent savings bar from shrinking */
+  margin-top: auto; /* Push to bottom of summary section */
 }
 
 .savings-label {
@@ -116,4 +122,353 @@
   border-radius: 6px;
   color: #fff;
   font-weight: 800;
+}
+
+/* New styles for mini bar graph (Income / Expenses / Cashflow) */
+.bar-graph {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.bar-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bar-label {
+  min-width: 160px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #e8e8f0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.bar-value {
+  background: rgba(255,255,255,0.04);
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #fff;
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* track */
+.bar-track {
+  flex: 1;
+  height: 12px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* fill variants using palette */
+.bar-fill {
+  height: 100%;
+  transition: width 600ms ease;
+  border-radius: 999px 0 0 999px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+/* Income: purple gradient consistent with existing UI */
+.bar-fill.income {
+  background: linear-gradient(90deg, #7b4df0 0%, #c69df7 100%);
+  box-shadow: 0 6px 18px rgba(123,77,240,0.12);
+}
+
+/* Expenses: slightly warm/muted to contrast */
+.bar-fill.expenses {
+  background: linear-gradient(90deg, #e0626f 0%, #f3a6b0 100%);
+  box-shadow: 0 6px 18px rgba(224,98,111,0.12);
+}
+
+/* Cashflow: green-ish for positive, darker for negative */
+.bar-fill.cashflow {
+  background: linear-gradient(90deg, #2ecc71 0%, #7be5c9 100%);
+  box-shadow: 0 6px 18px rgba(46,204,113,0.12);
+}
+
+.bar-fill.cashflow.negative {
+  background: linear-gradient(90deg, #ff6b6b 0%, #ff9a9a 100%);
+  box-shadow: 0 6px 18px rgba(255,107,107,0.12);
+}
+
+/* Combined single chart styles (shared Y axis + bars) */
+.combined-graph {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto 1rem;
+  padding: 0.5rem 0;
+}
+
+.chart-wrap {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+/* Y-axis (tick labels) */
+.y-axis {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  color: #bdbddf;
+  font-size: 0.85rem;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+/* chart area with gridlines and bars */
+.chart-area {
+  flex: 1;
+  position: relative;
+  background: transparent;
+  padding-left: 6px;
+  padding-right: 6px;
+  box-sizing: border-box;
+}
+
+/* subtle horizontal gridlines using repeating gradient */
+.chart-area .grid-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 1px,
+    transparent 1px,
+    transparent 28px
+  );
+  pointer-events: none;
+  border-radius: 6px;
+}
+
+/* bars container aligned to baseline */
+.bars {
+  position: relative;
+  display: flex;
+  gap: 1.5rem;
+  align-items: end;
+  height: 140px; /* chart height */
+  padding: 12px 8px 6px;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+/* individual bar column */
+.bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 72px;
+
+  /* NEW: ensure the bar element spans the chart height so percentage heights inside resolve correctly */
+  height: 100%;
+}
+
+/* value label above each bar */
+.bar-value-top {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+}
+
+/* bar track (full height) */
+.bar-track {
+  width: 40px;
+  /* NEW: allow the track to flex to fill the remaining vertical space inside .bar */
+  flex: 1;
+  height: auto; /* remove percentage-based height so flex works */
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+/* bar fill grows upwards by height percentage */
+/* Make this rule specific to the chart area so it doesn't conflict with other .bar-fill rules */
+.chart-area .bar-fill {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  transition: height 600ms ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+/* Horizontal bar graph (Income / Passive Income) */
+.horizontal-graph {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.hbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hbar-label {
+  width: 140px;
+  color: #e8e8f0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.hbar-track {
+  flex: 1;
+  height: 18px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  position: relative;
+}
+
+.hbar-fill {
+  height: 100%;
+  transition: width 600ms ease;
+  border-radius: 999px 0 0 999px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+/* Income: purple gradient */
+.hbar-fill.income {
+  background: linear-gradient(90deg, #7b4df0 0%, #c69df7 100%);
+  box-shadow: 0 6px 18px rgba(123,77,240,0.12);
+}
+
+/* Passive: slightly lighter purple variant */
+.hbar-fill.passive {
+  background: linear-gradient(90deg, rgba(123,77,240,0.85) 0%, rgba(198,157,247,0.85) 100%);
+  box-shadow: 0 6px 18px rgba(123,77,240,0.08);
+}
+
+/* value shown to the right of each bar */
+.hbar-value {
+  min-width: 96px;
+  text-align: right;
+  color: #fff;
+  font-weight: 700;
+  background: rgba(255,255,255,0.03);
+  padding: 0.18rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* cashflow row (separate from bars) */
+.cashflow-row {
+  max-width: 820px;
+  margin: 0.5rem auto 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.cashflow-label {
+  color: #e8e8f0;
+  font-weight: 600;
+}
+
+.cashflow-amount {
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* positive / negative color variants */
+.cashflow-row.positive .cashflow-amount {
+  background: rgba(46,204,113,0.08);
+  color: #2ecc71;
+}
+
+.cashflow-row.negative .cashflow-amount {
+  background: rgba(255,107,107,0.08);
+  color: #ff6b6b;
+}
+
+/* New styles for graph card */
+.graph-card {
+  max-width: 820px;
+  margin: 0 auto 1rem;
+  background: #0e0e10; /* darker box */
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  padding: 14px;
+  border-radius: 6px; /* smaller radius for square-ish feel */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* make tracks/fills less rounded to match square-ish card */
+.hbar-track {
+  flex: 1;
+  height: 18px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 1px; /* reduced rounding */
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  position: relative;
+}
+
+.hbar-fill {
+  height: 100%;
+  transition: width 600ms ease;
+  border-radius: 1px 0 0 1px; /* reduced rounding */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+/* cashflow row sits inside the card — tweak spacing and remove external margin */
+.graph-card .cashflow-row {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.01);
+  border: 1px solid rgba(255,255,255,0.015);
+}
+
+/* slightly tighten the hbar label/value to fit the square layout */
+.hbar-label { width: 120px; }
+.hbar-value { min-width: 84px; }
+
+/* responsive tweaks (small screens) */
+@media (max-width: 720px) {
+  .y-axis { width: 48px; font-size: 0.78rem; }
+  .bars { height: 110px; gap: 1rem; }
+  .bar { width: 60px; }
+  .bar-track { width: 34px; }
+  .bar-value-top { font-size: 0.8rem; }
+  .hbar-label { width: 96px; font-size: 0.9rem; }
+  .hbar-value { min-width: 72px; font-size: 0.86rem; }
+  .horizontal-graph { gap: 0.5rem; }
+  .graph-card { padding: 10px; gap: 8px; }
 }

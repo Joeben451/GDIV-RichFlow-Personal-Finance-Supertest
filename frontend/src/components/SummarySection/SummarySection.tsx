@@ -3,20 +3,35 @@ import './SummarySection.css';
 
 type Props = {
   passiveIncome?: number;
-  targetPassiveIncome?: number;
+  totalExpenses?: number;
   cashSavings?: number;
+  totalIncome?: number; // new prop for display
 };
 
 const SummarySection: React.FC<Props> = ({
   passiveIncome = 1200,
-  targetPassiveIncome = 5000,
-  cashSavings = 8500,
+  totalExpenses = 5000,
+  cashSavings = 10000,
+  totalIncome = 8000, // default placeholder, backend will replace
 }) => {
   // compute percentage (clamp between 0 and 100)
   const percent = Math.min(
     100,
-    Math.max(0, Math.round((passiveIncome / targetPassiveIncome) * 100))
+    Math.max(0, Math.round((passiveIncome / totalExpenses) * 100))
   );
+
+  // New: compute cashflow and values for bar graph
+  const cashFlow = totalIncome - totalExpenses;
+  const absCashFlow = Math.abs(cashFlow);
+
+  // Determine max for scaling bars (use income vs passive income)
+  const barMax = Math.max(totalIncome, passiveIncome, 1);
+
+  const toBarPercent = (value: number) =>
+    Math.round((value / barMax) * 100);
+
+  const incomeBarPercent = toBarPercent(totalIncome);
+  const passiveBarPercent = toBarPercent(passiveIncome);
 
   return (
     <section className="summary-section">
@@ -52,8 +67,54 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-footer">
             <span className="progress-percent">{percent}%</span>
             <span className="progress-target">
-              of ${targetPassiveIncome.toLocaleString()} target
+              of ${totalExpenses.toLocaleString()} Total Expenses
             </span>
+          </div>
+        </div>
+
+        {/* New: Horizontal bar graph for Total Income and Passive Income */}
+        {/* Grouped inside a darker, square-ish card */}
+        <div className="graph-card" aria-hidden={false}>
+          <div className="horizontal-graph">
+            <div className="hbar">
+              <div className="hbar-label">Total Income</div>
+              <div
+                className="hbar-track"
+                role="img"
+                aria-label={`Total income ${totalIncome}`}
+              >
+                <div
+                  className="hbar-fill income"
+                  style={{ width: `${incomeBarPercent}%` }}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="hbar-value">${totalIncome.toLocaleString()}</div>
+            </div>
+
+            <div className="hbar">
+              <div className="hbar-label">Passive Income</div>
+              <div
+                className="hbar-track"
+                role="img"
+                aria-label={`Passive income ${passiveIncome}`}
+              >
+                <div
+                  className="hbar-fill passive"
+                  style={{ width: `${passiveBarPercent}%` }}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="hbar-value">${passiveIncome.toLocaleString()}</div>
+            </div>
+          </div>
+
+          {/* Total cashflow row inside the same card */}
+          <div
+            className={`cashflow-row ${cashFlow < 0 ? 'negative' : 'positive'}`}
+          >
+            <div className="cashflow-label">Total Cashflow</div>
+            <div className="cashflow-amount">${cashFlow.toLocaleString()}</div>
           </div>
         </div>
 
