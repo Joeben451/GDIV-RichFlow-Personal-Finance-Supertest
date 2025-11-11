@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Header.css';
 import { useAuth } from '../../context/AuthContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onAddBalanceSheet?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet }) => {
   const { user } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+  
+  const handleAddBalanceSheet = () => {
+    setIsDropdownOpen(false);
+    onAddBalanceSheet?.();
+  };
   
   return (
     <header className="header">
@@ -20,6 +34,18 @@ const Header: React.FC = () => {
         <h1 className="header-title">Dashboard</h1>
       </div>
       <div className="header-right">
+        <div className="add-button-container">
+          <button className="add-button" onClick={toggleDropdown} title="Add new item">
+            +
+          </button>
+          {isDropdownOpen && (
+            <div className="dropdown-menu">
+              <button className="dropdown-item" onClick={handleAddBalanceSheet}>
+                Add Balance Sheet
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

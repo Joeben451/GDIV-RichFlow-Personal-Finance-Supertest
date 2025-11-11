@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/Header/Header';
@@ -6,11 +6,14 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import IncomeSection from '../../components/IncomeSection/IncomeSection';
 import SummarySection from '../../components/SummarySection/SummarySection';
 import ExpensesSection from '../../components/ExpensesSection/ExpensesSection';
+import AssetsSection from '../../components/AssetsSection/AssetsSection';
+import LiabilitiesSection from '../../components/LiabilitiesSection/LiabilitiesSection';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
+  const [showBalanceSheet, setShowBalanceSheet] = useState(false);
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
@@ -33,9 +36,13 @@ const Dashboard: React.FC = () => {
     return null;
   }
 
+  const handleAddBalanceSheet = () => {
+    setShowBalanceSheet(true);
+  };
+
   return (
     <div className="dashboard-container">
-      <Header />
+      <Header onAddBalanceSheet={handleAddBalanceSheet} />
       <div className="dashboard-main">
         <Sidebar />
         <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
@@ -52,6 +59,14 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          {showBalanceSheet && (
+            <div className="balance-sheet-section">
+              <div className="balance-sheet-grid">
+                <AssetsSection />
+                <LiabilitiesSection />
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
