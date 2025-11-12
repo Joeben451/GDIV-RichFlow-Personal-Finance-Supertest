@@ -37,7 +37,7 @@ const Sidebar: React.FC = () => {
           <span className="sidebar-text"> General </span>
         </button>
 
-        <button className="selection large"> 
+        <button className="selection large" onClick={() => navigate("/user-guide")}> 
           <div className="sidebar-button large"></div>
           <span className="sidebar-text"> User Guide </span>
         </button>

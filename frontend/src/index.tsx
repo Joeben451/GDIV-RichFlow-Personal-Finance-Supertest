@@ -2,10 +2,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing/Landing';
 import Signup from './pages/Signup/Signup';
 import Login from './pages/Login/login';
 import Dashboard from './pages/Dashboard/Dashboard';
+import UserGuide from './pages/UserGuide/UserGuide';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -22,6 +24,14 @@ root.render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route 
+            path="/user-guide" 
+            element={
+              <ProtectedRoute>
+                <UserGuide />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
