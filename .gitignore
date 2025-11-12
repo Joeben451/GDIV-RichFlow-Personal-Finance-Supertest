@@ -9,7 +9,6 @@ dist/
 build/
 out/
 *.js.map
-frontend/
 
 # Environment variables
 .env
