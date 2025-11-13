@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import '../ChangeUsername/ChangeUsername.css';
+import './ChangePassword.css';
 
 const ChangePassword: React.FC = () => {
   const { changePassword } = useAuth();
@@ -49,14 +49,14 @@ const ChangePassword: React.FC = () => {
   };
 
   return (
-    <div className="change-username-page">
-      <div className="change-username-card">
-        <button type="button" className="back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+    <div className="change-password-page">
+      <div className="change-password-card">
+        <button type="button" className="change-password-back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
         <h2>Change Password</h2>
 
-        <form className="change-username-form" onSubmit={handleSubmit}>
-          {error && <div className="error">{error}</div>}
-          {success && <div className="success">{success}</div>}
+        <form className="change-password-form" onSubmit={handleSubmit}>
+          {error && <div className="change-password-error">{error}</div>}
+          {success && <div className="change-password-success">{success}</div>}
 
           <label className="full">
             Current password

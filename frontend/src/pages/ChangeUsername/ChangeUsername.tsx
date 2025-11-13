@@ -56,13 +56,13 @@ const ChangeUsername: React.FC = () => {
   return (
     <div className="change-username-page">
       <div className="change-username-card">
-        <button type="button" className="back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+        <button type="button" className="change-username-back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
         <h2>Change Username</h2>
-        <p className="small-note">Your current username: <strong>{user?.name || '—'}</strong></p>
+        <p className="change-username-small-note">Your current username: <strong>{user?.name || '—'}</strong></p>
 
         <form className="change-username-form" onSubmit={handleSubmit}>
-          {error && <div className="error">{error}</div>}
-          {success && <div className="success">{success}</div>}
+          {error && <div className="change-username-error">{error}</div>}
+          {success && <div className="change-username-success">{success}</div>}
 
           <label className="full">
             Confirm current username
