@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FinancialDataProvider } from '../../context/FinancialDataContext';
 import { balanceSheetAPI } from '../../utils/api';
 import Header from '../../components/Header/Header';
 import Sidebar from '../../components/Sidebar/Sidebar';
@@ -10,10 +12,14 @@ import ExpensesSection from '../../components/ExpensesSection/ExpensesSection';
 import AssetsSection from '../../components/AssetsSection/AssetsSection';
 import LiabilitiesSection from '../../components/LiabilitiesSection/LiabilitiesSection';
 import './Dashboard.css';
+import RightSidePanel from '../../components/RightSidePanel/RightSidePanel';
+import SakiAssistant from '../../components/RightSidePanel/SakiAssistant';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
+
+  const [panelOpen, setPanelOpen] = useState<boolean>(false);
   const [showBalanceSheet, setShowBalanceSheet] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('balanceSheetVisible');
@@ -95,6 +101,32 @@ const Dashboard: React.FC = () => {
   };
 
   return (
+    <FinancialDataProvider>
+      <div className="dashboard-container">
+        <Header />
+        <div className="dashboard-main">
+    <Sidebar onOpenAssistant={() => setPanelOpen(true)} />
+          <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
+            <div className="dashboard-grid">
+              <div className="grid-left">
+                <IncomeSection />
+              </div>
+              <div className="grid-right">
+                <div className="grid-right-top">
+                  <SummarySection />
+                </div>
+                <div className="grid-right-bottom">
+                  <ExpensesSection />
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+        <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
+          <SakiAssistant />
+        </RightSidePanel>
+      </div>
+    </FinancialDataProvider>
     <div className="dashboard-container">
   <Header onAddBalanceSheet={handleAddBalanceSheet} onToggleBalanceSheet={handleToggleBalanceSheet} balanceSheetExists={balanceSheetExists} balanceSheetVisible={showBalanceSheet} />
       <div className="dashboard-main">
