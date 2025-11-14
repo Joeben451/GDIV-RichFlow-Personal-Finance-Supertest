@@ -1,0 +1,66 @@
+.admin-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 1rem 2rem;
+}
+
+.admin-header {
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  padding: 1rem 2rem;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+}
+
+.admin-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.search-container {
+  flex: 1;
+  max-width: 400px;
+  margin-left: auto;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-content {
+  flex: 1;
+  background-color: #1E1E1E;
+}
+
+.user-count {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+}

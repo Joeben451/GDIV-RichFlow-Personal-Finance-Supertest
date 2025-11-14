@@ -447,3 +447,30 @@ export const aiAPI = {
     });
   }
 }
+
+// Admin API calls
+export const adminAPI = {
+  // Get all users
+  getUsers: async () => {
+    return await apiRequest('/admin/users', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  // Get single user by ID
+  getUser: async (userId: number) => {
+    return await apiRequest(`/admin/users/${userId}`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  // Delete user by ID
+  deleteUser: async (userId: number) => {
+    return await apiRequest(`/admin/users/${userId}`, {
+      method: 'DELETE',
+      requiresAuth: true,
+    });
+  },
+};

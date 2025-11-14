@@ -14,11 +14,11 @@ model User {
   password        String
   createdAt       DateTime         @default(now())
   updatedAt       DateTime
-  lastLogin       DateTime?          
+  lastLogin       DateTime?
   BalanceSheet    BalanceSheet?
+  CashSavings     CashSavings?
   IncomeStatement IncomeStatement?
   Session         Session[]
-  CashSavings     CashSavings?
 }
 
 model Session {
@@ -80,10 +80,9 @@ model IncomeStatement {
   User       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 model CashSavings {
-  id        Int        @id @default(autoincrement())
-  amount    Float      @default (0)
-  userId    Int        @unique
-  User      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     Int   @id @default(autoincrement())
+  amount Float @default(0)
+  userId Int   @unique
+  User   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

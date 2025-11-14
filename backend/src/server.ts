@@ -10,6 +10,7 @@ import incomeRoutes from './routes/income.routes';
 import expenseRoutes from './routes/expense.routes';
 import aiRoutes from './routes/ai.routes';
 import balanceSheetRoutes from './routes/balanceSheet.routes';
+import adminRoutes from './routes/admin.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -49,6 +50,9 @@ app.use('/api', (req, res, next) => {
 
 // Mount auth routes
 app.use('/api/auth', authRoutes);
+
+// Mount admin routes
+app.use('/api/admin', adminRoutes);
 
 // Mount cash savings routes
 app.use('/api/cash-savings', cashSavingsRoutes);

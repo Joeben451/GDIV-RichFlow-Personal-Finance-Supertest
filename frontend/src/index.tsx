@@ -11,6 +11,7 @@ import UserGuide from './pages/UserGuide/UserGuide';
 import ChangeUsername from './pages/ChangeUsername/ChangeUsername';
 import ChangeEmail from './pages/ChangeEmail/ChangeEmail';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
+import Admin from './pages/Admin/Admin';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -59,6 +60,7 @@ root.render(
               </ProtectedRoute>
             }
           />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
