@@ -5,6 +5,11 @@ import cookieParser from 'cookie-parser';
 import * as path from 'path';
 import routes from './routes';
 import authRoutes from './routes/auth.routes';
+import cashSavingsRoutes from './routes/cashSavings.routes';
+import incomeRoutes from './routes/income.routes';
+import expenseRoutes from './routes/expense.routes';
+import aiRoutes from './routes/ai.routes';
+import balanceSheetRoutes from './routes/balanceSheet.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -45,8 +50,23 @@ app.use('/api', (req, res, next) => {
 // Mount auth routes
 app.use('/api/auth', authRoutes);
 
+// Mount cash savings routes
+app.use('/api/cash-savings', cashSavingsRoutes);
+
+// Mount income routes
+app.use('/api/income', incomeRoutes);
+
+// Mount expense routes
+app.use('/api/expenses', expenseRoutes);
+
+// Mount balance sheet routes
+app.use('/api', balanceSheetRoutes);
+
 // Mount other API routes
 app.use('/api', routes);
+
+app.use('/api/ai', aiRoutes);
+
 
 // Handle 404s for API routes
 app.use('/api', (req, res) => {

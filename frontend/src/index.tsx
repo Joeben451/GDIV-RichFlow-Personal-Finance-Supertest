@@ -2,10 +2,15 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing/Landing';
 import Signup from './pages/Signup/Signup';
 import Login from './pages/Login/login';
 import Dashboard from './pages/Dashboard/Dashboard';
+import UserGuide from './pages/UserGuide/UserGuide';
+import ChangeUsername from './pages/ChangeUsername/ChangeUsername';
+import ChangeEmail from './pages/ChangeEmail/ChangeEmail';
+import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Admin from './pages/Admin/Admin';
 
 const container = document.getElementById('root');
@@ -23,6 +28,38 @@ root.render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route 
+            path="/user-guide" 
+            element={
+              <ProtectedRoute>
+                <UserGuide />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/change-username"
+            element={
+              <ProtectedRoute>
+                <ChangeUsername />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-email"
+            element={
+              <ProtectedRoute>
+                <ChangeEmail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <ProtectedRoute>
+                <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </AuthProvider>

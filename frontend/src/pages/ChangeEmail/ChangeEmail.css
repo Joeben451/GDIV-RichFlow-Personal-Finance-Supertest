@@ -1,0 +1,171 @@
+/* Styled Change Email page - RichFlow themed */
+.change-email-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000);
+  color: #fff;
+}
+
+.change-email-card {
+  width: 100%;
+  max-width: 720px;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.change-email-card h2 {
+  margin: 0 0 1.5rem 0;
+  color: #EDCA69;
+  font-size: 2rem;
+  font-weight: bold;
+  border-bottom: 2px solid #EDCA69;
+  padding-bottom: 0.75rem;
+}
+
+.change-email-back-button {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #EDCA69;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.change-email-back-button:hover {
+  background: #2a2a2a;
+  border-color: #EDCA69;
+  transform: translateX(-4px);
+}
+
+.change-email-card p {
+  margin: 0 0 1.5rem 0;
+  color: #d0d0d0;
+}
+
+.change-email-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.change-email-form .full {
+  grid-column: 1 / -1;
+}
+
+.change-email-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #EDCA69;
+  font-size: 0.95rem;
+}
+
+.change-email-form input {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
+  background: #0f0f0f;
+  color: #fff;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.change-email-form input:focus {
+  outline: none;
+  border-color: #EDCA69;
+  background: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(237, 202, 105, 0.1);
+}
+
+.change-email-form button {
+  grid-column: 1 / -1;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #EDCA69 0%, #f2d06b 100%);
+  color: #000000;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+}
+
+.change-email-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(237, 202, 105, 0.4);
+}
+
+.change-email-form button:active {
+  transform: translateY(0);
+}
+
+.change-email-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.change-email-small-note {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+.change-email-small-note strong {
+  color: #EDCA69;
+  font-weight: 600;
+}
+
+.change-email-error {
+  color: #ff6b6b;
+  grid-column: 1 / -1;
+  padding: 0.75rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.change-email-success {
+  color: #7bd389;
+  grid-column: 1 / -1;
+  padding: 0.75rem;
+  background: rgba(123, 211, 137, 0.1);
+  border: 1px solid rgba(123, 211, 137, 0.3);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .change-email-page {
+    padding: 1rem;
+  }
+
+  .change-email-card {
+    padding: 1.5rem;
+  }
+
+  .change-email-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .change-email-form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .change-email-form button {
+    padding: 0.75rem 1.25rem;
+  }
+}
