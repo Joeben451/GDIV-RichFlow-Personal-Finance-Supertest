@@ -63,3 +63,142 @@
   flex: 1 1 auto;
   color: #e6e6e6;
 }
+
+/* Saki Assistant Styles */
+.saki-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.saki-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(157, 109, 212, 0.3);
+}
+
+.saki-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #EDCA69;
+  margin: 0;
+}
+
+.saki-refresh-btn {
+  background: linear-gradient(135deg, #7345AF 0%, #9d6dd4 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.saki-refresh-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(157, 109, 212, 0.4);
+}
+
+.saki-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saki-loading,
+.saki-error,
+.saki-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #b794e0;
+  font-style: italic;
+}
+
+.saki-error {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  border-radius: 8px;
+}
+
+.saki-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for Saki content */
+.saki-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.saki-content::-webkit-scrollbar-track {
+  background: #0f0f0f;
+  border-radius: 10px;
+}
+
+.saki-content::-webkit-scrollbar-thumb {
+  background: #9d6dd4;
+  border-radius: 10px;
+}
+
+.saki-category {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.saki-category:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(157, 109, 212, 0.2);
+}
+
+.saki-category-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #EDCA69;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(237, 202, 105, 0.3);
+}
+
+.saki-insight,
+.saki-tip {
+  margin-bottom: 0.75rem;
+}
+
+.saki-insight:last-child,
+.saki-tip:last-child {
+  margin-bottom: 0;
+}
+
+.saki-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b794e0;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.saki-text {
+  margin: 0;
+  color: #e6e6e6;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.saki-tip .saki-text {
+  color: #9d6dd4;
+  font-weight: 500;
+  font-style: italic;
+}

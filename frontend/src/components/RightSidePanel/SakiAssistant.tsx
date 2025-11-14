@@ -7,30 +7,66 @@ interface Props {
   includeBalanceSheet?: boolean;
 }
 
-//f format analysis text
-const formatAnalysis = (analysis: any): string => {
+interface AnalysisCategory {
+  title: string;
+  insight: string;
+  tip: string;
+}
+
+// Parse the AI analysis into structured categories with insights and tips
+const parseAnalysis = (analysis: any): AnalysisCategory[] => {
   let obj: any = null;
+  
+  // Parse if it's a string
   if (typeof analysis === 'string') {
-    try { obj = JSON.parse(analysis); } catch { return `analysis:\n  ${analysis.trim()}`; }
-  } else { obj = analysis; }
+    try {
+      obj = JSON.parse(analysis);
+    } catch {
+      return [];
+    }
+  } else {
+    obj = analysis;
+  }
 
-  const lines: string[] = [];
-  const writeValue = (val: any): string => {
-    if (val == null) return 'null';
-    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') return String(val);
-    if (Array.isArray(val)) return val.map(i => `- ${typeof i === 'object' ? JSON.stringify(i) : String(i)}`).join('\n  ');
-    const pretty = JSON.stringify(val, null, 2);
-    return pretty.split('\n').map((l, idx) => (idx === 0 ? l : `  ${l}`)).join('\n').replace(/\n/g, '\n  ');
-  };
-
+  const categories: AnalysisCategory[] = [];
+  
   for (const key of Object.keys(obj)) {
     const value = obj[key];
-    const formatted = writeValue(value).replace(/\n/g, '\n  ');
-    lines.push(`${key}:\n  ${formatted}`);
+    
+    // Split the value into sentences to separate insight and tip
+    const sentences = value.split(/(?<=[.!?])\s+/);
+    
+    // First 1-2 sentences are the insight
+    const insight = sentences.slice(0, 2).join(' ');
+    
+    // Remaining sentences or look for "suggestion", "tip", "try", etc.
+    let tip = sentences.slice(2).join(' ');
+    
+    // If no tip found in remaining sentences, try to extract suggestion from insight
+    if (!tip && insight.toLowerCase().includes('suggest')) {
+      const parts = insight.split(/suggest(?:ion|ed)?:?\s*/i);
+      if (parts.length > 1) {
+        tip = parts[1];
+      }
+    }
+    
+    // If still no tip, look for action verbs
+    if (!tip) {
+      const actionMatch = value.match(/(increase|decrease|reduce|improve|consider|try|focus on|aim for)[^.!?]*/i);
+      if (actionMatch) {
+        tip = actionMatch[0];
+      }
+    }
+    
+    categories.push({
+      title: key,
+      insight: insight || value,
+      tip: tip || 'Continue monitoring this category for optimal financial health.'
+    });
   }
-  return lines.join('\n\n');
+  
+  return categories;
 };
-
 
 // actual assistant content
 const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = true }) => {
@@ -79,26 +115,41 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
     }
   }, []); // intentionally run once on mount
 
-  const rendered = analysis ? formatAnalysis(analysis) : null;
+  const categories = analysis ? parseAnalysis(analysis) : [];
 
   return (
     <div className="saki-root">
       <div className="saki-header">
-        <button onClick={loadAnalysis} disabled={loading} aria-label="Refresh analysis">
-          {loading ? 'Loading…' : 'Refresh'}
+        <h2 className="saki-title">Saki Financial Insights</h2>
+        <button className="saki-refresh-btn" onClick={loadAnalysis} disabled={loading} aria-label="Refresh analysis">
+          {loading ? '⟳ Loading…' : '⟳ Refresh'}
         </button>
       </div>
 
-      {loading && <p>Loading financial analysis…</p>}
-      {error && <p className="error">Error: {error}</p>}
+      {loading && <div className="saki-loading">Analyzing your financial data…</div>}
+      {error && <div className="saki-error">Error: {error}</div>}
 
-      {!loading && !error && rendered && (
+      {!loading && !error && categories.length > 0 && (
         <div className="saki-content">
-          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{rendered}</pre>
+          {categories.map((category, index) => (
+            <div key={index} className="saki-category">
+              <h3 className="saki-category-title">{category.title}</h3>
+              <div className="saki-insight">
+                <span className="saki-label">💡 Insight:</span>
+                <p className="saki-text">{category.insight}</p>
+              </div>
+              <div className="saki-tip">
+                <span className="saki-label">✨ Suggested Action:</span>
+                <p className="saki-text">{category.tip}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
-      {!loading && !error && !rendered && <p>No analysis available.</p>}
+      {!loading && !error && categories.length === 0 && (
+        <div className="saki-empty">No analysis available. Click Refresh to generate insights.</div>
+      )}
     </div>
   );
 };
