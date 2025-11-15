@@ -5,8 +5,8 @@ interface User {
   id: number;
   name: string;
   email: string;
-  lastOnline: string | null;
-  joinedDate: string;
+  lastLogin: string | null;
+  createdAt: string;
 }
 
 interface UserListProps {
@@ -14,9 +14,10 @@ interface UserListProps {
   currentUserId?: number;
   onEdit?: (userId: number) => void;
   onDelete?: (userId: number) => void;
+  onUserClick?: (userId: number, userName: string) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDelete }) => {
+const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDelete, onUserClick }) => {
   return (
     <div className="users-table-container">
       <table className="users-table">
@@ -39,19 +40,28 @@ const UserList: React.FC<UserListProps> = ({ users, currentUserId, onEdit, onDel
             </tr>
           ) : (
             users.map((user) => (
-              <tr key={user.id}>
+              <tr 
+                key={user.id}
+                className={onUserClick ? 'clickable-row' : ''}
+                onClick={() => onUserClick?.(user.id, user.name)}
+              >
                 <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>
-                  {user.lastOnline ? new Date(user.lastOnline).toLocaleDateString() : 'Never'}
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </td>
-                <td>{new Date(user.joinedDate).toLocaleDateString()}</td>
+                <td>
+                  {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
+                </td>
                 <td>
                   {user.id !== currentUserId ? (
                     <button 
                       className="action-btn user-list-delete-btn"
-                      onClick={() => onDelete?.(user.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete?.(user.id);
+                      }}
                     >
                       Delete
                     </button>

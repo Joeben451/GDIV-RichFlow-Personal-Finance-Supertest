@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getAllUsers, getUserById, deleteUserById } from '../services/admin.service';
+import { getAllUsers, getUserById, deleteUserById, getUserFinancialData } from '../services/admin.service';
 
 /**
  * Get all users
@@ -89,6 +89,35 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
     console.error('Delete user error:', error);
     return res.status(500).json({
       error: 'Failed to delete user',
+    });
+  }
+}
+
+/**
+ * Get user's financial data
+ * @route GET /api/admin/users/:id/financial
+ * @access Private (Admin only)
+ */
+export async function getUserFinancials(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = parseInt(req.params.id || '');
+
+    if (isNaN(userId)) {
+      return res.status(400).json({
+        error: 'Invalid user ID',
+      });
+    }
+
+    const financialData = await getUserFinancialData(userId);
+
+    return res.status(200).json({
+      message: 'User financial data fetched successfully',
+      data: financialData,
+    });
+  } catch (error) {
+    console.error('Get user financials error:', error);
+    return res.status(500).json({
+      error: 'Failed to fetch user financial data',
     });
   }
 }

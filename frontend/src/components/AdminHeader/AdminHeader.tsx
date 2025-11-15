@@ -7,7 +7,7 @@ const AdminHeader: React.FC = () => {
       <div className="header-left">
         <div className="logo">
           <div className="logo-circle max-h-fit"><img src="../../../assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
-          <span className="logo-text">RichMan</span>
+          <span className="logo-text">RichFlow</span>
         </div>
       </div>
       <div className="header-center">

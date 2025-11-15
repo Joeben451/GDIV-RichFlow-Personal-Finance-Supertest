@@ -48,6 +48,14 @@
   background-color: #303030;
 }
 
+.users-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
+.users-table tbody tr.clickable-row:hover {
+  background-color: #3a3a3a;
+}
+
 .empty-state {
   text-align: center;
   color: #888;
