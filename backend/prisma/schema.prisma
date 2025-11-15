@@ -8,18 +8,20 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  name            String           @unique
-  email           String           @unique
-  password        String
-  isAdmin         Boolean          @default(false)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime
-  lastLogin       DateTime?
-  BalanceSheet    BalanceSheet?
-  CashSavings     CashSavings?
-  IncomeStatement IncomeStatement?
-  Session         Session[]
+  id                  Int              @id @default(autoincrement())
+  name                String           @unique
+  email               String           @unique
+  password            String
+  isAdmin             Boolean          @default(false)
+  preferredCurrencyId Int              @default(1)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime
+  lastLogin           DateTime?
+  BalanceSheet        BalanceSheet?
+  CashSavings         CashSavings?
+  IncomeStatement     IncomeStatement?
+  Session             Session[]
+  PreferredCurrency   Currency         @relation(fields: [preferredCurrencyId], references: [id])
 }
 
 model Session {
@@ -86,4 +88,11 @@ model CashSavings {
   amount Float @default(0)
   userId Int   @unique
   User   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Currency {
+  id        Int    @id @default(autoincrement())
+  cur_symbol String
+  cur_name  String
+  User      User[]
 }

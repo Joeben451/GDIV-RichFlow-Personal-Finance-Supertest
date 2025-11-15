@@ -48,7 +48,7 @@ export const apiRequest = async (
     ...(headers as Record<string, string>),
   };
 
-  // Add Authorization header if required
+  // Only add Authorization header if authentication is required
   if (requiresAuth) {
     const token = getAccessToken();
     if (token) {
@@ -73,7 +73,7 @@ export const apiRequest = async (
     const data = await response.json();
 
     if (!response.ok) {
-      // If access token missing (401) or expired/invalid (403), try to refresh when auth is required
+      // Only try to refresh tokens if auth is actually required
       if (requiresAuth && (response.status === 401 || response.status === 403)) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
@@ -104,6 +104,7 @@ export const apiRequest = async (
         }
       }
 
+      // For non-auth endpoints, just throw the error without trying to refresh
       throw new Error(data.error || 'Request failed');
     }
 
@@ -478,6 +479,34 @@ export const adminAPI = {
   getUserFinancials: async (userId: number) => {
     return await apiRequest(`/admin/users/${userId}/financial`, {
       method: 'GET',
+      requiresAuth: true,
+    });
+  },
+};
+
+// Currency API calls
+export const currencyAPI = {
+  // Get all available currencies
+  getCurrencies: async () => {
+    return await apiRequest('/currency', {
+      method: 'GET',
+      requiresAuth: false,
+    });
+  },
+
+  // Get user's preferred currency
+  getUserCurrency: async () => {
+    return await apiRequest('/currency/user', {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  // Update user's preferred currency
+  updateUserCurrency: async (currencyId: number) => {
+    return await apiRequest('/currency/user', {
+      method: 'PUT',
+      body: JSON.stringify({ currencyId }),
       requiresAuth: true,
     });
   },

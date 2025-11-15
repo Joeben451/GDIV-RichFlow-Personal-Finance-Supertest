@@ -11,6 +11,7 @@ import expenseRoutes from './routes/expense.routes';
 import aiRoutes from './routes/ai.routes';
 import balanceSheetRoutes from './routes/balanceSheet.routes';
 import adminRoutes from './routes/admin.routes';
+import currencyRoutes from './routes/currency.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -65,6 +66,9 @@ app.use('/api/expenses', expenseRoutes);
 
 // Mount balance sheet routes
 app.use('/api', balanceSheetRoutes);
+
+// Mount currency routes
+app.use('/api/currency', currencyRoutes);
 
 // Mount other API routes
 app.use('/api', routes);

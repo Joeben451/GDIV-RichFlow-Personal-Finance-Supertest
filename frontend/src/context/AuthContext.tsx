@@ -1,11 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI, setAccessToken, clearAccessToken, refreshAccessToken } from '../utils/api';
 
+interface Currency {
+  id: number;
+  cur_symbol: string;
+  cur_name: string;
+}
+
 interface User {
   id: string | number;
   name: string;
   email: string;
   isAdmin?: boolean;
+  preferredCurrency?: Currency;
 }
 
 interface AuthContextType {

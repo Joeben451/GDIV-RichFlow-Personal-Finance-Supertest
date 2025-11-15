@@ -114,3 +114,110 @@
 .sidebar-button:active {
   transform: scale(0.95);
 }
+
+/* Currency Modal Styles */
+.currency-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.currency-modal-content {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideInModal 0.3s ease;
+}
+
+@keyframes slideInModal {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.currency-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.currency-modal-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.currency-modal-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.currency-modal-close:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.currency-modal-body {
+  display: flex;
+  justify-content: center;
+}
+
+.currency-modal-body .currency-selector {
+  width: 100%;
+}
+
+.currency-modal-body .currency-selector-button {
+  width: 100%;
+  justify-content: space-between;
+  padding: 12px 20px;
+  font-size: 16px;
+}
+
+.currency-modal-body .currency-dropdown {
+  position: static;
+  width: 100%;
+  max-height: 350px;
+  margin-top: 12px;
+}

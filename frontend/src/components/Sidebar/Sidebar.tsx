@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import CurrencySelector from '../CurrencySelector/CurrencySelector';
 import './Sidebar.css';
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
 
 const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
   const [expanded, setExpanded] = React.useState(false);
+  const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -46,7 +48,7 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
           <span className="sidebar-text"> User Guide </span>
         </button>
 
-        <button className="selection large"> 
+        <button className="selection large" onClick={() => setShowCurrencyModal(true)}> 
           <div className="sidebar-button large"></div>
           <span className="sidebar-text"> Change Currency </span>
         </button>
@@ -84,6 +86,21 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
           <span className="sidebar-text"> Log Out </span>
         </button>
       </div>
+
+      {/* Currency Selection Modal */}
+      {showCurrencyModal && (
+        <div className="currency-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
+          <div className="currency-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="currency-modal-header">
+              <h2>Select Currency</h2>
+              <button className="currency-modal-close" onClick={() => setShowCurrencyModal(false)}>×</button>
+            </div>
+            <div className="currency-modal-body">
+              <CurrencySelector onCurrencyChange={() => setShowCurrencyModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
 
     </aside>
   );
