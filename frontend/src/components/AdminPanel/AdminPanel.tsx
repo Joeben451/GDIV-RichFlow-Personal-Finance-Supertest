@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './AdminPanel.css';
 import UserList from '../UserList/UserList';
+import AdminUserFinancialView from '../AdminUserFinancialView/AdminUserFinancialView';
 import { adminAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,8 +9,8 @@ interface User {
   id: number;
   name: string;
   email: string;
-  lastOnline: string | null;
-  joinedDate: string;
+  lastLogin: string | null;
+  createdAt: string;
 }
 
 const AdminPanel: React.FC = () => {
@@ -19,6 +20,8 @@ const AdminPanel: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserName, setSelectedUserName] = useState<string>('');
 
   // Fetch users from the database
   useEffect(() => {
@@ -38,8 +41,8 @@ const AdminPanel: React.FC = () => {
           id: user.id,
           name: user.name,
           email: user.email,
-          lastOnline: user.lastLogin,
-          joinedDate: new Date(user.createdAt).toLocaleDateString(),
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt,
         }));
         
         setUsers(transformedUsers);
@@ -102,6 +105,27 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleUserClick = (userId: number, userName: string) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(userName);
+  };
+
+  const handleBackToUserList = () => {
+    setSelectedUserId(null);
+    setSelectedUserName('');
+  };
+
+  // If a user is selected, show their financial data
+  if (selectedUserId !== null) {
+    return (
+      <AdminUserFinancialView
+        userId={selectedUserId}
+        userName={selectedUserName}
+        onBack={handleBackToUserList}
+      />
+    );
+  }
+
   return (
     <section className="admin-section">
       <div className="admin-header">
@@ -128,6 +152,7 @@ const AdminPanel: React.FC = () => {
             currentUserId={user?.id ? Number(user.id) : undefined}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onUserClick={handleUserClick}
           />
         )}
       </div>

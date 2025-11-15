@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUsers, getUser, deleteUser } from '../controllers/admin.controller';
+import { getUsers, getUser, deleteUser, getUserFinancials } from '../controllers/admin.controller';
 import { authenticateToken, requireAdmin } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -17,6 +17,13 @@ router.get('/users', authenticateToken, requireAdmin, getUsers);
  * @access Private (Admin only)
  */
 router.get('/users/:id', authenticateToken, requireAdmin, getUser);
+
+/**
+ * @route GET /api/admin/users/:id/financial
+ * @desc Get user's financial data
+ * @access Private (Admin only)
+ */
+router.get('/users/:id/financial', authenticateToken, requireAdmin, getUserFinancials);
 
 /**
  * @route DELETE /api/admin/users/:id

@@ -473,4 +473,12 @@ export const adminAPI = {
       requiresAuth: true,
     });
   },
+
+  // Get user's financial data
+  getUserFinancials: async (userId: number) => {
+    return await apiRequest(`/admin/users/${userId}/financial`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
 };
