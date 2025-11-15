@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useExpenses } from '../../hooks/useExpenses';
+import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/currency.utils';
 import './ExpensesSection.css';
 
 const ExpenseSection: React.FC = () => {
+  const { user } = useAuth();
+  const currency = user?.preferredCurrency;
   const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook } = useExpenses();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
@@ -55,7 +59,7 @@ const ExpenseSection: React.FC = () => {
             <div key={item.id} className="expense-item">
               <span>{item.name}</span>
               <span className="expense-amount">
-                ${typeof item.amount === 'number' ? item.amount.toFixed(2) : '0.00'}
+                {formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}
               </span>
               <button
                 className="delete-btn"

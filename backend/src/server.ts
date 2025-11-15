@@ -64,16 +64,17 @@ app.use('/api/income', incomeRoutes);
 // Mount expense routes
 app.use('/api/expenses', expenseRoutes);
 
+// Mount currency routes (BEFORE /api to avoid auth middleware interference)
+app.use('/api/currency', currencyRoutes);
+
+// Mount AI routes
+app.use('/api/ai', aiRoutes);
+
 // Mount balance sheet routes
 app.use('/api', balanceSheetRoutes);
 
-// Mount currency routes
-app.use('/api/currency', currencyRoutes);
-
 // Mount other API routes
 app.use('/api', routes);
-
-app.use('/api/ai', aiRoutes);
 
 
 // Handle 404s for API routes

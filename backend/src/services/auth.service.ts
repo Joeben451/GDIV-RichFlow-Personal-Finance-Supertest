@@ -102,7 +102,10 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
  */
 export async function loginUser(email: string, password: string) {
   const user = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
+    include: {
+      PreferredCurrency: true
+    }
   });
 
   if (!user) {
@@ -124,7 +127,8 @@ export async function loginUser(email: string, password: string) {
     id: user.id,
     email: user.email,
     name: user.name,
-    isAdmin: user.isAdmin
+    isAdmin: user.isAdmin,
+    PreferredCurrency: user.PreferredCurrency
   };
 }
 
@@ -169,7 +173,8 @@ export async function findValidSession(refreshToken: string) {
           id: true,
           email: true,
           name: true,
-          isAdmin: true
+          isAdmin: true,
+          PreferredCurrency: true
         }
       }
     }
@@ -242,7 +247,8 @@ export async function updateUsername(userId: number, newName: string) {
       id: true,
       email: true,
       name: true,
-      isAdmin: true
+      isAdmin: true,
+      PreferredCurrency: true
     }
   });
 
@@ -273,7 +279,7 @@ export async function updateEmail(userId: number, newEmail: string) {
   const updated = await prisma.user.update({
     where: { id: userId },
     data: { email: newEmail, updatedAt: new Date() },
-    select: { id: true, email: true, name: true, isAdmin: true }
+    select: { id: true, email: true, name: true, isAdmin: true, PreferredCurrency: true }
   });
 
   return updated;

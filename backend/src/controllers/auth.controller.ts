@@ -100,7 +100,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         id: user.id,
         email: user.email,
         name: user.name,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        preferredCurrency: user.PreferredCurrency
       }
     });
 
@@ -141,7 +142,8 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
         id: session.User.id,
         email: session.User.email,
         name: session.User.name,
-        isAdmin: session.User.isAdmin
+        isAdmin: session.User.isAdmin,
+        preferredCurrency: session.User.PreferredCurrency
       }
     });
 
@@ -219,7 +221,8 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
         name: true,
         isAdmin: true,
         createdAt: true,
-        lastLogin: true
+        lastLogin: true,
+        PreferredCurrency: true
       }
     });
 
@@ -232,7 +235,8 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
         id: user.id.toString(),
         email: user.email,
         name: user.name,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        preferredCurrency: user.PreferredCurrency
       }
     });
 

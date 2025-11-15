@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useExpenses } from '../../hooks/useExpenses';
 import { cashSavingsAPI, incomeAPI, assetsAPI, liabilitiesAPI } from '../../utils/api';
 import { incomeTotalsStore } from '../../state/incomeTotalsStore';
+import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/currency.utils';
 import './SummarySection.css';
 
 type Props = {
@@ -18,6 +20,8 @@ const SummarySection: React.FC<Props> = ({
   totalAssetsProp,
   totalLiabilitiesProp,
 }) => {
+  const { user } = useAuth();
+  const currency = user?.preferredCurrency;
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('0');
@@ -212,7 +216,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-header">
             <span className="progress-label">Passive + Portfolio Income</span>
             <span className="progress-amount">
-              ${passiveAndPortfolioIncome.toLocaleString()}
+              {formatCurrency(passiveAndPortfolioIncome, currency)}
             </span>
           </div>
 
@@ -234,7 +238,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="progress-footer">
             <span className="progress-percent">{progressPercent}%</span>
             <span className="progress-target">
-              of ${totalExpensesDb.toLocaleString()} (Total Expenses)
+              of {formatCurrency(totalExpensesDb, currency)} (Total Expenses)
             </span>
           </div>
         </div>
@@ -255,7 +259,7 @@ const SummarySection: React.FC<Props> = ({
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">${totalIncomeLive.toLocaleString()}</div>
+              <div className="hbar-value">{formatCurrency(totalIncomeLive, currency)}</div>
             </div>
 
             <div className="hbar">
@@ -271,7 +275,7 @@ const SummarySection: React.FC<Props> = ({
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">${totalExpensesDb.toLocaleString()}</div>
+              <div className="hbar-value">{formatCurrency(totalExpensesDb, currency)}</div>
             </div>
           </div>
 
@@ -281,7 +285,7 @@ const SummarySection: React.FC<Props> = ({
           >
             <div className="cashflow-label">Cashflow</div>
             <div className="cashflow-amount">
-              ${Math.abs(cashFlow).toLocaleString()}
+              {formatCurrency(Math.abs(cashFlow), currency)}
               {cashFlow < 0 && ' (deficit)'}
             </div>
           </div>
@@ -305,7 +309,7 @@ const SummarySection: React.FC<Props> = ({
                     aria-hidden="true"
                   />
                 </div>
-                <div className="hbar-value">{balanceSheetLoading ? '...' : `$${totalAssets.toLocaleString()}`}</div>
+                <div className="hbar-value">{balanceSheetLoading ? '...' : formatCurrency(totalAssets, currency)}</div>
               </div>
 
               <div className="hbar">
@@ -345,7 +349,7 @@ const SummarySection: React.FC<Props> = ({
           {!isEditing ? (
             <>
               <span className="savings-amount">
-                {loading ? 'Loading...' : `$${cashSavings.toLocaleString()}`}
+                {loading ? 'Loading...' : formatCurrency(cashSavings, currency)}
               </span>
               {!loading && (
                 <button 

@@ -94,6 +94,7 @@ export async function getUserFinancialData(userId: number) {
           },
         },
         CashSavings: true,
+        PreferredCurrency: true,
       },
     });
 
@@ -118,6 +119,7 @@ export async function getUserFinancialData(userId: number) {
         email: user.email,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin,
+        preferredCurrency: user.PreferredCurrency,
       },
       balanceSheet: user.BalanceSheet ? {
         ...user.BalanceSheet,

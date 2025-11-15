@@ -1,11 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI, setAccessToken, clearAccessToken, refreshAccessToken } from '../utils/api';
-
-interface Currency {
-  id: number;
-  cur_symbol: string;
-  cur_name: string;
-}
+import { Currency } from '../types/currency.types';
 
 interface User {
   id: string | number;
@@ -70,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     const data = await authAPI.login(email, password);
+    // User data includes preferredCurrency from backend
     setUser(data.user);
   };
 
@@ -81,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateUsername = async (newName: string) => {
     try {
       const data = await authAPI.updateUsername(newName);
-      // Expect backend to return `{ user: { id, email, name } }`
+      // Expect backend to return `{ user: { id, email, name, preferredCurrency } }`
       if (data?.user) {
         setUser(data.user);
       } else {

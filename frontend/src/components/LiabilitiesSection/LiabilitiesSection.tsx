@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { liabilitiesAPI } from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
+import { formatCurrency } from "../../utils/currency.utils";
 import "./LiabilitiesSection.css";
 
 interface LiabilityItem {
@@ -13,6 +15,8 @@ type Props = {
 };
 
 const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
+  const { user } = useAuth();
+  const currency = user?.preferredCurrency;
   const [liabilities, setLiabilities] = useState<LiabilityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +115,7 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
           {liabilities.map((item) => (
             <div key={item.id} className="liability-item">
               <span>{item.name}</span>
-              <span>${typeof item.value === "number" ? item.value.toFixed(2) : "0.00"}</span>
+              <span>{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
               <button
                 className="delete-btn"
                 onClick={() => handleDelete(item.id)}

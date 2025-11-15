@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { assetsAPI } from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
+import { formatCurrency } from "../../utils/currency.utils";
 import "./AssetsSection.css";
 
 interface AssetItem {
@@ -13,6 +15,8 @@ type Props = {
 };
 
 const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
+  const { user } = useAuth();
+  const currency = user?.preferredCurrency;
   const [assets, setAssets] = useState<AssetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +114,7 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
           {assets.map((item) => (
             <div key={item.id} className="asset-item">
               <span>{item.name}</span>
-              <span>${typeof item.value === "number" ? item.value.toFixed(2) : "0.00"}</span>
+              <span>{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
               <button
                 className="delete-btn"
                 onClick={() => handleDelete(item.id)}

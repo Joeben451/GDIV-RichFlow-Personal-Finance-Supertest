@@ -15,23 +15,20 @@ import { authenticateToken } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// All balance sheet routes require authentication
-router.use(authenticateToken);
+// Balance Sheet routes (all require authentication)
+router.get('/balance-sheet', authenticateToken, getBalanceSheetHandler);
+router.post('/balance-sheet', authenticateToken, createBalanceSheetHandler);
 
-// Balance Sheet routes
-router.get('/balance-sheet', getBalanceSheetHandler);
-router.post('/balance-sheet', createBalanceSheetHandler);
+// Asset routes (all require authentication)
+router.get('/assets', authenticateToken, getAssetsHandler);
+router.post('/assets', authenticateToken, addAssetHandler);
+router.put('/assets/:id', authenticateToken, updateAssetHandler);
+router.delete('/assets/:id', authenticateToken, deleteAssetHandler);
 
-// Asset routes
-router.get('/assets', getAssetsHandler);
-router.post('/assets', addAssetHandler);
-router.put('/assets/:id', updateAssetHandler);
-router.delete('/assets/:id', deleteAssetHandler);
-
-// Liability routes
-router.get('/liabilities', getLiabilitiesHandler);
-router.post('/liabilities', addLiabilityHandler);
-router.put('/liabilities/:id', updateLiabilityHandler);
-router.delete('/liabilities/:id', deleteLiabilityHandler);
+// Liability routes (all require authentication)
+router.get('/liabilities', authenticateToken, getLiabilitiesHandler);
+router.post('/liabilities', authenticateToken, addLiabilityHandler);
+router.put('/liabilities/:id', authenticateToken, updateLiabilityHandler);
+router.delete('/liabilities/:id', authenticateToken, deleteLiabilityHandler);
 
 export default router;

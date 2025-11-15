@@ -166,7 +166,7 @@ const UserGuide: React.FC = () => {
           </p>
         </section>
 
-        <button className="back-button" onClick={() => navigate('/dashboard')}>
+        <button className="user-guide-back-button" onClick={() => navigate('/dashboard')}>
           Back to Dashboard
         </button>
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../utils/api';
+import { Currency } from '../../types/currency.types';
+import { formatCurrency } from '../../utils/currency.utils';
 import './AdminUserFinancialView.css';
 
 interface AdminUserFinancialViewProps {
@@ -66,6 +68,7 @@ interface FinancialData {
     email: string;
     createdAt: string;
     lastLogin: string | null;
+    preferredCurrency: Currency | null;
   };
   balanceSheet: BalanceSheet | null;
   incomeStatement: IncomeStatement | null;
@@ -77,6 +80,7 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
   const [financialData, setFinancialData] = useState<FinancialData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userCurrency, setUserCurrency] = useState<Currency | null>(null);
 
   useEffect(() => {
     const fetchFinancialData = async () => {
@@ -86,6 +90,10 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
         const response = await adminAPI.getUserFinancials(userId);
         const data = response.data || response;
         setFinancialData(data);
+        // Set user's preferred currency
+        if (data.user?.preferredCurrency) {
+          setUserCurrency(data.user.preferredCurrency);
+        }
       } catch (err: any) {
         console.error('Error fetching financial data:', err);
         setError(err.message || 'Failed to fetch financial data');
@@ -182,37 +190,37 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
       <div className="summary-cards">
         <div className="summary-card">
           <div className="card-label">Total Income</div>
-          <div className="card-value income-value">${totalIncome.toLocaleString()}</div>
+          <div className="card-value income-value">{formatCurrency(totalIncome, userCurrency)}</div>
         </div>
         <div className="summary-card">
           <div className="card-label">Total Expenses</div>
-          <div className="card-value expense-value">${totalExpenses.toLocaleString()}</div>
+          <div className="card-value expense-value">{formatCurrency(totalExpenses, userCurrency)}</div>
         </div>
         <div className="summary-card">
           <div className="card-label">Cashflow</div>
           <div className={`card-value ${cashflow >= 0 ? 'positive-value' : 'negative-value'}`}>
-            ${Math.abs(cashflow).toLocaleString()}
+            {formatCurrency(Math.abs(cashflow), userCurrency)}
             {cashflow < 0 && ' (deficit)'}
           </div>
         </div>
         <div className="summary-card">
           <div className="card-label">Cash/Savings</div>
-          <div className="card-value">${cashSavings.toLocaleString()}</div>
+          <div className="card-value">{formatCurrency(cashSavings, userCurrency)}</div>
         </div>
         {financialData.balanceSheet && (
           <>
             <div className="summary-card">
               <div className="card-label">Total Assets</div>
-              <div className="card-value asset-value">${totalAssets.toLocaleString()}</div>
+              <div className="card-value asset-value">{formatCurrency(totalAssets, userCurrency)}</div>
             </div>
             <div className="summary-card">
               <div className="card-label">Total Liabilities</div>
-              <div className="card-value liability-value">${totalLiabilities.toLocaleString()}</div>
+              <div className="card-value liability-value">{formatCurrency(totalLiabilities, userCurrency)}</div>
             </div>
             <div className="summary-card">
               <div className="card-label">Net Worth</div>
               <div className={`card-value ${netWorth >= 0 ? 'positive-value' : 'negative-value'}`}>
-                ${Math.abs(netWorth).toLocaleString()}
+                {formatCurrency(Math.abs(netWorth), userCurrency)}
                 {netWorth < 0 && ' (negative)'}
               </div>
             </div>
@@ -238,14 +246,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                   {earnedIncome.map((income) => (
                     <tr key={income.id}>
                       <td>{income.name}</td>
-                      <td>${income.amount.toLocaleString()}</td>
+                      <td>{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
                     <td>Total</td>
-                    <td>${totalEarnedIncome.toLocaleString()}</td>
+                    <td>{formatCurrency(totalEarnedIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -268,14 +276,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                   {portfolioIncome.map((income) => (
                     <tr key={income.id}>
                       <td>{income.name}</td>
-                      <td>${income.amount.toLocaleString()}</td>
+                      <td>{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
                     <td>Total</td>
-                    <td>${totalPortfolioIncome.toLocaleString()}</td>
+                    <td>{formatCurrency(totalPortfolioIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -298,14 +306,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                   {passiveIncome.map((income) => (
                     <tr key={income.id}>
                       <td>{income.name}</td>
-                      <td>${income.amount.toLocaleString()}</td>
+                      <td>{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
                     <td>Total</td>
-                    <td>${totalPassiveIncome.toLocaleString()}</td>
+                    <td>{formatCurrency(totalPassiveIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -331,14 +339,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                 {expenses.map((expense) => (
                   <tr key={expense.id}>
                     <td>{expense.name}</td>
-                    <td>${expense.amount.toLocaleString()}</td>
+                    <td>{formatCurrency(expense.amount, userCurrency)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
                   <td>Total</td>
-                  <td>${totalExpenses.toLocaleString()}</td>
+                  <td>{formatCurrency(totalExpenses, userCurrency)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -367,14 +375,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                     {financialData.balanceSheet.assets.map((asset) => (
                       <tr key={asset.id}>
                         <td>{asset.name}</td>
-                        <td>${asset.value.toLocaleString()}</td>
+                        <td>{formatCurrency(asset.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td>Total Assets</td>
-                      <td>${totalAssets.toLocaleString()}</td>
+                      <td>{formatCurrency(totalAssets, userCurrency)}</td>
                     </tr>
                   </tfoot>
                 </table>
@@ -397,14 +405,14 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
                     {financialData.balanceSheet.liabilities.map((liability) => (
                       <tr key={liability.id}>
                         <td>{liability.name}</td>
-                        <td>${liability.value.toLocaleString()}</td>
+                        <td>{formatCurrency(liability.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td>Total Liabilities</td>
-                      <td>${totalLiabilities.toLocaleString()}</td>
+                      <td>{formatCurrency(totalLiabilities, userCurrency)}</td>
                     </tr>
                   </tfoot>
                 </table>

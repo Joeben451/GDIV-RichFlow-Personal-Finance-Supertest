@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../utils/api';
+import { Currency } from '../../types/currency.types';
+import { formatCurrency } from '../../utils/currency.utils';
 import './UserFinancialView.css';
 
 interface UserFinancialViewProps {
@@ -77,6 +79,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
   const [financialData, setFinancialData] = useState<FinancialData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userCurrency, setUserCurrency] = useState<Currency | null>(null);
 
   useEffect(() => {
     const fetchFinancialData = async () => {
@@ -92,6 +95,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
         console.log('Income statement:', data.incomeStatement);
         console.log('Cash savings:', data.cashSavings);
         setFinancialData(data);
+        // Set user's preferred currency
+        if (data.user?.preferredCurrency) {
+          setUserCurrency(data.user.preferredCurrency);
+        }
+        // Set user's preferred currency
+        if (data.user?.preferredCurrency) {
+          setUserCurrency(data.user.preferredCurrency);
+        }
       } catch (err: any) {
         console.error('Error fetching financial data:', err);
         setError(err.message || 'Failed to fetch financial data');
@@ -232,14 +243,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {earnedIncome.map((income) => (
                       <tr key={income.id}>
                         <td>{income.name}</td>
-                        <td>${income.amount.toLocaleString()}</td>
+                        <td>{formatCurrency(income.amount, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total</strong></td>
-                      <td><strong>${totalEarnedIncome.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalEarnedIncome, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -261,14 +272,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {portfolioIncome.map((income) => (
                       <tr key={income.id}>
                         <td>{income.name}</td>
-                        <td>${income.amount.toLocaleString()}</td>
+                        <td>{formatCurrency(income.amount, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total</strong></td>
-                      <td><strong>${totalPortfolioIncome.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalPortfolioIncome, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -290,14 +301,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {passiveIncome.map((income) => (
                       <tr key={income.id}>
                         <td>{income.name}</td>
-                        <td>${income.amount.toLocaleString()}</td>
+                        <td>{formatCurrency(income.amount, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total</strong></td>
-                      <td><strong>${totalPassiveIncome.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalPassiveIncome, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -306,7 +317,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
               )}
             </div>
             <div className="total-income">
-              <strong>Total Income: ${totalIncome.toLocaleString()}</strong>
+              <strong>Total Income: {formatCurrency(totalIncome, userCurrency)}</strong>
             </div>
           </div>
         </div>
@@ -320,7 +331,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
               <div className="progress-header">
                 <span className="progress-label">Passive + Portfolio Income</span>
                 <span className="progress-amount">
-                  ${(totalPassiveIncome + totalPortfolioIncome).toLocaleString()}
+                  {formatCurrency(totalPassiveIncome + totalPortfolioIncome, userCurrency)}
                 </span>
               </div>
               <div className="progress-track">
@@ -336,7 +347,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                   {totalExpenses > 0 ? Math.round(((totalPassiveIncome + totalPortfolioIncome) / totalExpenses) * 100) : 0}%
                 </span>
                 <span className="progress-target">
-                  of ${totalExpenses.toLocaleString()} (Total Expenses)
+                  of {formatCurrency(totalExpenses, userCurrency)} (Total Expenses)
                 </span>
               </div>
             </div>
@@ -352,7 +363,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                       style={{ width: `${totalIncome > 0 ? 100 : 0}%` }}
                     />
                   </div>
-                  <div className="hbar-value">${totalIncome.toLocaleString()}</div>
+                  <div className="hbar-value">{formatCurrency(totalIncome, userCurrency)}</div>
                 </div>
                 <div className="hbar">
                   <div className="hbar-label">Total Expenses</div>
@@ -364,13 +375,13 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                       }}
                     />
                   </div>
-                  <div className="hbar-value">${totalExpenses.toLocaleString()}</div>
+                  <div className="hbar-value">{formatCurrency(totalExpenses, userCurrency)}</div>
                 </div>
               </div>
               <div className={`cashflow-row ${(totalIncome - totalExpenses) < 0 ? 'negative' : 'positive'}`}>
                 <div className="cashflow-label">Cashflow</div>
                 <div className="cashflow-amount">
-                  ${Math.abs(totalIncome - totalExpenses).toLocaleString()}
+                  {formatCurrency(Math.abs(totalIncome - totalExpenses), userCurrency)}
                   {(totalIncome - totalExpenses) < 0 && ' (deficit)'}
                 </div>
               </div>
@@ -390,7 +401,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                         }}
                       />
                     </div>
-                    <div className="hbar-value">${totalAssets.toLocaleString()}</div>
+                    <div className="hbar-value">{formatCurrency(totalAssets, userCurrency)}</div>
                   </div>
                   <div className="hbar">
                     <div className="hbar-label">Total Liabilities</div>
@@ -402,13 +413,13 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                         }}
                       />
                     </div>
-                    <div className="hbar-value">${totalLiabilities.toLocaleString()}</div>
+                    <div className="hbar-value">{formatCurrency(totalLiabilities, userCurrency)}</div>
                   </div>
                 </div>
                 <div className={`net-worth-row ${netWorth < 0 ? 'negative' : 'positive'}`}>
                   <div className="net-worth-label">Net Worth</div>
                   <div className="net-worth-amount">
-                    ${Math.abs(netWorth).toLocaleString()}
+                    {formatCurrency(Math.abs(netWorth), userCurrency)}
                     {netWorth < 0 && ' (negative)'}
                   </div>
                 </div>
@@ -418,7 +429,7 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
             {/* Cash Savings */}
             <div className="savings-bar">
               <span className="savings-label">Cash / Savings</span>
-              <span className="savings-amount">${cashSavings.toLocaleString()}</span>
+              <span className="savings-amount">{formatCurrency(cashSavings, userCurrency)}</span>
             </div>
           </div>
         </div>
@@ -440,14 +451,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {expenses.map((expense) => (
                       <tr key={expense.id}>
                         <td>{expense.name}</td>
-                        <td>${expense.amount.toLocaleString()}</td>
+                        <td>{formatCurrency(expense.amount, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total</strong></td>
-                      <td><strong>${totalExpenses.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalExpenses, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -478,14 +489,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {financialData.balanceSheet.assets.map((asset) => (
                       <tr key={asset.id}>
                         <td>{asset.name}</td>
-                        <td>${asset.value.toLocaleString()}</td>
+                        <td>{formatCurrency(asset.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total Assets</strong></td>
-                      <td><strong>${totalAssets.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalAssets, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -507,14 +518,14 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
                     {financialData.balanceSheet.liabilities.map((liability) => (
                       <tr key={liability.id}>
                         <td>{liability.name}</td>
-                        <td>${liability.value.toLocaleString()}</td>
+                        <td>{formatCurrency(liability.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr>
                       <td><strong>Total Liabilities</strong></td>
-                      <td><strong>${totalLiabilities.toLocaleString()}</strong></td>
+                      <td><strong>{formatCurrency(totalLiabilities, userCurrency)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>

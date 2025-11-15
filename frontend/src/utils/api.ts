@@ -486,12 +486,27 @@ export const adminAPI = {
 
 // Currency API calls
 export const currencyAPI = {
-  // Get all available currencies
+  // Get all available currencies (public endpoint)
   getCurrencies: async () => {
-    return await apiRequest('/currency', {
-      method: 'GET',
-      requiresAuth: false,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/currency`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch currencies' }));
+        throw new Error(errorData.error || 'Failed to fetch currencies');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+      throw error;
+    }
   },
 
   // Get user's preferred currency
