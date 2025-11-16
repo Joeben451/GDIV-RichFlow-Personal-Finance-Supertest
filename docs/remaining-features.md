@@ -46,13 +46,13 @@ The Balance Sheet feature provides users with a clear and accurate snapshot of t
 
 ## Admin Panel Feature
 
-The Admin Panel is a new, restricted-access area designed for system administrators. This feature provides the tools necessary to manage users, monitor application activity, and ensure the smooth operation of the RichFlow platform.
+The Admin Panel is a new, restricted-access area designed for system administrators. This feature provides the tools necessary to manage users and ensure the smooth operation of the RichFlow platform.
 
 ### Key Functionalities
 
 - **User Management**: Administrators can view a list of all registered users, inspect their financial data (for support and verification purposes), and manage user accounts.
-- **Dashboard Overview**: The panel includes a dashboard that provides high-level statistics about the application, such as user growth and financial data trends.
-- **System Health Monitoring**: Provides insights into the application's performance and operational status.
+- **Dashboard Overview**: The panel includes a dashboard that provides a list of users. When they click on a user, 
+they are shown a detailed view of their financial data.
 - **Secure Access**: Access to the admin panel is strictly controlled and limited to users with administrative privileges, enforced by dedicated backend middleware.
 
 ### Architecture
@@ -64,17 +64,16 @@ The Admin Panel is a new, restricted-access area designed for system administrat
 
 ## Saki AI Assistant Feature
 
-The Saki AI Assistant is a simple generative AI designed to help users navigate their finances more effectively. While the full user interface is still in development, the backend infrastructure has been established to support AI-driven queries and insights.
+The Saki AI Assistant is a simple generative AI designed to help users navigate their finances more effectively. The backend infrastructure has been established to support AI-driven insights about their financial data.
 
 ### Key Functionalities (Backend Implemented)
 
-- **Natural Language Queries**: The backend service (`ai.service.ts`) is capable of processing natural language questions about a user's financial data.
 - **Personalized Financial Insights**: The AI can analyze a user's income, expenses, and balance sheet to provide personalized tips and observations. It can also suggest ways to improve their financial well-being.
 - **Secure Data Handling**: The AI service operates within the user's authenticated session, ensuring that it only accesses the data of the user making the request.
 
 ### Architecture
 
-- **Backend**: The core of the feature resides in the backend with a dedicated `ai.controller.ts` and `ai.service.ts`. These modules are responsible for interpreting user queries, interacting with other financial services to gather data, and formulating an intelligent response. The `/api/ai` route is protected and handles all interactions with the assistant.
+- **Backend**: The core of the feature resides in the backend with a dedicated `ai.controller.ts` and `ai.service.ts`. These modules are responsible for interpreting user data, interacting with other financial services to gather data, and formulating an intelligent response. The `/api/ai` route is protected and handles all interactions with the assistant.
 
 ---
 
@@ -91,7 +90,7 @@ The Saki AI Assistant is a simple generative AI designed to help users navigate 
 
 ## Changelog
 
-**Document Version:** 1.0  
+**Document Version:** 1.1 
 **Last Updated:** November 16, 2025
 
 ### Changes
