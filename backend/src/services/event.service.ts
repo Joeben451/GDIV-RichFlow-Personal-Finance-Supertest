@@ -224,5 +224,26 @@ export async function logLiabilityEvent(
   });
 }
 
+/**
+ * Helper function to log cash savings events
+ */
+export async function logCashSavingsEvent(
+  actionType: ActionType,
+  userId: number,
+  entityId: number,
+  beforeValue?: EventData,
+  afterValue?: EventData
+) {
+  return await createEvent({
+    actionType,
+    entityType: EntityType.CASH_SAVINGS,
+    entitySubtype: null,
+    beforeValue: beforeValue || null,
+    afterValue: afterValue || null,
+    userId,
+    entityId
+  });
+}
+
 // NOTE: Intentionally NO update or delete functions for events
 // Events are immutable and can only be created and read
