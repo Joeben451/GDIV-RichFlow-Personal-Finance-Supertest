@@ -50,6 +50,8 @@
   scrollbar-color: #7345AF #0f0f0f;
 }
 
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
