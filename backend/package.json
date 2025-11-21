@@ -6,7 +6,8 @@
     "devStart": "nodemon ./backend/server.ts",
     "dev": "nodemon ./src/server.ts",
     "seed-currency": "ts-node prisma/seed.currency.ts",
-    "seed-users": "ts-node prisma/seed.users.ts"
+    "seed-users": "ts-node prisma/seed.users.ts",
+    "seed-timemachine": "ts-node prisma/seed.timemachine.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

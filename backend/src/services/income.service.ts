@@ -1,11 +1,13 @@
 import prisma from '../config/database.config';
 import { logIncomeEvent } from './event.service';
 import { ActionType } from '../types/event.types';
+import { determineIncomeQuadrant, IncomeQuadrant } from '../utils/incomeQuadrant.utils';
 
 interface IncomeLineData {
   name: string;
   amount: number;
   type: string;
+  quadrant?: IncomeQuadrant | string | null;
 }
 
 /**
@@ -55,11 +57,14 @@ export async function addIncomeLine(userId: number, data: IncomeLineData) {
   }
 
   // Create income line
+  const resolvedQuadrant = determineIncomeQuadrant(data.type, data.quadrant as string | undefined);
+
   const newIncomeLine = await prisma.incomeLine.create({
     data: {
       name: data.name,
       amount: data.amount,
       type: data.type,
+      quadrant: resolvedQuadrant,
       isId: incomeStatement.id // Link to income statement
     }
   });
@@ -73,7 +78,8 @@ export async function addIncomeLine(userId: number, data: IncomeLineData) {
     {
       name: newIncomeLine.name,
       amount: newIncomeLine.amount,
-      type: newIncomeLine.type
+      type: newIncomeLine.type,
+      quadrant: newIncomeLine.quadrant
     }
   );
 
@@ -103,16 +109,20 @@ export async function updateIncomeLine(userId: number, incomeLineId: number, dat
   const beforeValue = {
     name: incomeLine.name,
     amount: incomeLine.amount,
-    type: incomeLine.type
+    type: incomeLine.type,
+    quadrant: incomeLine.quadrant
   };
 
   // Update the income line
+  const resolvedQuadrant = determineIncomeQuadrant(data.type, data.quadrant as string | undefined);
+
   const updatedIncomeLine = await prisma.incomeLine.update({
     where: { id: incomeLineId },
     data: {
       name: data.name,
       amount: data.amount,
-      type: data.type
+      type: data.type,
+      quadrant: resolvedQuadrant
     }
   });
 
@@ -125,7 +135,8 @@ export async function updateIncomeLine(userId: number, incomeLineId: number, dat
     {
       name: updatedIncomeLine.name,
       amount: updatedIncomeLine.amount,
-      type: updatedIncomeLine.type
+      type: updatedIncomeLine.type,
+      quadrant: updatedIncomeLine.quadrant
     }
   );
 
@@ -155,7 +166,8 @@ export async function deleteIncomeLine(userId: number, incomeLineId: number) {
   const beforeValue = {
     name: incomeLine.name,
     amount: incomeLine.amount,
-    type: incomeLine.type
+    type: incomeLine.type,
+    quadrant: incomeLine.quadrant
   };
 
   // Delete the income line

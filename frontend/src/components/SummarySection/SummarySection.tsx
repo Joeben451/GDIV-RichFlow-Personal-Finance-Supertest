@@ -108,13 +108,13 @@ const SummarySection: React.FC<Props> = ({
         const response = await incomeAPI.getIncomeLines();
         const lines = Array.isArray(response) ? response : [];
         const earned = lines
-          .filter((i: any) => i.type === 'Earned')
+          .filter((i: any) => i.type?.toUpperCase() === 'EARNED')
           .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
         const portfolio = lines
-          .filter((i: any) => i.type === 'Portfolio')
+          .filter((i: any) => i.type?.toUpperCase() === 'PORTFOLIO')
           .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
         const passive = lines
-          .filter((i: any) => i.type === 'Passive')
+          .filter((i: any) => i.type?.toUpperCase() === 'PASSIVE')
           .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
         incomeTotalsStore.replace({ earned, portfolio, passive });
       } catch (e) {

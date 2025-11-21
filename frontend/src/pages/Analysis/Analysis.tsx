@@ -5,6 +5,7 @@ import '../../components/Header/Header.css';
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
 import { analysisAPI } from '../../utils/api';
+import { formatCurrency as formatCurrencyValue } from '../../utils/currency.utils';
 
 type SnapshotData = {
   date: string;
@@ -91,13 +92,11 @@ const Analysis: React.FC = () => {
     setSavedSnapshots(prev => prev.filter(s => s.id !== id));
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(value);
-  };
+  const preferredCurrency = user?.preferredCurrency;
+  const formatCurrency = React.useCallback(
+    (value: number) => formatCurrencyValue(value, preferredCurrency),
+    [preferredCurrency]
+  );
 
   const formatPercentage = (value: string) => {
     return `${value}%`;
