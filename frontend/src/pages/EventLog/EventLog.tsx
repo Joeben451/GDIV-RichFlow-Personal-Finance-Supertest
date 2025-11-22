@@ -21,7 +21,6 @@ const usePerUserKeys = (user: any) => {
   const uid = (user && (user.id || user.userId || user.uid)) || 'anon';
   return {
     removedKey: `eventlog:removed:user:${uid}`,
-    deletedKey: `eventlog:deleted:user:${uid}`,
   };
 };
 
@@ -40,24 +39,6 @@ const saveRemovedEvents = (key: string, events: FinancialEvent[]) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(events));
-  } catch {}
-};
-
-const loadDeletedIds = (key: string): Set<string> => {
-  if (typeof window === 'undefined') return new Set();
-  try {
-    const raw = localStorage.getItem(key);
-    const arr: string[] = raw ? JSON.parse(raw) : [];
-    return new Set(arr);
-  } catch {
-    return new Set();
-  }
-};
-
-const saveDeletedIds = (key: string, ids: Set<string>) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(Array.from(ids)));
   } catch {}
 };
 
@@ -120,30 +101,7 @@ const EventLog: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
 
-  const { removedKey, deletedKey } = usePerUserKeys(user);
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  // Delete handler
-  const handleDeleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(e => e.id !== id));
-    setDeletedIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      saveDeletedIds(deletedKey, next);
-      // If it was a persisted removed event, purge from that storage too
-      const persistedRemoved = loadRemovedEvents(removedKey);
-      if (persistedRemoved.some(ev => ev.id === id)) {
-        const remaining = persistedRemoved.filter(ev => ev.id !== id);
-        saveRemovedEvents(removedKey, remaining);
-      }
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    // Initialize deleted IDs on mount
-    setDeletedIds(loadDeletedIds(deletedKey));
-  }, [deletedKey]);
+  const { removedKey } = usePerUserKeys(user);
 
   useEffect(() => {
     const loadFromApi = async () => {
@@ -201,8 +159,7 @@ const EventLog: React.FC = () => {
         const existingRemoved = loadRemovedEvents(removedKey);
 
         // Filter out locally deleted ids
-        const localDeleted = loadDeletedIds(deletedKey);
-        const merged = [...transformed, ...existingRemoved].filter(ev => !localDeleted.has(ev.id));
+        const merged = [...transformed, ...existingRemoved];
 
         merged.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
         setEvents(merged);
@@ -215,7 +172,7 @@ const EventLog: React.FC = () => {
     };
 
     loadFromApi();
-  }, [typeFilter, startDate, endDate, deletedKey, removedKey]);
+  }, [typeFilter, startDate, endDate, removedKey]);
 
   const filtered = useMemo(() => {
     return events
@@ -369,19 +326,6 @@ const EventLog: React.FC = () => {
                           ? `${sym}${abs}`
                           : `${ev.valueChange >= 0 ? '+' : '-'}${sym}${abs}`;
                       })()}
-                    </td>
-                    <td>
-                      {ev.id !== 'start' && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteEvent(ev.id)}
-                          className="clear-btn"
-                          style={{ padding: '0.3rem 0.6rem' }}
-                          title="Delete log"
-                        >
-                          ×
-                        </button>
-                      )}
                     </td>
                   </tr>
                 );
