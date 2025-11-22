@@ -262,19 +262,19 @@ export const incomeAPI = {
   },
 
   // Add new income line
-  addIncomeLine: async (name: string, amount: number, type: string) => {
+  addIncomeLine: async (name: string, amount: number, type: string, quadrant?: string) => {
     return await apiRequest('/income', {
       method: 'POST',
-      body: JSON.stringify({ name, amount, type }),
+      body: JSON.stringify({ name, amount, type, quadrant }),
       requiresAuth: true,
     });
   },
 
   // Update income line
-  updateIncomeLine: async (id: number, name: string, amount: number, type: string) => {
+  updateIncomeLine: async (id: number, name: string, amount: number, type: string, quadrant?: string) => {
     return await apiRequest(`/income/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ name, amount, type }),
+      body: JSON.stringify({ name, amount, type, quadrant }),
       requiresAuth: true,
     });
   },
@@ -448,6 +448,17 @@ export const aiAPI = {
     });
   }
 }
+
+// Analysis API calls
+export const analysisAPI = {
+  getFinancialSnapshot: async (date?: string) => {
+    const url = date ? `/analysis/snapshot?date=${date}` : '/analysis/snapshot';
+    return await apiRequest(url, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+};
 
 // Admin API calls
 export const adminAPI = {

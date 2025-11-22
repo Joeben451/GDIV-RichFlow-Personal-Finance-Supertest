@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { addIncomeLine, getIncomeLines, updateIncomeLine, deleteIncomeLine } from '../services/income.service';
+import { EARNED_QUADRANTS } from '../utils/incomeQuadrant.utils';
 
 /**
  * Get all income lines for the authenticated user
@@ -28,7 +29,7 @@ export async function getIncomeLinesHandler(req: Request, res: Response, next: N
 export async function addIncomeLineHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.userId;
-    const { name, amount, type } = req.body;
+    const { name, amount, type, quadrant } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -53,7 +54,17 @@ export async function addIncomeLineHandler(req: Request, res: Response, next: Ne
       });
     }
 
-    const incomeLine = await addIncomeLine(userId, { name, amount, type });
+    const normalizedQuadrant = typeof quadrant === 'string' ? quadrant.toUpperCase() : undefined;
+    const typeUpper = type.toUpperCase();
+    const earnedQuadrants = EARNED_QUADRANTS;
+
+    if (typeUpper === 'EARNED' && (!normalizedQuadrant || !earnedQuadrants.includes(normalizedQuadrant as any))) {
+      return res.status(400).json({
+        error: 'Earned income must specify quadrant as EMPLOYEE or SELF_EMPLOYED'
+      });
+    }
+
+    const incomeLine = await addIncomeLine(userId, { name, amount, type, quadrant: normalizedQuadrant ?? null });
 
     return res.status(201).json({
       message: 'Income line added successfully',
@@ -73,7 +84,7 @@ export async function updateIncomeLineHandler(req: Request, res: Response, next:
   try {
     const userId = req.user?.userId;
   const incomeLineId = parseInt(String(req.params.id), 10);
-    const { name, amount, type } = req.body;
+    const { name, amount, type, quadrant } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -102,10 +113,21 @@ export async function updateIncomeLineHandler(req: Request, res: Response, next:
       });
     }
 
+    const normalizedQuadrant = typeof quadrant === 'string' ? quadrant.toUpperCase() : undefined;
+    const typeUpper = type.toUpperCase();
+    const earnedQuadrants = EARNED_QUADRANTS;
+
+    if (typeUpper === 'EARNED' && (!normalizedQuadrant || !earnedQuadrants.includes(normalizedQuadrant as any))) {
+      return res.status(400).json({
+        error: 'Earned income must specify quadrant as EMPLOYEE or SELF_EMPLOYED'
+      });
+    }
+
     const updatedIncomeLine = await updateIncomeLine(userId, incomeLineId, {
       name,
       amount,
-      type
+      type,
+      quadrant: normalizedQuadrant ?? null
     });
 
     if (!updatedIncomeLine) {

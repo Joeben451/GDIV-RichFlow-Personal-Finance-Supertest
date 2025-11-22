@@ -12,6 +12,7 @@ import ChangeUsername from './pages/ChangeUsername/ChangeUsername';
 import ChangeEmail from './pages/ChangeEmail/ChangeEmail';
 import ChangePassword from './pages/ChangePassword/ChangePassword';
 import Admin from './pages/Admin/Admin';
+import Analysis from './pages/Analysis/Analysis';
 import EventLog from './pages/EventLog/EventLog';
 
 const container = document.getElementById('root');
@@ -29,6 +30,14 @@ root.render(
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route 
+            path="/analysis" 
+            element={
+              <ProtectedRoute>
+                <Analysis />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/user-guide" 
             element={

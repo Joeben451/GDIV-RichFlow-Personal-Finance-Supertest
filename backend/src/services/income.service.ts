@@ -1,9 +1,13 @@
 import prisma from '../config/database.config';
+import { logIncomeEvent } from './event.service';
+import { ActionType } from '../types/event.types';
+import { determineIncomeQuadrant, IncomeQuadrant } from '../utils/incomeQuadrant.utils';
 
 interface IncomeLineData {
   name: string;
   amount: number;
   type: string;
+  quadrant?: IncomeQuadrant | string | null;
 }
 
 /**
@@ -53,14 +57,33 @@ export async function addIncomeLine(userId: number, data: IncomeLineData) {
   }
 
   // Create income line
-  return await prisma.incomeLine.create({
+  const resolvedQuadrant = determineIncomeQuadrant(data.type, data.quadrant as string | undefined);
+
+  const newIncomeLine = await prisma.incomeLine.create({
     data: {
       name: data.name,
       amount: data.amount,
       type: data.type,
+      quadrant: resolvedQuadrant,
       isId: incomeStatement.id // Link to income statement
     }
   });
+
+  // Log the CREATE event
+  await logIncomeEvent(
+    ActionType.CREATE,
+    userId,
+    newIncomeLine.id,
+    undefined,
+    {
+      name: newIncomeLine.name,
+      amount: newIncomeLine.amount,
+      type: newIncomeLine.type,
+      quadrant: newIncomeLine.quadrant
+    }
+  );
+
+  return newIncomeLine;
 }
 
 /**
@@ -82,15 +105,42 @@ export async function updateIncomeLine(userId: number, incomeLineId: number, dat
     return null;
   }
 
+  // Capture before state
+  const beforeValue = {
+    name: incomeLine.name,
+    amount: incomeLine.amount,
+    type: incomeLine.type,
+    quadrant: incomeLine.quadrant
+  };
+
   // Update the income line
-  return await prisma.incomeLine.update({
+  const resolvedQuadrant = determineIncomeQuadrant(data.type, data.quadrant as string | undefined);
+
+  const updatedIncomeLine = await prisma.incomeLine.update({
     where: { id: incomeLineId },
     data: {
       name: data.name,
       amount: data.amount,
-      type: data.type
+      type: data.type,
+      quadrant: resolvedQuadrant
     }
   });
+
+  // Log the UPDATE event
+  await logIncomeEvent(
+    ActionType.UPDATE,
+    userId,
+    incomeLineId,
+    beforeValue,
+    {
+      name: updatedIncomeLine.name,
+      amount: updatedIncomeLine.amount,
+      type: updatedIncomeLine.type,
+      quadrant: updatedIncomeLine.quadrant
+    }
+  );
+
+  return updatedIncomeLine;
 }
 
 /**
@@ -112,10 +162,27 @@ export async function deleteIncomeLine(userId: number, incomeLineId: number) {
     return null;
   }
 
+  // Capture before state for event log
+  const beforeValue = {
+    name: incomeLine.name,
+    amount: incomeLine.amount,
+    type: incomeLine.type,
+    quadrant: incomeLine.quadrant
+  };
+
   // Delete the income line
   await prisma.incomeLine.delete({
     where: { id: incomeLineId }
   });
+
+  // Log the DELETE event (entity is deleted but event remains)
+  await logIncomeEvent(
+    ActionType.DELETE,
+    userId,
+    incomeLineId,
+    beforeValue,
+    undefined
+  );
 
   return true;
 }
