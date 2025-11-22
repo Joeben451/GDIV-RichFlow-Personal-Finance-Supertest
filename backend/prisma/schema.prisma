@@ -19,7 +19,6 @@ model User {
   lastLogin           DateTime?
   BalanceSheet        BalanceSheet?
   CashSavings         CashSavings?
-  Event               Event[]
   IncomeStatement     IncomeStatement?
   Session             Session[]
   Event               Event[]
@@ -98,23 +97,6 @@ model Currency {
   cur_symbol String
   cur_name   String
   User       User[]
-}
-
-model Event {
-  id            Int      @id @default(autoincrement())
-  timestamp     DateTime @default(now())
-  actionType    String
-  entityType    String
-  entitySubtype String?
-  beforeValue   String?
-  afterValue    String?
-  userId        Int
-  entityId      Int
-  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([entityId])
-  @@index([entityType])
-  @@index([userId])
 }
 
 model Event {

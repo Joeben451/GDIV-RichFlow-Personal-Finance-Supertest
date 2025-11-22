@@ -1,10 +1,23 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
+import { JSX, useEffect, useMemo, useState } from 'react';
 import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { incomeAPI, assetsAPI, liabilitiesAPI, expensesAPI } from '../../utils/api';
+import { eventsAPI } from '../../utils/api';
 
-type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability';
+type EventType = 'INCOME' | 'EXPENSE' | 'ASSET' | 'LIABILITY' | 'CASH_SAVINGS';
+
+interface BackendEvent {
+  id: number;
+  timestamp: string;
+  actionType: 'CREATE' | 'UPDATE' | 'DELETE';
+  entityType: EventType;
+  entitySubtype: string | null;
+  beforeValue: string | null;
+  afterValue: string | null;
+  userId: number;
+  entityId: number;
+}
 
 interface FinancialEvent {
   id: string;
@@ -12,6 +25,7 @@ interface FinancialEvent {
   type: EventType;
   description: string;
   valueChange: number;
+  actionType: string;
 }
 
 const EventLog: React.FC = () => {
@@ -27,113 +41,124 @@ const EventLog: React.FC = () => {
   const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
-    const loadAll = async () => {
+    const loadEvents = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Parallel fetch of financial data
-        const [incomeLinesRaw, assetsRaw, liabilitiesRaw, expensesRaw] = await Promise.all([
-          incomeAPI.getIncomeLines().catch(() => []),
-          assetsAPI.getAssets().catch(() => []),
-          liabilitiesAPI.getLiabilities().catch(() => []),
-          expensesAPI.getExpenses().catch(() => []),
-        ]);
+        // Fetch events from backend
+        const response = await eventsAPI.getEvents({ limit: 1000 });
+        const backendEvents: BackendEvent[] = response.events || [];
 
-        const incomeLines = Array.isArray(incomeLinesRaw) ? incomeLinesRaw : [];
-        const assets = Array.isArray(assetsRaw) ? assetsRaw : [];
-        const liabilities = Array.isArray(liabilitiesRaw) ? liabilitiesRaw : [];
-        const expenses = Array.isArray(expensesRaw) ? expensesRaw : [];
+        // Transform backend events to display format
+        const transformedEvents: FinancialEvent[] = [];
 
-        const buildTimestamp = (item: any): string => {
-          // Prefer createdAt or updatedAt if present; fallback to now
-          return item?.createdAt || item?.updatedAt || new Date().toISOString();
-        };
-
-        const synthesized: FinancialEvent[] = [];
-
-        // Fixed first event: user registration
-        const registrationTs = user?.createdAt || user?.created_at || user?.created || new Date().toISOString();
-        synthesized.push({
+        // Add starting balance event
+        const registrationTs = (user as any)?.createdAt || (user as any)?.created_at || (user as any)?.created || new Date().toISOString();
+        transformedEvents.push({
           id: 'start',
-            timestamp: registrationTs,
-          type: 'Asset',
+          timestamp: registrationTs,
+          type: 'ASSET',
           description: 'Starting Balance',
           valueChange: 0,
+          actionType: 'CREATE',
         });
 
-        // Income (Earned, Portfolio, Passive) all treated as type 'Income'
-        for (const line of incomeLines) {
-          const amount = typeof line.amount === 'number' ? line.amount : parseFloat(line.amount);
-          if (isNaN(amount)) continue;
-          const prefix =
-            line.type === 'Earned'
-              ? 'Added Income'
-              : line.type === 'Portfolio'
-              ? 'Added Portfolio'
-              : line.type === 'Passive'
-              ? 'Added Passive'
-              : 'Added Income';
-          synthesized.push({
-            id: `income-${line.id}`,
-            timestamp: buildTimestamp(line),
-            type: 'Income',
-            description: `${prefix}: ${line.name}`,
-            valueChange: Math.abs(amount), // positive
+        // Transform each backend event
+        for (const event of backendEvents) {
+          const afterData = event.afterValue ? JSON.parse(event.afterValue) : null;
+          const beforeData = event.beforeValue ? JSON.parse(event.beforeValue) : null;
+          
+          let description = '';
+          let valueChange = 0;
+          
+          // Build description based on action type and entity type
+          if (event.actionType === 'CREATE') {
+            const name = afterData?.name || 'Unknown';
+            const amount = afterData?.amount || afterData?.value || 0;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || afterData?.type || 'Income';
+              description = `Added ${subtype} Income: ${name}`;
+              valueChange = Math.abs(amount);
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Logged Expense: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'ASSET') {
+              description = `Added Asset: ${name}`;
+              valueChange = Math.abs(amount);
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Logged Liability: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'CASH_SAVINGS') {
+              description = `Updated Cash Savings`;
+              valueChange = Math.abs(amount);
+            }
+          } else if (event.actionType === 'UPDATE') {
+            const name = afterData?.name || beforeData?.name || 'Unknown';
+            const afterAmount = afterData?.amount || afterData?.value || 0;
+            const beforeAmount = beforeData?.amount || beforeData?.value || 0;
+            const diff = afterAmount - beforeAmount;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || afterData?.type || 'Income';
+              description = `Updated ${subtype} Income: ${name}`;
+              valueChange = diff;
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Updated Expense: ${name}`;
+              valueChange = -Math.abs(diff);
+            } else if (event.entityType === 'ASSET') {
+              description = `Updated Asset: ${name}`;
+              valueChange = diff;
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Updated Liability: ${name}`;
+              valueChange = -diff;
+            } else if (event.entityType === 'CASH_SAVINGS') {
+              description = `Updated Cash Savings`;
+              valueChange = diff;
+            }
+          } else if (event.actionType === 'DELETE') {
+            const name = beforeData?.name || 'Unknown';
+            const amount = beforeData?.amount || beforeData?.value || 0;
+            
+            if (event.entityType === 'INCOME') {
+              const subtype = event.entitySubtype || beforeData?.type || 'Income';
+              description = `Removed ${subtype} Income: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'EXPENSE') {
+              description = `Removed Expense: ${name}`;
+              valueChange = Math.abs(amount); // Removing expense is positive
+            } else if (event.entityType === 'ASSET') {
+              description = `Removed Asset: ${name}`;
+              valueChange = -Math.abs(amount);
+            } else if (event.entityType === 'LIABILITY') {
+              description = `Removed Liability: ${name}`;
+              valueChange = Math.abs(amount); // Removing liability is positive
+            }
+          }
+
+          transformedEvents.push({
+            id: `event-${event.id}`,
+            timestamp: event.timestamp,
+            type: event.entityType,
+            description,
+            valueChange,
+            actionType: event.actionType,
           });
         }
 
-        // Assets
-        for (const a of assets) {
-          const value = typeof a.value === 'number' ? a.value : parseFloat(a.value);
-          if (isNaN(value)) continue;
-          synthesized.push({
-            id: `asset-${a.id}`,
-            timestamp: buildTimestamp(a),
-            type: 'Asset',
-            description: `Added Asset: ${a.name}`,
-            valueChange: Math.abs(value), // positive
-          });
-        }
+        // Sort chronologically (ascending by timestamp)
+        transformedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-        // Liabilities (negative)
-        for (const l of liabilities) {
-          const value = typeof l.value === 'number' ? l.value : parseFloat(l.value);
-          if (isNaN(value)) continue;
-          synthesized.push({
-            id: `liability-${l.id}`,
-            timestamp: buildTimestamp(l),
-            type: 'Liability',
-            description: `Logged Liability: ${l.name}`,
-            valueChange: -Math.abs(value), // negative
-          });
-        }
-
-        // Expenses (negative)
-        for (const e of expenses) {
-          const amount = typeof e.amount === 'number' ? e.amount : parseFloat(e.amount);
-          if (isNaN(amount)) continue;
-          synthesized.push({
-            id: `expense-${e.id}`,
-            timestamp: buildTimestamp(e),
-            type: 'Expense',
-            description: `Logged Expense: ${e.name}`,
-            valueChange: -Math.abs(amount), // negative
-          });
-        }
-
-        // Sort chronological with registration first (ascending by timestamp)
-        synthesized.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-        setEvents(synthesized);
+        setEvents(transformedEvents);
       } catch (err: any) {
-        setError(err?.message || 'Failed to build event log');
+        setError(err?.message || 'Failed to load event log');
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadAll();
+    loadEvents();
   }, [user]);
 
   const filtered = useMemo(() => {
@@ -203,10 +228,11 @@ const EventLog: React.FC = () => {
             <label>Type</label>
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value as any)}>
               <option value="All">All</option>
-              <option value="Income">Income</option>
-              <option value="Expense">Expense</option>
-              <option value="Asset">Asset</option>
-              <option value="Liability">Liability</option>
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+              <option value="ASSET">Asset</option>
+              <option value="LIABILITY">Liability</option>
+              <option value="CASH_SAVINGS">Cash Savings</option>
             </select>
           </div>
           <div className="filter-group">
@@ -269,7 +295,9 @@ const EventLog: React.FC = () => {
                     <td className="type-cell">
                       {/* Hide type badge for Starting Balance row */}
                       {ev.id !== 'start' ? (
-                        <span className={`badge badge-${ev.type.toLowerCase()}`}>{ev.type}</span>
+                        <span className={`badge badge-${ev.type.toLowerCase().replace('_', '-')}`}>
+                          {ev.type.replace('_', ' ')}
+                        </span>
                       ) : (
                         null
                       )}
