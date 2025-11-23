@@ -461,28 +461,7 @@ export const analysisAPI = {
 };
 
 // Events API calls
-export const eventsAPI = {
-  // Get events for the authenticated user with optional filters
-  getEvents: async (params?: {
-    entityType?: 'INCOME' | 'EXPENSE' | 'ASSET' | 'LIABILITY' | 'CASH_SAVINGS' | 'USER';
-    startDate?: string; // ISO or YYYY-MM-DD
-    endDate?: string;   // ISO or YYYY-MM-DD
-    limit?: number;
-    offset?: number;
-  }) => {
-    const q: string[] = [];
-    if (params?.entityType) q.push(`entityType=${encodeURIComponent(params.entityType)}`);
-    if (params?.startDate) q.push(`startDate=${encodeURIComponent(params.startDate)}`);
-    if (params?.endDate) q.push(`endDate=${encodeURIComponent(params.endDate)}`);
-    if (typeof params?.limit === 'number') q.push(`limit=${params.limit}`);
-    if (typeof params?.offset === 'number') q.push(`offset=${params.offset}`);
-    const qs = q.length ? `?${q.join('&')}` : '';
-    return await apiRequest(`/events${qs}`, {
-      method: 'GET',
-      requiresAuth: true,
-    });
-  },
-};
+// (duplicated — merged into the later eventsAPI declaration)
 
 // Admin API calls
 export const adminAPI = {
@@ -520,7 +499,7 @@ export const adminAPI = {
 };
 
 // Events API calls
-export const eventsAPI = {
+export const eventLogsAPI = {
   // Get all events for the authenticated user
   getEvents: async (params?: {
     entityType?: string;

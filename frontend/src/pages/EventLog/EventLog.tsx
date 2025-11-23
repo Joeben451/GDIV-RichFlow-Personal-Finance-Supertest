@@ -3,7 +3,7 @@ import { JSX, useEffect, useMemo, useState } from 'react';
 import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { eventsAPI } from '../../utils/api';
+import { eventLogsAPI } from '../../utils/api';
 
 type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Removed' | 'Cash';
 
@@ -166,7 +166,7 @@ const EventLog: React.FC = () => {
           if (map[typeFilter]) params.entityType = map[typeFilter];
         }
 
-        const data = await eventsAPI.getEvents(params);
+        const data = await eventLogsAPI.getEvents(params);
         const apiEvents: any[] = Array.isArray(data?.events) ? data.events : [];
 
         const transformed: FinancialEvent[] = apiEvents.map((ev: any) => {
