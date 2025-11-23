@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { incomeAPI, assetsAPI, liabilitiesAPI, expensesAPI } from '../../utils/api';
 
-type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability';
+type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Removed';
 
 interface FinancialEvent {
   id: string;
@@ -13,6 +13,78 @@ interface FinancialEvent {
   description: string;
   valueChange: number;
 }
+
+// Helpers for snapshot + removed events persistence (per user)
+type Snapshot = {
+  incomes: Record<string, { subtype: 'Earned' | 'Portfolio' | 'Passive'; amount: number }>;
+  expenses: Record<string, { amount: number }>;
+  liabilities: Record<string, { value: number }>;
+};
+
+const parseNum = (v: any) => (typeof v === 'number' ? v : parseFloat(v));
+
+const usePerUserKeys = (user: any) => {
+  const uid = (user && (user.id || user.userId || user.uid)) || 'anon';
+  return {
+    removedKey: `eventlog:removed:user:${uid}`,
+    snapKey: `eventlog:snapshot:user:${uid}`,
+    deletedKey: `eventlog:deleted:user:${uid}`, // added
+  };
+};
+
+const loadRemovedEvents = (key: string): FinancialEvent[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(key);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveRemovedEvents = (key: string, events: FinancialEvent[]) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(events));
+  } catch {}
+};
+
+// Added deleted events helpers
+const loadDeletedIds = (key: string): Set<string> => {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(key);
+    const arr: string[] = raw ? JSON.parse(raw) : [];
+    return new Set(arr);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveDeletedIds = (key: string, ids: Set<string>) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(Array.from(ids)));
+  } catch {}
+};
+
+const loadSnapshot = (key: string): Snapshot | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as Snapshot) : null;
+  } catch {
+    return null;
+  }
+};
+
+const saveSnapshot = (key: string, snap: Snapshot) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(snap));
+  } catch {}
+};
 
 const EventLog: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +97,31 @@ const EventLog: React.FC = () => {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
+
+  const { removedKey, snapKey, deletedKey } = usePerUserKeys(user);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  // Delete handler
+  const handleDeleteEvent = (id: string) => {
+    setEvents(prev => prev.filter(e => e.id !== id));
+    setDeletedIds(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      saveDeletedIds(deletedKey, next);
+      // If it was a persisted removed event, purge from that storage too
+      const persistedRemoved = loadRemovedEvents(removedKey);
+      if (persistedRemoved.some(ev => ev.id === id)) {
+        const remaining = persistedRemoved.filter(ev => ev.id !== id);
+        saveRemovedEvents(removedKey, remaining);
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    // Initialize deleted IDs on mount
+    setDeletedIds(loadDeletedIds(deletedKey));
+  }, [deletedKey]);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -52,10 +149,11 @@ const EventLog: React.FC = () => {
         const synthesized: FinancialEvent[] = [];
 
         // Fixed first event: user registration
-        const registrationTs = user?.createdAt || user?.created_at || user?.created || new Date().toISOString();
+        const registrationTs =
+          (user as any)?.createdAt || (user as any)?.created_at || (user as any)?.created || new Date().toISOString();
         synthesized.push({
           id: 'start',
-            timestamp: registrationTs,
+          timestamp: registrationTs,
           type: 'Asset',
           description: 'Starting Balance',
           valueChange: 0,
@@ -63,7 +161,7 @@ const EventLog: React.FC = () => {
 
         // Income (Earned, Portfolio, Passive) all treated as type 'Income'
         for (const line of incomeLines) {
-          const amount = typeof line.amount === 'number' ? line.amount : parseFloat(line.amount);
+          const amount = parseNum(line?.amount);
           if (isNaN(amount)) continue;
           const prefix =
             line.type === 'Earned'
@@ -84,7 +182,7 @@ const EventLog: React.FC = () => {
 
         // Assets
         for (const a of assets) {
-          const value = typeof a.value === 'number' ? a.value : parseFloat(a.value);
+          const value = parseNum(a?.value);
           if (isNaN(value)) continue;
           synthesized.push({
             id: `asset-${a.id}`,
@@ -97,7 +195,7 @@ const EventLog: React.FC = () => {
 
         // Liabilities (negative)
         for (const l of liabilities) {
-          const value = typeof l.value === 'number' ? l.value : parseFloat(l.value);
+          const value = parseNum(l?.value);
           if (isNaN(value)) continue;
           synthesized.push({
             id: `liability-${l.id}`,
@@ -110,7 +208,7 @@ const EventLog: React.FC = () => {
 
         // Expenses (negative)
         for (const e of expenses) {
-          const amount = typeof e.amount === 'number' ? e.amount : parseFloat(e.amount);
+          const amount = parseNum(e?.amount);
           if (isNaN(amount)) continue;
           synthesized.push({
             id: `expense-${e.id}`,
@@ -121,10 +219,101 @@ const EventLog: React.FC = () => {
           });
         }
 
-        // Sort chronological with registration first (ascending by timestamp)
-        synthesized.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        // Build current snapshot (only for categories requested)
+        const curSnap: Snapshot = {
+          incomes: {},
+          expenses: {},
+          liabilities: {},
+        };
 
-        setEvents(synthesized);
+        for (const line of incomeLines) {
+          const amt = parseNum(line?.amount);
+          if (isNaN(amt)) continue;
+          const subtype =
+            line.type === 'Earned' ? 'Earned' : line.type === 'Portfolio' ? 'Portfolio' : 'Passive';
+          curSnap.incomes[String(line.id)] = { subtype, amount: Math.abs(amt) };
+        }
+        for (const l of liabilities) {
+          const val = parseNum(l?.value);
+          if (isNaN(val)) continue;
+          curSnap.liabilities[String(l.id)] = { value: Math.abs(val) };
+        }
+        for (const e of expenses) {
+          const amt = parseNum(e?.amount);
+          if (isNaN(amt)) continue;
+          curSnap.expenses[String(e.id)] = { amount: Math.abs(amt) };
+        }
+
+        // Detect removals vs previous snapshot and persist "Removed" events (never delete those rows)
+        const prevSnap = loadSnapshot(snapKey);
+        const existingRemoved = loadRemovedEvents(removedKey);
+
+        const removedToAdd: FinancialEvent[] = [];
+        if (prevSnap) {
+          // Incomes (subtypes have different dashboard label and sign rule)
+          for (const id of Object.keys(prevSnap.incomes)) {
+            if (!curSnap.incomes[id]) {
+              const prev = prevSnap.incomes[id];
+              const dash =
+                prev.subtype === 'Earned' ? 'Income' : prev.subtype === 'Portfolio' ? 'Portfolio' : 'Passive';
+              const evId = `removed-income-${prev.subtype.toLowerCase()}-${id}`;
+              // Negative for incomes (Income/Portfolio/Passive)
+              removedToAdd.push({
+                id: evId,
+                timestamp: new Date().toISOString(),
+                type: 'Removed',
+                description: `Removed: ${dash}`,
+                valueChange: -Math.abs(prev.amount),
+              });
+            }
+          }
+          // Expenses (positive when removed)
+          for (const id of Object.keys(prevSnap.expenses)) {
+            if (!curSnap.expenses[id]) {
+              const prev = prevSnap.expenses[id];
+              const evId = `removed-expense-${id}`;
+              removedToAdd.push({
+                id: evId,
+                timestamp: new Date().toISOString(),
+                type: 'Removed',
+                description: 'Removed: Expense',
+                valueChange: +Math.abs(prev.amount),
+              });
+            }
+          }
+          // Liabilities (positive when removed)
+          for (const id of Object.keys(prevSnap.liabilities)) {
+            if (!curSnap.liabilities[id]) {
+              const prev = prevSnap.liabilities[id];
+              const evId = `removed-liability-${id}`;
+              removedToAdd.push({
+                id: evId,
+                timestamp: new Date().toISOString(),
+                type: 'Removed',
+                description: 'Removed: Liability',
+                valueChange: +Math.abs(prev.value),
+              });
+            }
+          }
+        }
+
+        // Merge/dedupe removed events (by id) and persist
+        const dedupMap = new Map<string, FinancialEvent>();
+        [...existingRemoved, ...removedToAdd].forEach(ev => {
+          if (!dedupMap.has(ev.id)) dedupMap.set(ev.id, ev);
+        });
+        const mergedRemoved = Array.from(dedupMap.values());
+        saveRemovedEvents(removedKey, mergedRemoved);
+        saveSnapshot(snapKey, curSnap);
+
+        // Combine
+        let all = [...synthesized, ...mergedRemoved];
+        // Filter out deleted IDs
+        const localDeleted = loadDeletedIds(deletedKey);
+        all = all.filter(ev => !localDeleted.has(ev.id));
+
+        all.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        setEvents(all);
       } catch (err: any) {
         setError(err?.message || 'Failed to build event log');
         setEvents([]);
@@ -134,7 +323,7 @@ const EventLog: React.FC = () => {
     };
 
     loadAll();
-  }, [user]);
+  }, [user, removedKey, snapKey, deletedKey]);
 
   const filtered = useMemo(() => {
     return events
@@ -160,7 +349,7 @@ const EventLog: React.FC = () => {
     if (!search) return text;
     const lc = text.toLowerCase();
     const s = search.toLowerCase();
-    const parts: (string | JSX.Element)[] = [];
+    const parts: React.ReactNode[] = [];
     let idx = 0;
     while (true) {
       const found = lc.indexOf(s, idx);
@@ -207,6 +396,7 @@ const EventLog: React.FC = () => {
               <option value="Expense">Expense</option>
               <option value="Asset">Asset</option>
               <option value="Liability">Liability</option>
+              <option value="Removed">Removed</option>
             </select>
           </div>
           <div className="filter-group">
@@ -252,14 +442,16 @@ const EventLog: React.FC = () => {
                 <th>Type</th>
                 <th>Description</th>
                 <th className="col-change">Change</th>
+                <th> </th> {/* action column */}
               </tr>
             </thead>
             <tbody>
               {filtered.map(ev => {
                 const ts = new Date(ev.timestamp);
-                // Updated to always show + or - explicitly
                 const changeFmt =
-                  (ev.valueChange >= 0 ? '+' : '-') + Math.abs(ev.valueChange).toLocaleString();
+                  ev.id === 'start'
+                    ? Math.abs(ev.valueChange).toLocaleString()
+                    : (ev.valueChange >= 0 ? '+' : '-') + Math.abs(ev.valueChange).toLocaleString();
                 return (
                   <tr key={ev.id} className={`row-${ev.type.toLowerCase()}`}>
                     <td>
@@ -268,15 +460,26 @@ const EventLog: React.FC = () => {
                     </td>
                     <td className="type-cell">
                       {/* Hide type badge for Starting Balance row */}
-                      {ev.id !== 'start' ? (
-                        <span className={`badge badge-${ev.type.toLowerCase()}`}>{ev.type}</span>
+                      {ev.id === 'start' ? null : ev.type === 'Removed' ? (
+                        <span>removed</span>
                       ) : (
-                        null
+                        <span className={`badge badge-${ev.type.toLowerCase()}`}>{ev.type}</span>
                       )}
                     </td>
                     <td className="desc-cell">{highlight(ev.description)}</td>
-                    <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>
-                      {changeFmt}
+                    <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>{changeFmt}</td>
+                    <td>
+                      {ev.id !== 'start' && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEvent(ev.id)}
+                          className="clear-btn"
+                          style={{ padding: '0.3rem 0.6rem' }}
+                          title="Delete log"
+                        >
+                          ×
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
