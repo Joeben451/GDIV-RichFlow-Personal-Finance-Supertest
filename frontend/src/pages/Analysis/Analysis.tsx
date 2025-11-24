@@ -10,6 +10,8 @@ type SnapshotData = {
   date: string;
   balanceSheet: {
     totalCashBalance: number;
+    totalCash: number;
+    totalInvestedAssets: number;
     totalAssets: number;
     totalLiabilities: number;
     netWorth: number;
@@ -34,10 +36,11 @@ type SnapshotData = {
     freedomGap: number;
   };
   incomeQuadrant: {
-    EMPLOYEE: number;
-    SELF_EMPLOYED: number;
-    BUSINESS_OWNER: number;
-    INVESTOR: number;
+    EMPLOYEE: { amount: number; pct: number };
+    SELF_EMPLOYED: { amount: number; pct: number };
+    BUSINESS_OWNER: { amount: number; pct: number };
+    INVESTOR: { amount: number; pct: number };
+    total: number;
   };
   financialHealth: {
     runway: number;
@@ -173,10 +176,10 @@ const Analysis: React.FC = () => {
     if (!snapshotData) return [];
     const { incomeQuadrant } = snapshotData;
     return [
-      { name: 'Employee', value: incomeQuadrant.EMPLOYEE, color: QUADRANT_COLORS.EMPLOYEE },
-      { name: 'Self-Employed', value: incomeQuadrant.SELF_EMPLOYED, color: QUADRANT_COLORS.SELF_EMPLOYED },
-      { name: 'Business Owner', value: incomeQuadrant.BUSINESS_OWNER, color: QUADRANT_COLORS.BUSINESS_OWNER },
-      { name: 'Investor', value: incomeQuadrant.INVESTOR, color: QUADRANT_COLORS.INVESTOR },
+      { name: 'Employee', value: incomeQuadrant.EMPLOYEE.amount, color: QUADRANT_COLORS.EMPLOYEE },
+      { name: 'Self-Employed', value: incomeQuadrant.SELF_EMPLOYED.amount, color: QUADRANT_COLORS.SELF_EMPLOYED },
+      { name: 'Business Owner', value: incomeQuadrant.BUSINESS_OWNER.amount, color: QUADRANT_COLORS.BUSINESS_OWNER },
+      { name: 'Investor', value: incomeQuadrant.INVESTOR.amount, color: QUADRANT_COLORS.INVESTOR },
     ].filter(item => item.value > 0);
   }, [snapshotData]);
 
@@ -290,15 +293,17 @@ const Analysis: React.FC = () => {
 
     // Income quadrant shift
     const sumVals = (iq: SnapshotData['incomeQuadrant']) =>
-      (iq.EMPLOYEE || 0) + (iq.SELF_EMPLOYED || 0) + (iq.BUSINESS_OWNER || 0) + (iq.INVESTOR || 0);
+      (iq.EMPLOYEE?.amount || 0) + (iq.SELF_EMPLOYED?.amount || 0) + (iq.BUSINESS_OWNER?.amount || 0) + (iq.INVESTOR?.amount || 0);
     const iqStart = start.incomeQuadrant;
     const iqEnd = end.incomeQuadrant;
     const totalStart = sumVals(iqStart) || 1;
     const totalEnd = sumVals(iqEnd) || 1;
-    const cats: Array<keyof SnapshotData['incomeQuadrant']> = ['EMPLOYEE', 'SELF_EMPLOYED', 'BUSINESS_OWNER', 'INVESTOR'];
+    const cats: Array<keyof Omit<SnapshotData['incomeQuadrant'], 'total'>> = ['EMPLOYEE', 'SELF_EMPLOYED', 'BUSINESS_OWNER', 'INVESTOR'];
     const iqShift = cats.map((k) => {
-      const sPct = (iqStart[k] / totalStart) * 100;
-      const ePct = (iqEnd[k] / totalEnd) * 100;
+      const sAmt = iqStart[k].amount || 0;
+      const eAmt = iqEnd[k].amount || 0;
+      const sPct = (sAmt / totalStart) * 100;
+      const ePct = (eAmt / totalEnd) * 100;
       return { key: k, startPct: sPct, endPct: ePct, deltaPct: ePct - sPct };
     });
 
@@ -364,16 +369,16 @@ const Analysis: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-full bg-black text-white overflow-hidden font-sans selection:bg-[#FFD700]/30">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Background Ambient Glow */}
-        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#800080]/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#FFD700]/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="flex flex-col h-screen w-full bg-black text-white overflow-hidden  selection:bg-[#FFD700]/30">
+      <Header title="Analysis" hideActions rightContent={headerRight} />
+      <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          {/* Background Ambient Glow */}
+          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#800080]/20 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#FFD700]/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <Header title="Analysis" hideActions rightContent={headerRight} />
-
-        {showCompare && (
+          {showCompare && (
           <div className="px-6 md:px-8">
             <div className="max-w-7xl mx-auto mt-4 mb-2 rounded-2xl bg-zinc-900/50 border border-white/5 p-4 flex flex-col md:flex-row items-center gap-3">
               <span className="text-zinc-400 text-xs uppercase tracking-wider">Compare Period</span>
@@ -639,8 +644,20 @@ const Analysis: React.FC = () => {
                   />
                 </div>
                 <div className="mt-2 text-xs text-zinc-500 flex justify-between">
-                  <span>Assets: {formatHistorical(snapshotData.balanceSheet.totalAssets, snapshotData.currency)}</span>
-                  <span>Liabilities: {formatHistorical(snapshotData.balanceSheet.totalLiabilities, snapshotData.currency)}</span>
+                  <div className="flex gap-4 w-full justify-between">
+                    <div className="text-xs">
+                      <div className="text-zinc-400">Cash</div>
+                      <div className="font-semibold text-[#FFD700]">{formatHistorical(snapshotData.balanceSheet.totalCash, snapshotData.currency)}</div>
+                    </div>
+                    <div className="text-xs">
+                      <div className="text-zinc-400">Assets</div>
+                      <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalInvestedAssets, snapshotData.currency)}</div>
+                    </div>
+                    <div className="text-xs">
+                      <div className="text-zinc-400">Liabilities</div>
+                      <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalLiabilities, snapshotData.currency)}</div>
+                    </div>
+                  </div>
                 </div>
               </StatCard>
 
@@ -719,8 +736,19 @@ const Analysis: React.FC = () => {
                   className="col-span-2 bg-zinc-900/80"
                   accentColor={snapshotData.cashflow.netCashflow >= 0 ? 'gold' : 'default'}
                 >
-                   <div className="mt-2 text-xs text-zinc-500">
-                      Savings Rate: <span className="text-white font-bold">{snapshotData.ratios.savingsRate}%</span>
+                   <div className="mt-2 text-sm">
+                      <div className="flex justify-between items-center">
+                        <div className="text-zinc-400">Total Income</div>
+                        <div className="text-green-400 font-semibold">{formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}</div>
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="text-zinc-400">Total Expenses</div>
+                        <div className="text-red-400 font-semibold">{formatHistorical(snapshotData.cashflow.totalExpenses, snapshotData.currency)}</div>
+                      </div>
+                      <div className="my-2 h-px bg-white/5" />
+                      <div className="text-xs text-zinc-500">
+                        Savings Rate: <span className="text-white font-bold">{snapshotData.ratios.savingsRate}%</span>
+                      </div>
                    </div>
                 </StatCard>
               </div>
@@ -728,36 +756,93 @@ const Analysis: React.FC = () => {
               {/* Income Quadrant Chart */}
               <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 bg-zinc-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-6 flex flex-col">
                 <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-4">Income Quadrant</h3>
-                <div className="flex-1 min-h-[250px] relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={quadrantData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {quadrantData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.5)" />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip 
-                        contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
-                        itemStyle={{ color: '#fff' }}
-                        formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
-                      />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Center Text */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <div className="text-xs text-zinc-500">Total</div>
-                      <div className="text-sm font-bold text-white">
-                        {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                
+                <div className="flex flex-col md:flex-row items-center gap-6 flex-1 min-h-0">
+                  {/* Chart Container */}
+                  <div className="flex-1 w-full h-[250px] relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={quadrantData.length > 0 ? quadrantData : [{ name: 'No Data', value: 1, color: '#27272a' }]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={5}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {quadrantData.length > 0 ? (
+                            quadrantData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.5)" />
+                            ))
+                          ) : (
+                            <Cell fill="#27272a" stroke="none" />
+                          )}
+                        </Pie>
+                        {quadrantData.length > 0 && (
+                          <RechartsTooltip 
+                            contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                            itemStyle={{ color: '#fff' }}
+                            formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
+                          />
+                        )}
+                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="text-center">
+                        <div className="text-xs text-zinc-500">Total</div>
+                        <div className="text-sm font-bold text-white">
+                          {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detailed Breakdown */}
+                  <div className="w-full md:w-auto md:min-w-60">
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span style={{width:10,height:10,background:QUADRANT_COLORS.EMPLOYEE,borderRadius:999}} />
+                          <span className="text-zinc-400">Employee</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatHistorical(snapshotData.incomeQuadrant.EMPLOYEE.amount, snapshotData.currency)}</div>
+                          <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.EMPLOYEE.pct.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span style={{width:10,height:10,background:QUADRANT_COLORS.SELF_EMPLOYED,borderRadius:999}} />
+                          <span className="text-zinc-400">Self-Employed</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatHistorical(snapshotData.incomeQuadrant.SELF_EMPLOYED.amount, snapshotData.currency)}</div>
+                          <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.SELF_EMPLOYED.pct.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span style={{width:10,height:10,background:QUADRANT_COLORS.BUSINESS_OWNER,borderRadius:999}} />
+                          <span className="text-zinc-400">Business Owner</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatHistorical(snapshotData.incomeQuadrant.BUSINESS_OWNER.amount, snapshotData.currency)}</div>
+                          <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.BUSINESS_OWNER.pct.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span style={{width:10,height:10,background:QUADRANT_COLORS.INVESTOR,borderRadius:999}} />
+                          <span className="text-zinc-400">Investor</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold">{formatHistorical(snapshotData.incomeQuadrant.INVESTOR.amount, snapshotData.currency)}</div>
+                          <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.INVESTOR.pct.toFixed(1)}%</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -796,6 +881,7 @@ const Analysis: React.FC = () => {
             </div>
           )}
         </main>
+        </div>
       </div>
     </div>
   );

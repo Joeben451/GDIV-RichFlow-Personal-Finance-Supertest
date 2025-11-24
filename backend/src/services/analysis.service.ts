@@ -472,11 +472,18 @@ function calculateSnapshotFromState(
     quadrantTotals[bucket] += line.amount;
   });
 
-  const incomeQuadrant = {
-    EMPLOYEE: Number(quadrantTotals.EMPLOYEE),
-    SELF_EMPLOYED: Number(quadrantTotals.SELF_EMPLOYED),
-    BUSINESS_OWNER: Number(quadrantTotals.BUSINESS_OWNER),
-    INVESTOR: Number(quadrantTotals.INVESTOR)
+  const qEmployee = Number(quadrantTotals.EMPLOYEE);
+  const qSelf = Number(quadrantTotals.SELF_EMPLOYED);
+  const qBus = Number(quadrantTotals.BUSINESS_OWNER);
+  const qInv = Number(quadrantTotals.INVESTOR);
+  const totalQuadrant = qEmployee + qSelf + qBus + qInv;
+
+  const incomeQuadrantData = {
+    EMPLOYEE: { amount: qEmployee, pct: totalIncome > 0 ? (qEmployee / totalIncome) * 100 : 0 },
+    SELF_EMPLOYED: { amount: qSelf, pct: totalIncome > 0 ? (qSelf / totalIncome) * 100 : 0 },
+    BUSINESS_OWNER: { amount: qBus, pct: totalIncome > 0 ? (qBus / totalIncome) * 100 : 0 },
+    INVESTOR: { amount: qInv, pct: totalIncome > 0 ? (qInv / totalIncome) * 100 : 0 },
+    total: totalIncome
   };
 
   return {
@@ -484,6 +491,10 @@ function calculateSnapshotFromState(
     currency: state.currency,
     balanceSheet: {
       totalCashBalance: Number(totalCashBalance),
+      // Expose liquid cash separately for solvency analysis
+      totalCash: Number(totalCashBalance),
+      // Invested / illiquid assets (excludes cash)
+      totalInvestedAssets: Number(totalAssets),
       totalAssets: Number(totalAssets),
       totalLiabilities: Number(totalLiabilities),
       netWorth: Number(netWorth)
@@ -507,7 +518,8 @@ function calculateSnapshotFromState(
       solvencyRatio: Number(solvencyRatio.toFixed(2)),
       freedomGap: Number(freedomGap)
     },
-    incomeQuadrant,
+    // Income quadrant with amounts and percentage contribution
+    incomeQuadrant: incomeQuadrantData,
     financialHealth
   };
 }
@@ -624,11 +636,18 @@ async function getCurrentFinancialSnapshot(userId: number) {
     quadrantTotals[bucket] += Number(line.amount);
   });
 
-  const incomeQuadrant = {
-    EMPLOYEE: Number(quadrantTotals.EMPLOYEE),
-    SELF_EMPLOYED: Number(quadrantTotals.SELF_EMPLOYED),
-    BUSINESS_OWNER: Number(quadrantTotals.BUSINESS_OWNER),
-    INVESTOR: Number(quadrantTotals.INVESTOR)
+  const qEmployee = Number(quadrantTotals.EMPLOYEE);
+  const qSelf = Number(quadrantTotals.SELF_EMPLOYED);
+  const qBus = Number(quadrantTotals.BUSINESS_OWNER);
+  const qInv = Number(quadrantTotals.INVESTOR);
+  const totalQ = qEmployee + qSelf + qBus + qInv;
+
+  const incomeQuadrantData = {
+    EMPLOYEE: { amount: qEmployee, pct: totalIncome > 0 ? (qEmployee / totalIncome) * 100 : 0 },
+    SELF_EMPLOYED: { amount: qSelf, pct: totalIncome > 0 ? (qSelf / totalIncome) * 100 : 0 },
+    BUSINESS_OWNER: { amount: qBus, pct: totalIncome > 0 ? (qBus / totalIncome) * 100 : 0 },
+    INVESTOR: { amount: qInv, pct: totalIncome > 0 ? (qInv / totalIncome) * 100 : 0 },
+    total: totalIncome
   };
 
   return {
@@ -636,6 +655,8 @@ async function getCurrentFinancialSnapshot(userId: number) {
     currency,
     balanceSheet: {
       totalCashBalance: Number(totalCashBalance),
+      totalCash: Number(totalCashBalance),
+      totalInvestedAssets: Number(totalAssets),
       totalAssets: Number(totalAssets),
       totalLiabilities: Number(totalLiabilities),
       netWorth: Number(netWorth)
@@ -659,7 +680,7 @@ async function getCurrentFinancialSnapshot(userId: number) {
       solvencyRatio: Number(solvencyRatio.toFixed(2)),
       freedomGap: Number(freedomGap)
     },
-    incomeQuadrant,
+    incomeQuadrant: incomeQuadrantData,
     financialHealth
   };
 }
