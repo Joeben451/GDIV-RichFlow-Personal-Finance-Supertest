@@ -407,7 +407,8 @@ function calculateFinancialHealth(
 function calculateSnapshotFromState(
   state: FinancialState, 
   targetDate: Date,
-  financialHealth: FinancialHealth
+  financialHealth: FinancialHealth,
+  prevMonthState: FinancialState | null
 ) {
   // Calculate balance sheet totals
   const totalAssets = Array.from(state.assets.values()).reduce((sum, asset) => sum + asset.value, 0);
@@ -435,6 +436,34 @@ function calculateSnapshotFromState(
   // Calculate ratios
   const passiveCoverageRatio = totalExpenses > 0 ? (passiveIncome / totalExpenses) * 100 : 0;
   const savingsRate = totalIncome > 0 ? (netCashflow / totalIncome) * 100 : 0;
+
+  // --- RichFlow Metrics ---
+  
+  // 1. Wealth Velocity (Net Worth Change vs Previous Month)
+  let wealthVelocity = 0;
+  let wealthVelocityPct = 0;
+  
+  if (prevMonthState) {
+    const prevAssets = Array.from(prevMonthState.assets.values()).reduce((sum, a) => sum + a.value, 0);
+    const prevLiabilities = Array.from(prevMonthState.liabilities.values()).reduce((sum, l) => sum + l.value, 0);
+    const prevCash = prevMonthState.cashSavings;
+    const prevNetWorth = prevAssets - prevLiabilities + prevCash;
+    
+    wealthVelocity = netWorth - prevNetWorth;
+    if (prevNetWorth !== 0) {
+      wealthVelocityPct = (wealthVelocity / Math.abs(prevNetWorth)) * 100;
+    } else if (netWorth !== 0) {
+      wealthVelocityPct = netWorth > 0 ? 100 : -100;
+    }
+  }
+
+  // 2. Solvency Ratio (Liabilities / Assets)
+  // Note: totalAssets in our state excludes cash, but for solvency we should include liquid assets (cash)
+  const totalAssetsWithCash = totalAssets + totalCashBalance;
+  const solvencyRatio = totalAssetsWithCash > 0 ? (totalLiabilities / totalAssetsWithCash) * 100 : 0;
+
+  // 3. Freedom Gap (Expenses - Passive Income)
+  const freedomGap = totalExpenses - passiveIncome;
 
   // Income quadrant distribution
   const quadrantTotals = createEmptyQuadrantTotals();
@@ -471,6 +500,12 @@ function calculateSnapshotFromState(
     ratios: {
       passiveCoverageRatio: passiveCoverageRatio.toFixed(2),
       savingsRate: savingsRate.toFixed(2)
+    },
+    richFlowMetrics: {
+      wealthVelocity: Number(wealthVelocity),
+      wealthVelocityPct: Number(wealthVelocityPct.toFixed(2)),
+      solvencyRatio: Number(solvencyRatio.toFixed(2)),
+      freedomGap: Number(freedomGap)
     },
     incomeQuadrant,
     financialHealth
@@ -555,6 +590,33 @@ async function getCurrentFinancialSnapshot(userId: number) {
   const passiveCoverageRatio = totalExpenses > 0 ? (passiveIncome / totalExpenses) * 100 : 0;
   const savingsRate = totalIncome > 0 ? (netCashflow / totalIncome) * 100 : 0;
 
+  // --- RichFlow Metrics ---
+  
+  // 1. Wealth Velocity (Net Worth Change vs Previous Month)
+  let wealthVelocity = 0;
+  let wealthVelocityPct = 0;
+  
+  if (prevMonthState) {
+    const prevAssets = Array.from(prevMonthState.assets.values()).reduce((sum, a) => sum + a.value, 0);
+    const prevLiabilities = Array.from(prevMonthState.liabilities.values()).reduce((sum, l) => sum + l.value, 0);
+    const prevCash = prevMonthState.cashSavings;
+    const prevNetWorth = prevAssets - prevLiabilities + prevCash;
+    
+    wealthVelocity = netWorth - prevNetWorth;
+    if (prevNetWorth !== 0) {
+      wealthVelocityPct = (wealthVelocity / Math.abs(prevNetWorth)) * 100;
+    } else if (netWorth !== 0) {
+      wealthVelocityPct = netWorth > 0 ? 100 : -100;
+    }
+  }
+
+  // 2. Solvency Ratio (Liabilities / Assets)
+  const totalAssetsWithCash = totalAssets + totalCashBalance;
+  const solvencyRatio = totalAssetsWithCash > 0 ? (totalLiabilities / totalAssetsWithCash) * 100 : 0;
+
+  // 3. Freedom Gap (Expenses - Passive Income)
+  const freedomGap = totalExpenses - passiveIncome;
+
   // Income quadrant distribution
   const quadrantTotals = createEmptyQuadrantTotals();
   incomeStatement?.IncomeLine?.forEach(line => {
@@ -590,6 +652,12 @@ async function getCurrentFinancialSnapshot(userId: number) {
     ratios: {
       passiveCoverageRatio: passiveCoverageRatio.toFixed(2),
       savingsRate: savingsRate.toFixed(2)
+    },
+    richFlowMetrics: {
+      wealthVelocity: Number(wealthVelocity),
+      wealthVelocityPct: Number(wealthVelocityPct.toFixed(2)),
+      solvencyRatio: Number(solvencyRatio.toFixed(2)),
+      freedomGap: Number(freedomGap)
     },
     incomeQuadrant,
     financialHealth
@@ -673,5 +741,5 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
 
   const financialHealth = calculateFinancialHealth(state, prevMonthState, sixMonthAgoState);
 
-  return calculateSnapshotFromState(state, targetDate, financialHealth);
+  return calculateSnapshotFromState(state, targetDate, financialHealth, prevMonthState);
 };

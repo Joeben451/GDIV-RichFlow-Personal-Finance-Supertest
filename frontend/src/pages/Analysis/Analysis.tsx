@@ -27,6 +27,12 @@ type SnapshotData = {
     passiveCoverageRatio: string;
     savingsRate: string;
   };
+  richFlowMetrics: {
+    wealthVelocity: number;
+    wealthVelocityPct: number;
+    solvencyRatio: number;
+    freedomGap: number;
+  };
   incomeQuadrant: {
     EMPLOYEE: number;
     SELF_EMPLOYED: number;
@@ -673,15 +679,39 @@ const Analysis: React.FC = () => {
               {/* Cashflow Section */}
               <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 grid grid-cols-2 gap-4">
                 <StatCard
-                  title="Total Income"
-                  value={formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                  title="Wealth Velocity"
+                  value={
+                    <span className={snapshotData.richFlowMetrics.wealthVelocity >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {snapshotData.richFlowMetrics.wealthVelocity >= 0 ? '+' : ''}
+                      {formatHistorical(snapshotData.richFlowMetrics.wealthVelocity, snapshotData.currency)}
+                    </span>
+                  }
+                  trend={snapshotData.richFlowMetrics.wealthVelocityPct}
                   className="col-span-2 md:col-span-1"
-                />
+                >
+                  <div className="mt-1 text-xs text-zinc-500">Monthly Net Worth Change</div>
+                </StatCard>
+                
                 <StatCard
-                  title="Total Expenses"
-                  value={formatHistorical(snapshotData.cashflow.totalExpenses, snapshotData.currency)}
+                  title="Solvency Ratio"
+                  value={`${snapshotData.richFlowMetrics.solvencyRatio}%`}
                   className="col-span-2 md:col-span-1"
-                />
+                >
+                  <div className="mt-2 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${
+                        snapshotData.richFlowMetrics.solvencyRatio < 30 ? 'bg-green-500' : 
+                        snapshotData.richFlowMetrics.solvencyRatio < 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(snapshotData.richFlowMetrics.solvencyRatio, 100)}%` }} 
+                    />
+                  </div>
+                  <div className="mt-1 text-xs text-zinc-500">
+                    {snapshotData.richFlowMetrics.solvencyRatio < 30 ? 'Safe (<30%)' : 
+                     snapshotData.richFlowMetrics.solvencyRatio < 60 ? 'Caution (30-60%)' : 'High Risk (>60%)'}
+                  </div>
+                </StatCard>
+
                 <StatCard
                   title="Net Cashflow"
                   value={formatHistorical(snapshotData.cashflow.netCashflow, snapshotData.currency)}
@@ -751,10 +781,16 @@ const Analysis: React.FC = () => {
                 className="col-span-1"
               />
               <StatCard
-                title="Passive Income"
-                value={formatHistorical(snapshotData.cashflow.passiveIncome, snapshotData.currency)}
+                title={snapshotData.richFlowMetrics.freedomGap > 0 ? "Freedom Gap" : "Freedom Surplus"}
+                value={
+                  <span className={snapshotData.richFlowMetrics.freedomGap > 0 ? "text-orange-400" : "text-green-400"}>
+                    {snapshotData.richFlowMetrics.freedomGap > 0 ? '-' : '+'}
+                    {formatHistorical(Math.abs(snapshotData.richFlowMetrics.freedomGap), snapshotData.currency)}
+                  </span>
+                }
+                subValue={snapshotData.richFlowMetrics.freedomGap > 0 ? "To Go" : "Surplus"}
                 className="col-span-1"
-                accentColor="purple"
+                accentColor={snapshotData.richFlowMetrics.freedomGap > 0 ? 'default' : 'gold'}
               />
 
             </div>
