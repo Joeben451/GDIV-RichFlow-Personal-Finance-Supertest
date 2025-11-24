@@ -458,6 +458,18 @@ export const analysisAPI = {
       requiresAuth: true,
     });
   },
+
+  getFinancialTrajectory: async (
+    startDate: string, 
+    endDate: string, 
+    interval: 'daily' | 'weekly' | 'monthly' = 'monthly'
+  ) => {
+    const url = `/analysis/trajectory?startDate=${startDate}&endDate=${endDate}&interval=${interval}`;
+    return await apiRequest(url, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
 };
 
 // Events API calls
