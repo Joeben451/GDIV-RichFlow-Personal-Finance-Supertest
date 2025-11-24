@@ -416,6 +416,32 @@ async function main() {
   console.log('   ✅ Liability removed: Car Loan paid off!\n');
 
   // ==========================================
+  // FEBRUARY 2025 - Currency Change (USD -> EUR)
+  // ==========================================
+  console.log('📆 FEBRUARY 2025 - Relocated to Europe (Currency Change)');
+
+  // Update user preferred currency to EUR (assuming ID 2 is EUR, check your seed.currency.ts)
+  // For this test, we'll assume: 1=USD, 2=EUR, 3=GBP
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { preferredCurrencyId: 2 }, // EUR
+  });
+
+  await prisma.event.create({
+    data: {
+      timestamp: new Date('2025-02-01T09:00:00Z'),
+      actionType: 'UPDATE',
+      entityType: 'USER',
+      beforeValue: JSON.stringify({ preferredCurrencyId: 1, currencyCode: '$', currencyName: 'USD' }),
+      afterValue: JSON.stringify({ preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' }),
+      userId: user.id,
+      entityId: user.id,
+    },
+  });
+
+  console.log('   ✅ Currency changed: USD ($) → EUR (€)\n');
+
+  // ==========================================
   // MARCH 2025 - Rental Property Investment
   // ==========================================
   console.log('📆 MARCH 2025 - Purchased Rental Property');
@@ -595,6 +621,30 @@ async function main() {
   console.log('   ✅ Cash Savings: $8,000 → $25,000\n');
 
   // ==========================================
+  // OCTOBER 2025 - Currency Change (EUR -> GBP)
+  // ==========================================
+  console.log('📆 OCTOBER 2025 - Business Trip to UK (Currency Change)');
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { preferredCurrencyId: 3 }, // GBP
+  });
+
+  await prisma.event.create({
+    data: {
+      timestamp: new Date('2025-10-01T09:00:00Z'),
+      actionType: 'UPDATE',
+      entityType: 'USER',
+      beforeValue: JSON.stringify({ preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' }),
+      afterValue: JSON.stringify({ preferredCurrencyId: 3, currencyCode: '£', currencyName: 'GBP' }),
+      userId: user.id,
+      entityId: user.id,
+    },
+  });
+
+  console.log('   ✅ Currency changed: EUR (€) → GBP (£)\n');
+
+  // ==========================================
   // NOVEMBER 2025 - Current State
   // ==========================================
   console.log('📆 NOVEMBER 2025 - Current Financial Status');
@@ -687,8 +737,10 @@ async function main() {
   console.log('   • 2024-06-01 - After salary raise');
   console.log('   • 2024-10-15 - Started investing');
   console.log('   • 2025-01-15 - After paying off car loan');
+  console.log('   • 2025-02-05 - Currency changed to EUR');
   console.log('   • 2025-03-20 - After rental property purchase');
   console.log('   • 2025-09-15 - Major cash savings growth');
+  console.log('   • 2025-10-05 - Currency changed to GBP');
   console.log('   • 2025-11-21 - Current state (today)\n');
 
   const eventCount = await prisma.event.count({

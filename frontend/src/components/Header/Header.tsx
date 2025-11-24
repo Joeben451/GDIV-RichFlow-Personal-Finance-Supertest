@@ -9,9 +9,18 @@ interface HeaderProps {
   balanceSheetVisible?: boolean;
   title?: string;
   hideActions?: boolean;
+  rightContent?: React.ReactNode;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet, balanceSheetExists, balanceSheetVisible = false, title = 'Dashboard', hideActions = false }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  onAddBalanceSheet, 
+  onToggleBalanceSheet, 
+  balanceSheetExists, 
+  balanceSheetVisible = false, 
+  title = 'Dashboard', 
+  hideActions = false,
+  rightContent
+}) => {
   const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -62,6 +71,7 @@ const Header: React.FC<HeaderProps> = ({ onAddBalanceSheet, onToggleBalanceSheet
         <h1 className="header-title">{title}</h1>
       </div>
       <div className="header-right">
+        {rightContent}
         {!hideActions && (
           <div className="add-button-container" ref={dropdownRef}>
             <button

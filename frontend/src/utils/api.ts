@@ -458,7 +458,22 @@ export const analysisAPI = {
       requiresAuth: true,
     });
   },
+
+  getFinancialTrajectory: async (
+    startDate: string, 
+    endDate: string, 
+    interval: 'daily' | 'weekly' | 'monthly' = 'monthly'
+  ) => {
+    const url = `/analysis/trajectory?startDate=${startDate}&endDate=${endDate}&interval=${interval}`;
+    return await apiRequest(url, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
 };
+
+// Events API calls
+// (duplicated — merged into the later eventsAPI declaration)
 
 // Admin API calls
 export const adminAPI = {
@@ -489,6 +504,41 @@ export const adminAPI = {
   // Get user's financial data
   getUserFinancials: async (userId: number) => {
     return await apiRequest(`/admin/users/${userId}/financial`, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+};
+
+// Events API calls
+export const eventLogsAPI = {
+  // Get all events for the authenticated user
+  getEvents: async (params?: {
+    entityType?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.entityType) queryParams.append('entityType', params.entityType);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+    
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/events?${queryString}` : '/events';
+    
+    return await apiRequest(endpoint, {
+      method: 'GET',
+      requiresAuth: true,
+    });
+  },
+
+  // Get events for a specific entity
+  getEntityEvents: async (entityType: string, entityId: number) => {
+    return await apiRequest(`/events/${entityType}/${entityId}`, {
       method: 'GET',
       requiresAuth: true,
     });

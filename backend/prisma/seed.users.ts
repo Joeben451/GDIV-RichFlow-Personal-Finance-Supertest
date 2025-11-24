@@ -42,26 +42,103 @@ async function main() {
   for (const user of users) {
     const hashedPassword = await hashPassword(user.password);
 
-    await prisma.user.upsert({
-      where: { email: user.email },
-      update: {
-        name: user.name,
-        password: hashedPassword,
-        isAdmin: user.isAdmin,
-        preferredCurrencyId: user.preferredCurrencyId,
-        updatedAt: new Date(),
-      },
-      create: {
-        name: user.name,
-        email: user.email,
-        password: hashedPassword,
-        isAdmin: user.isAdmin,
-        preferredCurrencyId: user.preferredCurrencyId,
-        updatedAt: new Date(),
-      },
-    });
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({ where: { email: user.email } });
+    let userId = existingUser?.id;
 
-    console.log(`✅ Upserted user: ${user.email} (${user.isAdmin ? 'Admin' : 'User'})`);
+    if (existingUser) {
+      // Update existing user
+      await prisma.user.update({
+        where: { email: user.email },
+        data: {
+          name: user.name,
+          password: hashedPassword,
+          isAdmin: user.isAdmin,
+          preferredCurrencyId: user.preferredCurrencyId,
+          updatedAt: new Date(),
+        },
+      });
+      console.log(`✅ Updated user: ${user.email} (${user.isAdmin ? 'Admin' : 'User'})`);
+    } else {
+      // Create new user
+      const newUser = await prisma.user.create({
+        data: {
+          name: user.name,
+          email: user.email,
+          password: hashedPassword,
+          isAdmin: user.isAdmin,
+          preferredCurrencyId: user.preferredCurrencyId,
+          updatedAt: new Date(),
+        },
+      });
+      userId = newUser.id;
+      console.log(`✅ Created user: ${user.email} (${user.isAdmin ? 'Admin' : 'User'})`);
+
+      // Log User Creation Event
+      await prisma.event.create({
+        data: {
+          timestamp: new Date(),
+          actionType: 'CREATE',
+          entityType: 'USER',
+          entitySubtype: null,
+          beforeValue: null,
+          afterValue: JSON.stringify({
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email,
+            preferredCurrencyId: newUser.preferredCurrencyId
+          }),
+          userId: newUser.id,
+          entityId: newUser.id
+        }
+      });
+    }
+
+    if (userId) {
+      // Ensure IncomeStatement exists
+      let incomeStatement = await prisma.incomeStatement.findFirst({ where: { userId } });
+      if (!incomeStatement) {
+        incomeStatement = await prisma.incomeStatement.create({ data: { userId } });
+        // Log Event
+        await prisma.event.create({
+          data: {
+            timestamp: new Date(),
+            actionType: 'CREATE',
+            entityType: 'INCOME',
+            entitySubtype: 'INCOME_STATEMENT',
+            beforeValue: null,
+            afterValue: JSON.stringify({ id: incomeStatement.id, userId }),
+            userId,
+            entityId: incomeStatement.id
+          }
+        });
+      }
+
+      // Ensure BalanceSheet exists
+      let balanceSheet = await prisma.balanceSheet.findFirst({ where: { userId } });
+      if (!balanceSheet) {
+        balanceSheet = await prisma.balanceSheet.create({ data: { userId } });
+      }
+
+      // Ensure CashSavings exists
+      let cashSavings = await prisma.cashSavings.findFirst({ where: { userId } });
+      if (!cashSavings) {
+        cashSavings = await prisma.cashSavings.create({ data: { userId, amount: 0 } });
+        // Log Event
+        await prisma.event.create({
+          data: {
+            timestamp: new Date(),
+            actionType: 'CREATE',
+            entityType: 'CASH_SAVINGS',
+            entitySubtype: null,
+            beforeValue: null,
+            afterValue: JSON.stringify({ id: cashSavings.id, userId, amount: 0 }),
+            userId,
+            entityId: cashSavings.id
+          }
+        });
+      }
+    }
   }
 
   console.log(`\n✅ Successfully seeded ${users.length} users`);

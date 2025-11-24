@@ -72,8 +72,8 @@ model IncomeLine {
   name            String
   amount          Float
   type            String
-  quadrant        String?
   isId            Int
+  quadrant        String?
   IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
 }
 
@@ -100,17 +100,17 @@ model Currency {
 }
 
 model Event {
-  id             Int      @id @default(autoincrement())
-  timestamp      DateTime @default(now())
-  actionType     String   // CREATE, UPDATE, DELETE
-  entityType     String   // INCOME, EXPENSE, ASSET, LIABILITY
-  entitySubtype  String?  // For income: EARNED, PORTFOLIO, PASSIVE
-  beforeValue    String?  // JSON string of before state
-  afterValue     String?  // JSON string of after state
-  userId         Int
-  entityId       Int      // ID of the affected entity
-  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id            Int      @id @default(autoincrement())
+  timestamp     DateTime @default(now())
+  actionType    String
+  entityType    String
+  entitySubtype String?
+  beforeValue   String?
+  afterValue    String?
+  userId        Int
+  entityId      Int
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([entityType])
   @@index([entityId])

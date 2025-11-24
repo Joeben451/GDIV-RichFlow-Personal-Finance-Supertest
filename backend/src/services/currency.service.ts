@@ -1,4 +1,6 @@
 import prisma from '../config/database.config';
+import { logUserEvent } from './event.service';
+import { ActionType } from '../types/event.types';
 
 /**
  * Get all available currencies
@@ -44,6 +46,12 @@ export const updateUserCurrency = async (userId: number, currencyId: number) => 
       throw new Error('Currency not found');
     }
 
+    // Get current user state for "beforeValue"
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { PreferredCurrency: true }
+    });
+
     // Update the user's preferred currency
     const updatedUser = await prisma.user.update({
       where: { id: userId },
@@ -52,6 +60,25 @@ export const updateUserCurrency = async (userId: number, currencyId: number) => 
         PreferredCurrency: true,
       },
     });
+
+    // Log the event
+    if (currentUser) {
+      await logUserEvent(
+        ActionType.UPDATE,
+        userId,
+        userId, // entityId is the userId for User events
+        { 
+          preferredCurrencyId: currentUser.preferredCurrencyId, 
+          currencyCode: currentUser.PreferredCurrency?.cur_symbol,
+          currencyName: currentUser.PreferredCurrency?.cur_name
+        }, // Before
+        { 
+          preferredCurrencyId: updatedUser.preferredCurrencyId, 
+          currencyCode: updatedUser.PreferredCurrency.cur_symbol,
+          currencyName: updatedUser.PreferredCurrency.cur_name
+        }  // After
+      );
+    }
 
     return updatedUser;
   } catch (error) {
