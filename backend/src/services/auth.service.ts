@@ -1,6 +1,8 @@
 import prisma from '../config/database.config';
 import { hashPassword, comparePassword } from '../utils/password.utils';
 import { generateRefreshToken, getRefreshTokenExpiration } from '../utils/jwt.utils';
+import { createEvent } from './event.service';
+import { ActionType, EntityType } from '../types/event.types';
 
 interface CreateUserData {
   name: string;
@@ -74,17 +76,56 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
     });
 
     // Automatically create an income statement for the new user
-    await tx.incomeStatement.create({
+    const incomeStatement = await tx.incomeStatement.create({
       data: {
         userId: newUser.id
       }
     });
 
     // Automatically create a cash savings record with default amount of 0
-    await tx.cashSavings.create({
+    const cashSavings = await tx.cashSavings.create({
       data: {
         userId: newUser.id,
         amount: 0
+      }
+    });
+
+    // Log income statement creation event
+    await tx.event.create({
+      data: {
+        actionType: ActionType.CREATE,
+        entityType: EntityType.INCOME,
+        entitySubtype: 'INCOME_STATEMENT',
+        beforeValue: null,
+        afterValue: JSON.stringify({ id: incomeStatement.id, userId: newUser.id }),
+        userId: newUser.id,
+        entityId: incomeStatement.id
+      }
+    });
+
+    // Log cash savings creation event
+    await tx.event.create({
+      data: {
+        actionType: ActionType.CREATE,
+        entityType: EntityType.CASH_SAVINGS,
+        entitySubtype: null,
+        beforeValue: null,
+        afterValue: JSON.stringify({ id: cashSavings.id, userId: newUser.id, amount: 0 }),
+        userId: newUser.id,
+        entityId: cashSavings.id
+      }
+    });
+
+    // Log user account creation event
+    await tx.event.create({
+      data: {
+        actionType: ActionType.CREATE,
+        entityType: EntityType.USER,
+        entitySubtype: null,
+        beforeValue: null,
+        afterValue: JSON.stringify({ id: newUser.id, email: newUser.email, name: newUser.name }),
+        userId: newUser.id,
+        entityId: newUser.id
       }
     });
 
@@ -315,3 +356,5 @@ export async function updatePassword(userId: number, currentPassword: string, ne
 
   return true;
 }
+
+

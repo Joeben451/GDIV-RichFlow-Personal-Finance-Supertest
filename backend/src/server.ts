@@ -13,6 +13,7 @@ import balanceSheetRoutes from './routes/balanceSheet.routes';
 import adminRoutes from './routes/admin.routes';
 import currencyRoutes from './routes/currency.routes';
 import eventRoutes from './routes/event.routes';
+import analysisRoutes from './routes/analysis.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 // Load environment variables from .env file
@@ -32,7 +33,7 @@ app.use((req, _res, next) => {
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Your frontend URL
+  origin: ['http://localhost:3000', 'http://localhost:3001'], // Your frontend URLs
   credentials: true // Allow cookies to be sent
 }));
 app.use(express.json());
@@ -76,6 +77,9 @@ app.use('/api', balanceSheetRoutes);
 
 // Mount event routes (immutable financial history)
 app.use('/api/events', eventRoutes);
+
+// Mount analysis routes
+app.use('/api/analysis', analysisRoutes);
 
 // Mount other API routes
 app.use('/api', routes);
