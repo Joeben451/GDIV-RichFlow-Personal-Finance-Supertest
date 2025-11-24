@@ -467,18 +467,25 @@ const Analysis: React.FC = () => {
   const ChartTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || payload.length === 0) return null;
     return (
-      <div className="rounded-md border border-zinc-700 bg-zinc-900/90 p-3 text-xs shadow-lg min-w-[180px]">
-        <div className="font-semibold text-white mb-1">{new Date(label).toLocaleDateString()}</div>
+      <div
+        onClick={() => handleJumpToSnapshot(label)}
+        className="rounded-md border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm p-3 text-xs shadow-xl min-w-[180px] cursor-pointer hover:border-[#FFD700] transition-colors"
+        style={{ zIndex: 1000, pointerEvents: 'auto' }}
+        title="Click to view snapshot"
+      >
+        <div className="font-semibold text-white mb-1 flex items-center justify-between">
+          <span>{new Date(label).toLocaleDateString()}</span>
+          <span className="text-[#FFD700] text-[10px]">📸 SNAPSHOT</span>
+        </div>
         {payload.map((p: any) => (
           <div key={p.dataKey} className="flex justify-between gap-2">
             <span className="text-zinc-400">{p.name}</span>
             <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, user?.preferredCurrency)) : p.value}</span>
           </div>
         ))}
-        <button
-          onClick={() => handleJumpToSnapshot(label)}
-          className="mt-2 w-full rounded bg-[#FFD700] text-black font-semibold py-1 hover:bg-[#e6c300] transition"
-        >Jump to Snapshot</button>
+        <div className="mt-2 pt-2 border-t border-zinc-700 text-center text-[10px] text-zinc-500">
+          Click to jump to this date
+        </div>
       </div>
     );
   };
@@ -502,7 +509,249 @@ const Analysis: React.FC = () => {
           <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#FFD700]/10 rounded-full blur-[120px] pointer-events-none" />
           <main className="flex-1 overflow-y-auto p-6 md:p-8 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
             {/* Snapshot Cards */}
+            {trajectoryMetrics && snapshotData && (
+              <div className="max-w-7xl mx-auto mb-6 rounded-2xl bg-linear-to-br from-zinc-900/80 to-zinc-900/60 border border-[#FFD700]/20 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#FFD700] flex items-center gap-2">
+                      <span>Financial Velocity & Freedom Trajectory</span>
+                    </h2>
+                    <p className="text-xs text-zinc-400 mt-1">
+                      Tracking your path to financial freedom: {trajectoryMetrics.startDate} → {trajectoryMetrics.endDate} ({trajectoryMetrics.dataPoints} data points)
+                    </p>
+                  </div>
+                </div>
 
+                {/* Key Trajectory Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <StatCard
+                    title="Freedom Gap"
+                    value={
+                      <span className={trajectoryMetrics.freedomGap.end <= 0 ? 'text-green-400' : 'text-orange-400'}>
+                        {trajectoryMetrics.freedomGap.end <= 0 ? 'Achieved! 🎉' : formatCurrencyValue(trajectoryMetrics.freedomGap.end, user?.preferredCurrency)}
+                      </span>
+                    }
+                    subValue={
+                      trajectoryMetrics.freedomGap.crossoverDate
+                        ? `Freedom achieved on ${trajectoryMetrics.freedomGap.crossoverDate}`
+                        : `${trajectoryMetrics.freedomGap.trendPercent >= 0 ? '📈' : '📉'} ${Math.abs(trajectoryMetrics.freedomGap.trendPercent).toFixed(1)}% ${trajectoryMetrics.freedomGap.trendPercent >= 0 ? 'increase' : 'decrease'}`
+                    }
+                    accentColor="gold"
+                  />
+
+                  <StatCard
+                    title="Wealth Velocity"
+                    value={`${trajectoryMetrics.wealthVelocity.end.toFixed(2)}%`}
+                    subValue={`${trajectoryMetrics.wealthVelocity.change >= 0 ? '+' : ''}${trajectoryMetrics.wealthVelocity.change.toFixed(2)}% change`}
+                    trend={trajectoryMetrics.wealthVelocity.change >= 0 ? 1 : -1}
+                  />
+
+                  <StatCard
+                    title="Net Worth Growth"
+                    value={formatCurrencyValue(trajectoryMetrics.netWorth.change, user?.preferredCurrency)}
+                    subValue={`${trajectoryMetrics.netWorth.growthRate.toFixed(1)}% growth`}
+                    trend={trajectoryMetrics.netWorth.change >= 0 ? 1 : -1}
+                  />
+
+                  <StatCard
+                    title="Passive Income Growth"
+                    value={formatCurrencyValue(trajectoryMetrics.passiveIncome.change, user?.preferredCurrency)}
+                    subValue={`${trajectoryMetrics.passiveIncome.growthRate.toFixed(1)}% increase`}
+                    trend={trajectoryMetrics.passiveIncome.change >= 0 ? 1 : -1}
+                    accentColor="purple"
+                  />
+                </div>
+
+                {/* Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                  {/* 1. The Rat Race Escape: Expenses vs Passive Income */}
+                  <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5">
+                    <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                      The Rat Race Escape
+                    </h3>
+                    <div className="h-[300px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={processedTrajectory}>
+                          <defs>
+                            <linearGradient id="colorPassive" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#4ade80" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+                            </linearGradient>
+                            <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#f87171" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#f87171" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                          <XAxis
+                            dataKey="date"
+                            stroke="#71717a"
+                            tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis
+                            stroke="#71717a"
+                            tickFormatter={(val) => `$${val / 1000}k`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <RechartsTooltip
+                            content={<ChartTooltip />}
+                            wrapperStyle={{ pointerEvents: 'auto' }}
+                            cursor={{ stroke: '#FFD700', strokeWidth: 1, strokeDasharray: '5 5' }}
+                          />
+                          <Legend />
+                          <Line type="monotone" dataKey="totalExpenses" name="Expenses" stroke="#f87171" strokeWidth={2} dot={false} animationDuration={0} />
+                          <Line type="monotone" dataKey="passiveIncome" name="Passive Income" stroke="#4ade80" strokeWidth={2} dot={false} animationDuration={0} />
+                          {/* Freedom Gap shaded area */}
+                          <Area type="monotone" dataKey="gapArea" name="Freedom Gap" stroke="none" fill="url(#colorExpenses)" animationDuration={0} />
+                          {/* Crossover Point */}
+                          {processedTrajectory.map((p, idx) => {
+                            const prev = processedTrajectory[idx - 1];
+                            if (idx > 0 && p.passiveIncome >= p.totalExpenses && prev.passiveIncome < prev.totalExpenses) {
+                              return (
+                                <ReferenceDot key={p.date} x={p.date} y={p.passiveIncome} r={6} fill="#4ade80" stroke="#18181b" />
+                              );
+                            }
+                            return null;
+                          })}
+                          {/* Currency change markers */}
+                          {processedTrajectory.filter(p => p.currencyChanged).map(p => (
+                            <ReferenceLine key={`cur-${p.date}`} x={p.date} stroke="#FFD700" strokeDasharray="4 2" label={{ value: p.currency, position: 'top', fill: '#FFD700', fontSize: 10 }} />
+                          ))}
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* 2. Net Worth & Velocity */}
+                  <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5">
+                    <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#FFD700]"></span>
+                      Net Worth & Velocity
+                    </h3>
+                    <div className="h-[300px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={processedTrajectory}>
+                          <defs>
+                            <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#FFD700" stopOpacity={0.2} />
+                              <stop offset="95%" stopColor="#FFD700" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                          <XAxis
+                            dataKey="date"
+                            stroke="#71717a"
+                            tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            stroke="#FFD700"
+                            tickFormatter={(val) => `$${val / 1000}k`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            stroke="#c084fc"
+                            tickFormatter={(val) => `${val.toFixed(1)}%`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <RechartsTooltip
+                            content={<ChartTooltip />}
+                            wrapperStyle={{ pointerEvents: 'auto' }}
+                            cursor={{ stroke: '#FFD700', strokeWidth: 1, strokeDasharray: '5 5' }}
+                          />
+                          <Legend />
+                          <Line yAxisId="left" type="monotone" dataKey="netWorth" name="Net Worth" stroke="#FFD700" strokeWidth={2} dot={false} animationDuration={0} />
+                          <Bar yAxisId="right" dataKey="netWorthDelta" name="Wealth Velocity" fill="#c084fc" radius={[4, 4, 0, 0]} animationDuration={0} />
+                          {processedTrajectory.filter(p => p.currencyChanged).map(p => (
+                            <ReferenceLine key={`cur-nw-${p.date}`} x={p.date} stroke="#FFD700" strokeDasharray="4 2" />
+                          ))}
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* 3. Asset Efficiency Trend */}
+                  <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5">
+                    <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                      Asset Efficiency (ROA)
+                    </h3>
+                    <div className="h-[300px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={processedTrajectory}>
+                          <defs>
+                            <linearGradient id="colorEfficiency" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                          <XAxis
+                            dataKey="date"
+                            stroke="#71717a"
+                            tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis
+                            stroke="#71717a"
+                            tickFormatter={(val) => `${val}%`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <RechartsTooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Line type="monotone" dataKey="assetEfficiency" name="Return on Assets" stroke="#60a5fa" strokeWidth={2} dot={false} />
+                          {processedTrajectory.filter(p => p.currencyChanged).map(p => (
+                            <ReferenceLine key={`cur-roa-${p.date}`} x={p.date} stroke="#FFD700" strokeDasharray="4 2" />
+                          ))}
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* 4. Quadrant Evolution */}
+                  <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5">
+                    <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                      Quadrant Evolution
+                    </h3>
+                    <div className="h-[300px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={processedTrajectory}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                          <XAxis
+                            dataKey="date"
+                            stroke="#71717a"
+                            tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', year: '2-digit' })}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis
+                            stroke="#71717a"
+                            tickFormatter={(val) => `${val.toFixed(0)}%`}
+                            tick={{ fontSize: 12 }}
+                            domain={[0, 100]}
+                          />
+                          <RechartsTooltip content={<ChartTooltip />} />
+                          <Legend />
+                          <Area type="monotone" dataKey="quadrantPct.EMPLOYEE" name="Employee" stackId="1" stroke={QUADRANT_COLORS.EMPLOYEE} fill={QUADRANT_COLORS.EMPLOYEE} />
+                          <Area type="monotone" dataKey="quadrantPct.SELF_EMPLOYED" name="Self-Employed" stackId="1" stroke={QUADRANT_COLORS.SELF_EMPLOYED} fill={QUADRANT_COLORS.SELF_EMPLOYED} />
+                          <Area type="monotone" dataKey="quadrantPct.BUSINESS_OWNER" name="Business Owner" stackId="1" stroke={QUADRANT_COLORS.BUSINESS_OWNER} fill={QUADRANT_COLORS.BUSINESS_OWNER} />
+                          <Area type="monotone" dataKey="quadrantPct.INVESTOR" name="Investor" stackId="1" stroke={QUADRANT_COLORS.INVESTOR} fill={QUADRANT_COLORS.INVESTOR} />
+                          {processedTrajectory.filter(p => p.currencyChanged).map(p => (
+                            <ReferenceLine key={`cur-iq-${p.date}`} x={p.date} stroke="#FFD700" strokeDasharray="4 2" />
+                          ))}
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {compareMetrics && (
               <div className="max-w-7xl mx-auto mb-6 rounded-2xl bg-zinc-900/60 border border-white/5 p-6">
@@ -911,14 +1160,17 @@ const Analysis: React.FC = () => {
                   className="col-span-1"
                 />
                 <StatCard
-                  title={snapshotData.richFlowMetrics.freedomGap > 0 ? "Freedom Gap" : "Freedom Surplus"}
+                  title={snapshotData.richFlowMetrics.freedomGap > 0 ? "Freedom Gap" : "Financial Freedom"}
                   value={
-                    <span className={snapshotData.richFlowMetrics.freedomGap > 0 ? "text-orange-400" : "text-green-400"}>
-                      {snapshotData.richFlowMetrics.freedomGap > 0 ? '-' : '+'}
-                      {formatHistorical(Math.abs(snapshotData.richFlowMetrics.freedomGap), snapshotData.currency)}
-                    </span>
+                    snapshotData.richFlowMetrics.freedomGap <= 0 ? (
+                      <span className="text-[#FFD700] font-bold">ACHIEVED 🎉</span>
+                    ) : (
+                      <span className="text-orange-400">
+                        -{formatHistorical(Math.abs(snapshotData.richFlowMetrics.freedomGap), snapshotData.currency)}
+                      </span>
+                    )
                   }
-                  subValue={snapshotData.richFlowMetrics.freedomGap > 0 ? "To Go" : "Surplus"}
+                  subValue={snapshotData.richFlowMetrics.freedomGap > 0 ? "To Go" : "Passive Income Covers Expenses"}
                   className="col-span-1"
                   accentColor={snapshotData.richFlowMetrics.freedomGap > 0 ? 'default' : 'gold'}
                 />
@@ -1169,4 +1421,3 @@ const Analysis: React.FC = () => {
 };
 
 export default Analysis;
-
