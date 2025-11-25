@@ -684,6 +684,7 @@ const Analysis: React.FC = () => {
     <div className="flex flex-col h-screen w-full bg-black text-white overflow-hidden  selection:bg-[#FFD700]/30">
       <Header title="Analysis" hideActions rightContent={headerRight} />
       <div className="flex flex-1 overflow-hidden relative">
+        <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* Background Ambient Glow */}
           <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#800080]/20 rounded-full blur-[120px] pointer-events-none" />
@@ -796,7 +797,7 @@ const Analysis: React.FC = () => {
                         className={`ml-auto md:ml-0 px-4 py-2 rounded-full text-sm transition-all ${rangeOk && !compareLoading
                           ? 'bg-[#9d6dd4]/20 text-white border border-[#9d6dd4]/40 hover:bg-[#9d6dd4]/30 shadow-[0_0_0_2px_rgba(157,109,212,0.25),0_0_18px_rgba(157,109,212,0.55)]'
                           : 'bg-zinc-900/60 text-zinc-500 border border-white/10 cursor-not-allowed'
-                        }`}
+                          }`}
                         title={rangeOk ? 'Generate comparison report' : 'Pick valid start and end dates'}
                       >
                         {compareLoading ? 'Generating…' : 'Generate Report'}
@@ -1108,7 +1109,7 @@ const Analysis: React.FC = () => {
                 <div className="col-span-1 md:col-span-2 lg:col-span-2 row-span-2 bg-zinc-900/50 backdrop-blur-md border border-white/5 rounded-2xl p-3 md:p-6 flex flex-col">
                   <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-2 md:mb-4">Income Quadrant</h3>
 
-                  <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-8">
+                  <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
                     {/* Chart Container */}
                     <div className="flex flex-col items-center w-full lg:w-[320px] shrink-0">
                       <div className="relative flex items-center justify-center w-full mx-auto h-80" style={{ width: '100%', maxWidth: '100%', height: 320, minHeight: 320, position: 'relative' }}>
@@ -1124,25 +1125,25 @@ const Analysis: React.FC = () => {
                               dataKey="value"
                               stroke="none"
                             >
-                            {quadrantData.length > 0 ? (
-                              quadrantData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.5)" />
-                              ))
-                            ) : (
-                              <Cell fill="#27272a" stroke="none" />
+                              {quadrantData.length > 0 ? (
+                                quadrantData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0.5)" />
+                                ))
+                              ) : (
+                                <Cell fill="#27272a" stroke="none" />
+                              )}
+                            </Pie>
+                            {quadrantData.length > 0 && (
+                              <RechartsTooltip
+                                cursor={false}
+                                contentStyle={{ backgroundColor: 'rgba(24, 24, 27, 0.95)', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
+                                formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
+                                wrapperStyle={{ zIndex: 1000 }}
+                                position={{ x: 0, y: 0 }}
+                              />
                             )}
-                          </Pie>
-                          {quadrantData.length > 0 && (
-                            <RechartsTooltip
-                              cursor={false}
-                              contentStyle={{ backgroundColor: 'rgba(24, 24, 27, 0.95)', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
-                              itemStyle={{ color: '#fff' }}
-                              formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
-                              wrapperStyle={{ zIndex: 1000 }}
-                              position={{ x: 0, y: 0 }}
-                            />
-                          )}
-                        </PieChart>
+                          </PieChart>
                         </ResponsiveContainer>
                         {/* Center Text - Hidden on mobile */}
                         <div className="absolute hidden lg:block" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
@@ -1154,7 +1155,7 @@ const Analysis: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Total below chart on mobile */}
                       <div className="lg:hidden text-center mt-4">
                         <div className="text-xs text-zinc-500 mb-1">Total</div>
@@ -1162,7 +1163,7 @@ const Analysis: React.FC = () => {
                           {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
                         </div>
                       </div>
-                      
+
                       {/* Legend below chart */}
                       <div className="flex flex-wrap justify-center gap-4 mt-4">
                         {quadrantData.map((entry, index) => (
@@ -1176,8 +1177,8 @@ const Analysis: React.FC = () => {
 
                     {/* Detailed Breakdown */}
                     <div className="w-full lg:w-auto lg:min-w-60 lg:max-w-xs">
-                      <div className="flex flex-col lg:grid lg:grid-cols-1 gap-3 text-sm">
-                        <div className="flex items-center justify-between gap-2 max-w-sm mx-auto w-full">
+                      <div className="flex flex-col lg:grid lg:grid-cols-1 gap-3 text-sm mr-4">
+                        <div className="flex items-center justify-between gap-2 w-full">
                           <div className="flex items-center gap-2 min-w-0">
                             <span style={{ width: 10, height: 10, background: QUADRANT_COLORS.EMPLOYEE, borderRadius: 999 }} className="shrink-0" />
                             <span className="text-zinc-400 truncate">Employee</span>
@@ -1187,7 +1188,7 @@ const Analysis: React.FC = () => {
                             <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.EMPLOYEE.pct.toFixed(1)}%</div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 max-w-sm mx-auto w-full">
+                        <div className="flex items-center justify-between gap-2 w-full">
                           <div className="flex items-center gap-2 min-w-0">
                             <span style={{ width: 10, height: 10, background: QUADRANT_COLORS.SELF_EMPLOYED, borderRadius: 999 }} className="shrink-0" />
                             <span className="text-zinc-400 truncate">Self-Employed</span>
@@ -1197,7 +1198,7 @@ const Analysis: React.FC = () => {
                             <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.SELF_EMPLOYED.pct.toFixed(1)}%</div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 max-w-sm mx-auto w-full">
+                        <div className="flex items-center justify-between gap-2 w-full">
                           <div className="flex items-center gap-2 min-w-0">
                             <span style={{ width: 10, height: 10, background: QUADRANT_COLORS.BUSINESS_OWNER, borderRadius: 999 }} className="shrink-0" />
                             <span className="text-zinc-400 truncate">Business Owner</span>
@@ -1207,7 +1208,7 @@ const Analysis: React.FC = () => {
                             <div className="text-xs text-zinc-500">{snapshotData.incomeQuadrant.BUSINESS_OWNER.pct.toFixed(1)}%</div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2 max-w-sm mx-auto w-full">
+                        <div className="flex items-center justify-between gap-2 w-full">
                           <div className="flex items-center gap-2 min-w-0">
                             <span style={{ width: 10, height: 10, background: QUADRANT_COLORS.INVESTOR, borderRadius: 999 }} className="shrink-0" />
                             <span className="text-zinc-400 truncate">Investor</span>
