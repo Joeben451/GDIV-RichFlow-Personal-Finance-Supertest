@@ -8,6 +8,7 @@ interface User {
   email: string;
   isAdmin?: boolean;
   preferredCurrency?: Currency;
+  createdAt: string;
 }
 
 interface AuthContextType {
@@ -46,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         // Try to refresh access token from cookie
         const refreshed = await refreshAccessToken();
-        
+
         if (refreshed) {
           // Get user profile with the new access token
           const userData = await authAPI.getProfile();

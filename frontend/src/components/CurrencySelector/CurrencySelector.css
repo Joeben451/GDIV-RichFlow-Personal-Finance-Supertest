@@ -4,6 +4,7 @@
 }
 
 .currency-selector-button {
+  color: black;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -29,6 +30,7 @@
 }
 
 .currency-symbol {
+  color: black;
   font-size: 16px;
   font-weight: 600;
 }
@@ -68,6 +70,7 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -175,6 +178,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;

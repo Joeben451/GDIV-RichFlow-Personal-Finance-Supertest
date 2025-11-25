@@ -169,6 +169,7 @@ export async function loginUser(email: string, password: string) {
     email: user.email,
     name: user.name,
     isAdmin: user.isAdmin,
+    createdAt: user.createdAt,
     PreferredCurrency: user.PreferredCurrency
   };
 }
@@ -215,6 +216,7 @@ export async function findValidSession(refreshToken: string) {
           email: true,
           name: true,
           isAdmin: true,
+          createdAt: true,
           PreferredCurrency: true
         }
       }
@@ -289,6 +291,7 @@ export async function updateUsername(userId: number, newName: string) {
       email: true,
       name: true,
       isAdmin: true,
+      createdAt: true,
       PreferredCurrency: true
     }
   });
@@ -320,7 +323,7 @@ export async function updateEmail(userId: number, newEmail: string) {
   const updated = await prisma.user.update({
     where: { id: userId },
     data: { email: newEmail, updatedAt: new Date() },
-    select: { id: true, email: true, name: true, isAdmin: true, PreferredCurrency: true }
+    select: { id: true, email: true, name: true, isAdmin: true, createdAt: true, PreferredCurrency: true }
   });
 
   return updated;

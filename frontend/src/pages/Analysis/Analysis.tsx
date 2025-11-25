@@ -265,11 +265,26 @@ const Analysis: React.FC = () => {
   useEffect(() => {
     const today = new Date();
     const endStr = today.toISOString().split('T')[0];
-    const start = new Date(today); start.setFullYear(today.getFullYear() - 1);
-    const startStr = start.toISOString().split('T')[0];
+
+    let startStr;
+    if (user?.createdAt) {
+      const created = new Date(user.createdAt);
+      // If created date is valid and in the past
+      if (!isNaN(created.getTime()) && created < today) {
+        startStr = created.toISOString().split('T')[0];
+      }
+    }
+
+    // Fallback to 1 year ago if no user creation date or invalid
+    if (!startStr) {
+      const start = new Date(today);
+      start.setFullYear(today.getFullYear() - 1);
+      startStr = start.toISOString().split('T')[0];
+    }
+
     setTrajectoryStart(startStr);
     setTrajectoryEnd(endStr);
-  }, []);
+  }, [user]);
   useEffect(() => {
     if (trajectoryStart && trajectoryEnd) fetchTrajectoryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps

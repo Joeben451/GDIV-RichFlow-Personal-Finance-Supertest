@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { 
-  createUser, 
-  findExistingUser, 
+import {
+  createUser,
+  findExistingUser,
   loginUser,
   createSession,
   findValidSession,
@@ -101,6 +101,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         email: user.email,
         name: user.name,
         isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
         preferredCurrency: user.PreferredCurrency
       }
     });
@@ -143,6 +144,7 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
         email: session.User.email,
         name: session.User.name,
         isAdmin: session.User.isAdmin,
+        createdAt: session.User.createdAt,
         preferredCurrency: session.User.PreferredCurrency
       }
     });
@@ -236,6 +238,7 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
         email: user.email,
         name: user.name,
         isAdmin: user.isAdmin,
+        createdAt: user.createdAt,
         preferredCurrency: user.PreferredCurrency
       }
     });
