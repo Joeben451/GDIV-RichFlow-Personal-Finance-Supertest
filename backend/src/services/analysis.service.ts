@@ -1,7 +1,7 @@
 import prisma from '../config/database.config';
 import { createEmptyQuadrantTotals, determineIncomeQuadrant } from '../utils/incomeQuadrant.utils';
 import { getEventsByUser } from './event.service';
-import { EntityType, ActionType } from '../types/event.types';
+import { EntityType, ActionType, Event } from '../types/event.types';
 
 /**
  * Represents the reconstructed financial state at a point in time
@@ -25,46 +25,156 @@ interface FinancialHealth {
   };
 }
 
-/**
- * Apply a single event to the financial state
- */
-function applyEventToState(state: FinancialState, event: any) {
-  const afterValue = event.afterValue ? JSON.parse(event.afterValue) : null;
-  const beforeValue = event.beforeValue ? JSON.parse(event.beforeValue) : null;
+// --- Pure Reducers ---
 
-  switch (event.entityType) {
-    case EntityType.ASSET:
-      handleAssetEvent(state, event.actionType as ActionType, event.entityId, afterValue, beforeValue);
+const assetReducer = (state: FinancialState, event: Event): FinancialState => {
+  const newState = { ...state, assets: new Map(state.assets) };
+  const { actionType, entityId, afterValue } = event;
+
+  switch (actionType) {
+    case ActionType.CREATE:
+    case ActionType.UPDATE:
+      if (afterValue) {
+        newState.assets.set(entityId, {
+          id: entityId,
+          name: afterValue.name,
+          value: Number(afterValue.value)
+        });
+      }
       break;
-    case EntityType.LIABILITY:
-      handleLiabilityEvent(state, event.actionType as ActionType, event.entityId, afterValue, beforeValue);
-      break;
-    case EntityType.INCOME:
-      if (event.entitySubtype === 'INCOME_STATEMENT') break;
-      handleIncomeEvent(state, event.actionType as ActionType, event.entityId, afterValue, beforeValue);
-      break;
-    case EntityType.EXPENSE:
-      handleExpenseEvent(state, event.actionType as ActionType, event.entityId, afterValue, beforeValue);
-      break;
-    case EntityType.CASH_SAVINGS:
-      handleCashSavingsEvent(state, event.actionType as ActionType, afterValue, beforeValue);
-      break;
-    case EntityType.USER:
-      handleUserEvent(state, event.actionType as ActionType, afterValue);
+    case ActionType.DELETE:
+      newState.assets.delete(entityId);
       break;
   }
-}
+  return newState;
+};
+
+const liabilityReducer = (state: FinancialState, event: Event): FinancialState => {
+  const newState = { ...state, liabilities: new Map(state.liabilities) };
+  const { actionType, entityId, afterValue } = event;
+
+  switch (actionType) {
+    case ActionType.CREATE:
+    case ActionType.UPDATE:
+      if (afterValue) {
+        newState.liabilities.set(entityId, {
+          id: entityId,
+          name: afterValue.name,
+          value: Number(afterValue.value)
+        });
+      }
+      break;
+    case ActionType.DELETE:
+      newState.liabilities.delete(entityId);
+      break;
+  }
+  return newState;
+};
+
+const incomeReducer = (state: FinancialState, event: Event): FinancialState => {
+  if (event.entitySubtype === 'INCOME_STATEMENT') return state;
+
+  const newState = { ...state, incomeLines: new Map(state.incomeLines) };
+  const { actionType, entityId, afterValue } = event;
+
+  switch (actionType) {
+    case ActionType.CREATE:
+    case ActionType.UPDATE:
+      if (afterValue) {
+        newState.incomeLines.set(entityId, {
+          id: entityId,
+          name: afterValue.name,
+          amount: Number(afterValue.amount),
+          type: afterValue.type,
+          quadrant: afterValue.quadrant || null
+        });
+      }
+      break;
+    case ActionType.DELETE:
+      newState.incomeLines.delete(entityId);
+      break;
+  }
+  return newState;
+};
+
+const expenseReducer = (state: FinancialState, event: Event): FinancialState => {
+  const newState = { ...state, expenses: new Map(state.expenses) };
+  const { actionType, entityId, afterValue } = event;
+
+  switch (actionType) {
+    case ActionType.CREATE:
+    case ActionType.UPDATE:
+      if (afterValue) {
+        newState.expenses.set(entityId, {
+          id: entityId,
+          name: afterValue.name,
+          amount: Number(afterValue.amount)
+        });
+      }
+      break;
+    case ActionType.DELETE:
+      newState.expenses.delete(entityId);
+      break;
+  }
+  return newState;
+};
+
+const cashSavingsReducer = (state: FinancialState, event: Event): FinancialState => {
+  const { actionType, afterValue } = event;
+
+  if ((actionType === ActionType.CREATE || actionType === ActionType.UPDATE) && afterValue && afterValue.amount !== undefined) {
+    return { ...state, cashSavings: Number(afterValue.amount) };
+  }
+  return state;
+};
+
+const userReducer = (state: FinancialState, event: Event): FinancialState => {
+  const { actionType, afterValue } = event;
+
+  if (actionType === ActionType.UPDATE && afterValue && afterValue.currencyCode) {
+    return {
+      ...state,
+      currency: {
+        symbol: afterValue.currencyCode,
+        name: afterValue.currencyName || afterValue.currencyCode
+      }
+    };
+  }
+  return state;
+};
+
+/**
+ * Root Reducer: Dispatches to specific reducers based on entity type
+ */
+const rootReducer = (state: FinancialState, event: Event): FinancialState => {
+  switch (event.entityType) {
+    case EntityType.ASSET:
+      return assetReducer(state, event);
+    case EntityType.LIABILITY:
+      return liabilityReducer(state, event);
+    case EntityType.INCOME:
+      return incomeReducer(state, event);
+    case EntityType.EXPENSE:
+      return expenseReducer(state, event);
+    case EntityType.CASH_SAVINGS:
+      return cashSavingsReducer(state, event);
+    case EntityType.USER:
+      return userReducer(state, event);
+    default:
+      return state;
+  }
+};
 
 /**
  * Reconstruct financial state from a list of events up to a target date
+ * Uses the pure reducer pattern
  */
 function reconstructStateFromEvents(
-  events: any[],
+  events: Event[],
   targetDate: Date,
   initialCurrency: { symbol: string; name: string }
 ): FinancialState {
-  // Start with empty state
-  const state: FinancialState = {
+  const initialState: FinancialState = {
     assets: new Map(),
     liabilities: new Map(),
     incomeLines: new Map(),
@@ -78,199 +188,11 @@ function reconstructStateFromEvents(
     .filter(e => new Date(e.timestamp) <= targetDate)
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-  // Replay events
-  for (const event of relevantEvents) {
-    applyEventToState(state, event);
-  }
-
-  return state;
+  // Apply reducer pipeline
+  return relevantEvents.reduce(rootReducer, initialState);
 }
 
-/**
- * Handle asset events (CREATE, UPDATE, DELETE)
- */
-function handleAssetEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  entityId: number,
-  afterValue: any,
-  beforeValue: any
-) {
-  switch (actionType) {
-    case ActionType.CREATE:
-      if (afterValue) {
-        state.assets.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          value: Number(afterValue.value)
-        });
-      }
-      break;
-
-    case ActionType.UPDATE:
-      if (afterValue) {
-        state.assets.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          value: Number(afterValue.value)
-        });
-      }
-      break;
-
-    case ActionType.DELETE:
-      state.assets.delete(entityId);
-      break;
-  }
-}
-
-/**
- * Handle liability events (CREATE, UPDATE, DELETE)
- */
-function handleLiabilityEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  entityId: number,
-  afterValue: any,
-  beforeValue: any
-) {
-  switch (actionType) {
-    case ActionType.CREATE:
-      if (afterValue) {
-        state.liabilities.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          value: Number(afterValue.value)
-        });
-      }
-      break;
-
-    case ActionType.UPDATE:
-      if (afterValue) {
-        state.liabilities.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          value: Number(afterValue.value)
-        });
-      }
-      break;
-
-    case ActionType.DELETE:
-      state.liabilities.delete(entityId);
-      break;
-  }
-}
-
-/**
- * Handle income line events (CREATE, UPDATE, DELETE)
- */
-function handleIncomeEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  entityId: number,
-  afterValue: any,
-  beforeValue: any
-) {
-  switch (actionType) {
-    case ActionType.CREATE:
-      if (afterValue) {
-        state.incomeLines.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          amount: Number(afterValue.amount),
-          type: afterValue.type,
-          quadrant: afterValue.quadrant || null
-        });
-      }
-      break;
-
-    case ActionType.UPDATE:
-      if (afterValue) {
-        state.incomeLines.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          amount: Number(afterValue.amount),
-          type: afterValue.type,
-          quadrant: afterValue.quadrant || null
-        });
-      }
-      break;
-
-    case ActionType.DELETE:
-      state.incomeLines.delete(entityId);
-      break;
-  }
-}
-
-/**
- * Handle expense events (CREATE, UPDATE, DELETE)
- */
-function handleExpenseEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  entityId: number,
-  afterValue: any,
-  beforeValue: any
-) {
-  switch (actionType) {
-    case ActionType.CREATE:
-      if (afterValue) {
-        state.expenses.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          amount: Number(afterValue.amount)
-        });
-      }
-      break;
-
-    case ActionType.UPDATE:
-      if (afterValue) {
-        state.expenses.set(entityId, {
-          id: entityId,
-          name: afterValue.name,
-          amount: Number(afterValue.amount)
-        });
-      }
-      break;
-
-    case ActionType.DELETE:
-      state.expenses.delete(entityId);
-      break;
-  }
-}
-
-/**
- * Handle cash savings events (CREATE, UPDATE)
- */
-function handleCashSavingsEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  afterValue: any,
-  beforeValue: any
-) {
-  if (actionType === ActionType.CREATE || actionType === ActionType.UPDATE) {
-    if (afterValue && afterValue.amount !== undefined) {
-      state.cashSavings = Number(afterValue.amount);
-    }
-  }
-}
-
-/**
- * Handle user events (UPDATE)
- */
-function handleUserEvent(
-  state: FinancialState,
-  actionType: ActionType,
-  afterValue: any
-) {
-  if (actionType === ActionType.UPDATE && afterValue) {
-    if (afterValue.currencyCode) {
-      state.currency = {
-        symbol: afterValue.currencyCode,
-        name: afterValue.currencyName || afterValue.currencyCode
-      };
-    }
-  }
-}
+// --- Metrics Calculation (Pure Functions) ---
 
 /**
  * Calculate financial health metrics
@@ -388,9 +310,6 @@ function calculateFinancialHealth(
         }
       }
     } else {
-      // No history available (e.g. new account), assume linear growth from 0
-      // Treat as if we started 1 month ago for rough projection? 
-      // Or just say "Insufficient Data"
       freedomDate = "Insufficient Data";
     }
   } else {
@@ -585,8 +504,11 @@ async function getCurrentFinancialSnapshot(userId: number) {
   const oneMonthAgo = new Date(now); oneMonthAgo.setMonth(now.getMonth() - 1);
   const sixMonthsAgo = new Date(now); sixMonthsAgo.setMonth(now.getMonth() - 6);
 
-  const prevMonthState = reconstructStateFromEvents(events, oneMonthAgo, currency);
-  const sixMonthAgoState = reconstructStateFromEvents(events, sixMonthsAgo, currency);
+  // Cast events to Event[] since we know they match our type
+  const typedEvents = events as unknown as Event[];
+
+  const prevMonthState = reconstructStateFromEvents(typedEvents, oneMonthAgo, currency);
+  const sixMonthAgoState = reconstructStateFromEvents(typedEvents, sixMonthsAgo, currency);
 
   const financialHealth = calculateFinancialHealth(currentState, prevMonthState, sixMonthAgoState);
 
@@ -732,6 +654,7 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
     queryParams.startDate = user.createdAt;
   }
   const events = await getEventsByUser(queryParams);
+  const typedEvents = events as unknown as Event[];
 
   // Determine initial currency
   const firstCurrencyEvent = await prisma.event.findFirst({
@@ -749,8 +672,12 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
   };
 
   if (firstCurrencyEvent && firstCurrencyEvent.beforeValue) {
-    const before = JSON.parse(firstCurrencyEvent.beforeValue);
-    if (before.currencyCode) {
+    // Check if beforeValue is object or string (handle both for safety)
+    const before = typeof firstCurrencyEvent.beforeValue === 'string'
+      ? JSON.parse(firstCurrencyEvent.beforeValue)
+      : firstCurrencyEvent.beforeValue;
+
+    if (before && before.currencyCode) {
       initialCurrency = {
         symbol: before.currencyCode,
         name: before.currencyName || before.currencyCode
@@ -758,14 +685,14 @@ export const getFinancialSnapshot = async (userId: number, date?: string) => {
     }
   }
 
-  const state = reconstructStateFromEvents(events, targetDate, initialCurrency);
+  const state = reconstructStateFromEvents(typedEvents, targetDate, initialCurrency);
 
   // Reconstruct past states for trends
   const oneMonthAgo = new Date(targetDate); oneMonthAgo.setMonth(targetDate.getMonth() - 1);
   const sixMonthsAgo = new Date(targetDate); sixMonthsAgo.setMonth(targetDate.getMonth() - 6);
 
-  const prevMonthState = reconstructStateFromEvents(events, oneMonthAgo, initialCurrency);
-  const sixMonthAgoState = reconstructStateFromEvents(events, sixMonthsAgo, initialCurrency);
+  const prevMonthState = reconstructStateFromEvents(typedEvents, oneMonthAgo, initialCurrency);
+  const sixMonthAgoState = reconstructStateFromEvents(typedEvents, sixMonthsAgo, initialCurrency);
 
   const financialHealth = calculateFinancialHealth(state, prevMonthState, sixMonthAgoState);
 
@@ -804,7 +731,6 @@ export const getFinancialTrajectory = async (
   };
 
   // Fetch ALL events from beginning to ensure correct state reconstruction
-  // This fixes the bug where assets created before the chart start date were missing
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { PreferredCurrency: true }
@@ -821,9 +747,10 @@ export const getFinancialTrajectory = async (
   }
 
   const events = await getEventsByUser(queryParams);
+  const typedEvents = events as unknown as Event[];
 
   // Ensure events are sorted chronologically
-  events.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  typedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   const initialCurrency = (() => {
     // Default to current if no history
@@ -832,16 +759,18 @@ export const getFinancialTrajectory = async (
       : { symbol: '$', name: 'USD' };
 
     // Try to find the first currency update to get the original currency
-    // Since we are replaying from the beginning, we need the state BEFORE the first update
-    const firstCurrencyEvent = events.find(e =>
+    const firstCurrencyEvent = typedEvents.find(e =>
       e.entityType === EntityType.USER &&
       e.actionType === ActionType.UPDATE &&
       e.beforeValue &&
-      JSON.parse(e.beforeValue).currencyCode
+      (typeof e.beforeValue === 'string' ? JSON.parse(e.beforeValue).currencyCode : e.beforeValue.currencyCode)
     );
 
     if (firstCurrencyEvent && firstCurrencyEvent.beforeValue) {
-      const before = JSON.parse(firstCurrencyEvent.beforeValue);
+      const before = typeof firstCurrencyEvent.beforeValue === 'string'
+        ? JSON.parse(firstCurrencyEvent.beforeValue)
+        : firstCurrencyEvent.beforeValue;
+
       if (before.currencyCode) {
         currency = {
           symbol: before.currencyCode,
@@ -853,7 +782,7 @@ export const getFinancialTrajectory = async (
   })();
 
   // Initialize state
-  const state: FinancialState = {
+  let state: FinancialState = {
     assets: new Map(),
     liabilities: new Map(),
     incomeLines: new Map(),
@@ -866,11 +795,11 @@ export const getFinancialTrajectory = async (
   let eventIndex = 0;
 
   // Incremental state reconstruction
-  // O(N + M) complexity instead of O(N * M)
   while (currentDate <= end) {
     // Apply new events since last check
-    while (eventIndex < events.length && new Date(events[eventIndex]!.timestamp) <= currentDate) {
-      applyEventToState(state, events[eventIndex]);
+    while (eventIndex < typedEvents.length && new Date(typedEvents[eventIndex]!.timestamp) <= currentDate) {
+      // Use rootReducer for incremental updates
+      state = rootReducer(state, typedEvents[eventIndex]!);
       eventIndex++;
     }
 

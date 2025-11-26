@@ -18,6 +18,18 @@ interface FinancialEvent {
 
 const parseNum = (v: any) => (typeof v === 'number' ? v : parseFloat(v));
 
+const parseJsonIfNeeded = (val: any) => {
+  if (!val) return undefined;
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return val;
+    }
+  }
+  return val;
+};
+
 const usePerUserKeys = (user: any) => {
   const uid = (user && (user.id || user.userId || user.uid)) || 'anon';
   return {
@@ -40,7 +52,7 @@ const saveRemovedEvents = (key: string, events: FinancialEvent[]) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(key, JSON.stringify(events));
-  } catch {}
+  } catch { }
 };
 
 // Map server entity types to display types
@@ -76,8 +88,8 @@ const computeValueChange = (
     obj && (typeof obj.amount === 'number' || typeof obj.amount === 'string'
       ? parseNum(obj.amount)
       : typeof obj.value === 'number' || typeof obj.value === 'string'
-      ? parseNum(obj.value)
-      : 0);
+        ? parseNum(obj.value)
+        : 0);
 
   if (at === 'DELETE') {
     const v = pick(beforeValue);
@@ -136,8 +148,8 @@ const EventLog: React.FC = () => {
         const apiEvents: any[] = Array.isArray(data?.events) ? data.events : [];
 
         const transformed: FinancialEvent[] = apiEvents.map((ev: any) => {
-          const afterValue = ev.afterValue ? JSON.parse(ev.afterValue) : undefined;
-          const beforeValue = ev.beforeValue ? JSON.parse(ev.beforeValue) : undefined;
+          const afterValue = parseJsonIfNeeded(ev.afterValue);
+          const beforeValue = parseJsonIfNeeded(ev.beforeValue);
           const type = mapEntityType(ev.entityType, ev.actionType);
           const valueChange = computeValueChange(ev.entityType, ev.actionType, beforeValue, afterValue);
 
@@ -150,11 +162,11 @@ const EventLog: React.FC = () => {
             case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
             case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
             case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
-            case 'USER': 
+            case 'USER':
               if (ev.actionType === 'UPDATE' && afterValue?.currencyCode) {
                 desc = `Currency Changed: ${beforeValue?.currencyCode || '?'} → ${afterValue.currencyCode}`;
               } else {
-                desc = `Account Created`; 
+                desc = `Account Created`;
               }
               break;
             default: desc = `${prefix}: ${ev.entityType}`;
@@ -210,7 +222,7 @@ const EventLog: React.FC = () => {
         const data = await eventLogsAPI.getEvents({ entityType: 'USER', limit: 1000 });
         const userEvents = (data?.events || []).filter((e: any) =>
           e.actionType === 'UPDATE' &&
-          e.afterValue && JSON.parse(e.afterValue).currencyCode
+          e.afterValue && parseJsonIfNeeded(e.afterValue).currencyCode
         );
 
         userEvents.sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -221,7 +233,7 @@ const EventLog: React.FC = () => {
         if (userEvents.length > 0) {
           // Before first change
           const first = userEvents[0];
-          const firstBefore = first.beforeValue ? JSON.parse(first.beforeValue) : null;
+          const firstBefore = parseJsonIfNeeded(first.beforeValue);
           segments.push({
             startDate: 0,
             symbol: firstBefore?.currencyCode || '$'
@@ -229,7 +241,7 @@ const EventLog: React.FC = () => {
 
           // After each change
           userEvents.forEach((ev: any) => {
-            const after = JSON.parse(ev.afterValue);
+            const after = parseJsonIfNeeded(ev.afterValue);
             segments.push({
               startDate: new Date(ev.timestamp).getTime(),
               symbol: after.currencyCode

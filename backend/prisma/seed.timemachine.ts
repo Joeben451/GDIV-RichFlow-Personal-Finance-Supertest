@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/utils/password.utils';
 
 const prisma = new PrismaClient();
@@ -87,8 +87,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'INCOME',
       entitySubtype: 'INCOME_STATEMENT',
-      beforeValue: null,
-      afterValue: JSON.stringify({ id: incomeStatement.id, userId: user.id }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { id: incomeStatement.id, userId: user.id },
       userId: user.id,
       entityId: incomeStatement.id,
     },
@@ -100,8 +100,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'CASH_SAVINGS',
       entitySubtype: null,
-      beforeValue: null,
-      afterValue: JSON.stringify({ id: cashSavings.id, userId: user.id, amount: 0 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { id: cashSavings.id, userId: user.id, amount: 0 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -131,8 +131,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: salary1.name, amount: 3200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: salary1.name, amount: 3200, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -152,8 +152,8 @@ async function main() {
       timestamp: new Date('2020-01-10T14:00:00Z'),
       actionType: 'CREATE',
       entityType: 'EXPENSE',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: rent1.name, amount: 1000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: rent1.name, amount: 1000 },
       userId: user.id,
       entityId: rent1.id,
     },
@@ -172,8 +172,8 @@ async function main() {
       timestamp: new Date('2020-01-10T14:30:00Z'),
       actionType: 'CREATE',
       entityType: 'EXPENSE',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: utilities.name, amount: 120 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: utilities.name, amount: 120 },
       userId: user.id,
       entityId: utilities.id,
     },
@@ -192,8 +192,8 @@ async function main() {
       timestamp: new Date('2020-01-15T16:00:00Z'),
       actionType: 'CREATE',
       entityType: 'EXPENSE',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: groceries.name, amount: 300 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: groceries.name, amount: 300 },
       userId: user.id,
       entityId: groceries.id,
     },
@@ -201,6 +201,21 @@ async function main() {
 
   console.log('   ✅ Income: $3,200/month (Junior Dev)');
   console.log('   ✅ Expenses: $1,420/month\n');
+
+  // Snapshot Jan 2020
+  await prisma.financialSnapshot.create({
+    data: {
+      userId: user.id,
+      date: new Date('2020-01-31T23:59:59Z'),
+      data: {
+        netWorth: 0,
+        totalAssets: 0,
+        totalLiabilities: 0,
+        totalIncome: 3200,
+        totalExpenses: 1420
+      }
+    }
+  });
 
   // ==========================================
   // 2021-2023 - Career Growth
@@ -219,8 +234,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 3200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-      afterValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 3500, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: { name: 'Junior Developer Salary', amount: 3200, type: 'EARNED', quadrant: 'EMPLOYEE' },
+      afterValue: { name: 'Junior Developer Salary', amount: 3500, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -237,8 +252,8 @@ async function main() {
       timestamp: new Date('2021-01-15T09:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 0 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 1000 }),
+      beforeValue: { id: cashSavings.id, amount: 0 },
+      afterValue: { id: cashSavings.id, amount: 1000 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -256,8 +271,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 3500, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-      afterValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 3800, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: { name: 'Junior Developer Salary', amount: 3500, type: 'EARNED', quadrant: 'EMPLOYEE' },
+      afterValue: { name: 'Junior Developer Salary', amount: 3800, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -274,8 +289,8 @@ async function main() {
       timestamp: new Date('2022-01-15T09:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 1000 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 2000 }),
+      beforeValue: { id: cashSavings.id, amount: 1000 },
+      afterValue: { id: cashSavings.id, amount: 2000 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -293,8 +308,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 3800, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-      afterValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 4200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: { name: 'Junior Developer Salary', amount: 3800, type: 'EARNED', quadrant: 'EMPLOYEE' },
+      afterValue: { name: 'Junior Developer Salary', amount: 4200, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -311,8 +326,8 @@ async function main() {
       timestamp: new Date('2023-01-15T09:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 2000 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 2500 }),
+      beforeValue: { id: cashSavings.id, amount: 2000 },
+      afterValue: { id: cashSavings.id, amount: 2500 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -320,6 +335,21 @@ async function main() {
 
   console.log('   ✅ 2021-2023: Salary grew $3,200 → $4,200');
   console.log('   ✅ Savings accumulated: $2,500\n');
+
+  // Snapshot Jan 2023
+  await prisma.financialSnapshot.create({
+    data: {
+      userId: user.id,
+      date: new Date('2023-01-31T23:59:59Z'),
+      data: {
+        netWorth: 2500,
+        totalAssets: 2500,
+        totalLiabilities: 0,
+        totalIncome: 4200,
+        totalExpenses: 1420 // Assuming expenses stayed roughly same for simplicity in snapshot
+      }
+    }
+  });
 
   // ==========================================
   // JANUARY 2024 - Promotion to Senior
@@ -338,8 +368,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: 'Junior Developer Salary', amount: 4200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-      afterValue: JSON.stringify({ name: 'Software Engineer Salary', amount: 4500, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: { name: 'Junior Developer Salary', amount: 4200, type: 'EARNED', quadrant: 'EMPLOYEE' },
+      afterValue: { name: 'Software Engineer Salary', amount: 4500, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -356,8 +386,8 @@ async function main() {
       timestamp: new Date('2024-01-10T14:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'EXPENSE',
-      beforeValue: JSON.stringify({ name: rent1.name, amount: 1000 }),
-      afterValue: JSON.stringify({ name: rent1.name, amount: 1200 }),
+      beforeValue: { name: rent1.name, amount: 1000 },
+      afterValue: { name: rent1.name, amount: 1200 },
       userId: user.id,
       entityId: rent1.id,
     },
@@ -373,8 +403,8 @@ async function main() {
       timestamp: new Date('2024-01-10T14:30:00Z'),
       actionType: 'UPDATE',
       entityType: 'EXPENSE',
-      beforeValue: JSON.stringify({ name: utilities.name, amount: 120 }),
-      afterValue: JSON.stringify({ name: utilities.name, amount: 150 }),
+      beforeValue: { name: utilities.name, amount: 120 },
+      afterValue: { name: utilities.name, amount: 150 },
       userId: user.id,
       entityId: utilities.id,
     },
@@ -390,8 +420,8 @@ async function main() {
       timestamp: new Date('2024-01-15T16:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'EXPENSE',
-      beforeValue: JSON.stringify({ name: groceries.name, amount: 300 }),
-      afterValue: JSON.stringify({ name: groceries.name, amount: 400 }),
+      beforeValue: { name: groceries.name, amount: 300 },
+      afterValue: { name: groceries.name, amount: 400 },
       userId: user.id,
       entityId: groceries.id,
     },
@@ -415,8 +445,8 @@ async function main() {
       timestamp: new Date('2024-03-01T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 2500 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 3000 }),
+      beforeValue: { id: cashSavings.id, amount: 2500 },
+      afterValue: { id: cashSavings.id, amount: 3000 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -435,8 +465,8 @@ async function main() {
       timestamp: new Date('2024-03-15T11:00:00Z'),
       actionType: 'CREATE',
       entityType: 'ASSET',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: car.name, value: 8000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: car.name, value: 8000 },
       userId: user.id,
       entityId: car.id,
     },
@@ -455,8 +485,8 @@ async function main() {
       timestamp: new Date('2024-03-15T11:30:00Z'),
       actionType: 'CREATE',
       entityType: 'LIABILITY',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: carLoan.name, value: 5000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: carLoan.name, value: 5000 },
       userId: user.id,
       entityId: carLoan.id,
     },
@@ -465,6 +495,21 @@ async function main() {
   console.log('   ✅ Cash Savings: $3,000');
   console.log('   ✅ Asset: Used Car ($8,000)');
   console.log('   ✅ Liability: Car Loan ($5,000)\n');
+
+  // Snapshot March 2024
+  await prisma.financialSnapshot.create({
+    data: {
+      userId: user.id,
+      date: new Date('2024-03-31T23:59:59Z'),
+      data: {
+        netWorth: 3000 + 8000 - 5000, // Cash + Car - Loan = 6000
+        totalAssets: 11000, // 3000 Cash + 8000 Car
+        totalLiabilities: 5000,
+        totalIncome: 4500,
+        totalExpenses: 1750
+      }
+    }
+  });
 
   // ==========================================
   // JUNE 2024 - Salary Raise
@@ -482,8 +527,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: 'Software Engineer Salary', amount: 4500, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-      afterValue: JSON.stringify({ name: 'Software Engineer Salary (Raised)', amount: 5200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+      beforeValue: { name: 'Software Engineer Salary', amount: 4500, type: 'EARNED', quadrant: 'EMPLOYEE' },
+      afterValue: { name: 'Software Engineer Salary (Raised)', amount: 5200, type: 'EARNED', quadrant: 'EMPLOYEE' },
       userId: user.id,
       entityId: salary1.id,
     },
@@ -512,8 +557,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: freelance.name, amount: 800, type: 'EARNED', quadrant: 'SELF_EMPLOYED' }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: freelance.name, amount: 800, type: 'EARNED', quadrant: 'SELF_EMPLOYED' },
       userId: user.id,
       entityId: freelance.id,
     },
@@ -539,8 +584,8 @@ async function main() {
       timestamp: new Date('2024-10-05T10:00:00Z'),
       actionType: 'CREATE',
       entityType: 'ASSET',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: stocks.name, value: 5000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: stocks.name, value: 5000 },
       userId: user.id,
       entityId: stocks.id,
     },
@@ -562,8 +607,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'INCOME',
       entitySubtype: 'PORTFOLIO',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: dividends.name, amount: 50, type: 'PORTFOLIO', quadrant: 'INVESTOR' }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: dividends.name, amount: 50, type: 'PORTFOLIO', quadrant: 'INVESTOR' },
       userId: user.id,
       entityId: dividends.id,
     },
@@ -579,8 +624,8 @@ async function main() {
       timestamp: new Date('2024-10-20T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 3000 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 8000 }),
+      beforeValue: { id: cashSavings.id, amount: 3000 },
+      afterValue: { id: cashSavings.id, amount: 8000 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -589,6 +634,21 @@ async function main() {
   console.log('   ✅ Asset: Stock Portfolio ($5,000)');
   console.log('   ✅ Income: Stock Dividends ($50/month)');
   console.log('   ✅ Cash Savings increased to $8,000\n');
+
+  // Snapshot Oct 2024
+  await prisma.financialSnapshot.create({
+    data: {
+      userId: user.id,
+      date: new Date('2024-10-31T23:59:59Z'),
+      data: {
+        netWorth: 8000 + 8000 + 5000 - 5000, // Cash + Car + Stocks - Loan = 16000
+        totalAssets: 21000, // 8000 Cash + 8000 Car + 5000 Stocks
+        totalLiabilities: 5000,
+        totalIncome: 5200 + 800 + 50, // Salary + Freelance + Divs = 6050
+        totalExpenses: 1750
+      }
+    }
+  });
 
   // ==========================================
   // JANUARY 2025 - Paid Off Car Loan
@@ -604,8 +664,8 @@ async function main() {
       timestamp: new Date('2025-01-15T12:00:00Z'),
       actionType: 'DELETE',
       entityType: 'LIABILITY',
-      beforeValue: JSON.stringify({ name: carLoan.name, value: 5000 }),
-      afterValue: null,
+      beforeValue: { name: carLoan.name, value: 5000 },
+      afterValue: Prisma.DbNull,
       userId: user.id,
       entityId: carLoan.id,
     },
@@ -630,8 +690,8 @@ async function main() {
       timestamp: new Date('2025-02-01T09:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'USER',
-      beforeValue: JSON.stringify({ preferredCurrencyId: 1, currencyCode: '$', currencyName: 'USD' }),
-      afterValue: JSON.stringify({ preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' }),
+      beforeValue: { preferredCurrencyId: 1, currencyCode: '$', currencyName: 'USD' },
+      afterValue: { preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' },
       userId: user.id,
       entityId: user.id,
     },
@@ -657,8 +717,8 @@ async function main() {
       timestamp: new Date('2025-03-10T10:00:00Z'),
       actionType: 'CREATE',
       entityType: 'ASSET',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: rentalProperty.name, value: 150000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: rentalProperty.name, value: 150000 },
       userId: user.id,
       entityId: rentalProperty.id,
     },
@@ -677,8 +737,8 @@ async function main() {
       timestamp: new Date('2025-03-10T10:30:00Z'),
       actionType: 'CREATE',
       entityType: 'LIABILITY',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: mortgage.name, value: 120000 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: mortgage.name, value: 120000 },
       userId: user.id,
       entityId: mortgage.id,
     },
@@ -700,8 +760,8 @@ async function main() {
       actionType: 'CREATE',
       entityType: 'INCOME',
       entitySubtype: 'PASSIVE',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: rentalIncome.name, amount: 1200, type: 'PASSIVE', quadrant: 'INVESTOR' }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: rentalIncome.name, amount: 1200, type: 'PASSIVE', quadrant: 'INVESTOR' },
       userId: user.id,
       entityId: rentalIncome.id,
     },
@@ -720,8 +780,8 @@ async function main() {
       timestamp: new Date('2025-03-25T11:00:00Z'),
       actionType: 'CREATE',
       entityType: 'EXPENSE',
-      beforeValue: null,
-      afterValue: JSON.stringify({ name: propertyTax.name, amount: 400 }),
+      beforeValue: Prisma.DbNull,
+      afterValue: { name: propertyTax.name, amount: 400 },
       userId: user.id,
       entityId: propertyTax.id,
     },
@@ -731,6 +791,21 @@ async function main() {
   console.log('   ✅ Liability: Mortgage ($120,000)');
   console.log('   ✅ Income: Rental Income ($1,200/month)');
   console.log('   ✅ Expense: Property Tax & Maintenance ($400/month)\n');
+
+  // Snapshot March 2025
+  await prisma.financialSnapshot.create({
+    data: {
+      userId: user.id,
+      date: new Date('2025-03-31T23:59:59Z'),
+      data: {
+        netWorth: 8000 + 8000 + 5000 + 150000 - 120000, // Cash + Car + Stocks + Rental - Mortgage = 51000
+        totalAssets: 171000,
+        totalLiabilities: 120000,
+        totalIncome: 5200 + 800 + 50 + 1200, // 7250
+        totalExpenses: 1750 + 400 // 2150
+      }
+    }
+  });
 
   // ==========================================
   // JUNE 2025 - Portfolio Growth
@@ -747,8 +822,8 @@ async function main() {
       timestamp: new Date('2025-06-15T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'ASSET',
-      beforeValue: JSON.stringify({ name: stocks.name, value: 5000 }),
-      afterValue: JSON.stringify({ name: stocks.name, value: 12000 }),
+      beforeValue: { name: stocks.name, value: 5000 },
+      afterValue: { name: stocks.name, value: 12000 },
       userId: user.id,
       entityId: stocks.id,
     },
@@ -765,8 +840,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'PORTFOLIO',
-      beforeValue: JSON.stringify({ name: dividends.name, amount: 50, type: 'PORTFOLIO', quadrant: 'INVESTOR' }),
-      afterValue: JSON.stringify({ name: dividends.name, amount: 120, type: 'PORTFOLIO', quadrant: 'INVESTOR' }),
+      beforeValue: { name: dividends.name, amount: 50, type: 'PORTFOLIO', quadrant: 'INVESTOR' },
+      afterValue: { name: dividends.name, amount: 120, type: 'PORTFOLIO', quadrant: 'INVESTOR' },
       userId: user.id,
       entityId: dividends.id,
     },
@@ -791,8 +866,8 @@ async function main() {
       actionType: 'UPDATE',
       entityType: 'INCOME',
       entitySubtype: 'EARNED',
-      beforeValue: JSON.stringify({ name: freelance.name, amount: 800, type: 'EARNED', quadrant: 'SELF_EMPLOYED' }),
-      afterValue: JSON.stringify({ name: freelance.name, amount: 2500, type: 'EARNED', quadrant: 'SELF_EMPLOYED' }),
+      beforeValue: { name: freelance.name, amount: 800, type: 'EARNED', quadrant: 'SELF_EMPLOYED' },
+      afterValue: { name: freelance.name, amount: 2500, type: 'EARNED', quadrant: 'SELF_EMPLOYED' },
       userId: user.id,
       entityId: freelance.id,
     },
@@ -808,8 +883,8 @@ async function main() {
       timestamp: new Date('2025-09-15T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'CASH_SAVINGS',
-      beforeValue: JSON.stringify({ id: cashSavings.id, amount: 8000 }),
-      afterValue: JSON.stringify({ id: cashSavings.id, amount: 25000 }),
+      beforeValue: { id: cashSavings.id, amount: 8000 },
+      afterValue: { id: cashSavings.id, amount: 25000 },
       userId: user.id,
       entityId: cashSavings.id,
     },
@@ -833,8 +908,8 @@ async function main() {
       timestamp: new Date('2025-10-01T09:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'USER',
-      beforeValue: JSON.stringify({ preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' }),
-      afterValue: JSON.stringify({ preferredCurrencyId: 3, currencyCode: '£', currencyName: 'GBP' }),
+      beforeValue: { preferredCurrencyId: 2, currencyCode: '€', currencyName: 'EUR' },
+      afterValue: { preferredCurrencyId: 3, currencyCode: '£', currencyName: 'GBP' },
       userId: user.id,
       entityId: user.id,
     },
@@ -858,8 +933,8 @@ async function main() {
       timestamp: new Date('2025-11-01T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'LIABILITY',
-      beforeValue: JSON.stringify({ name: mortgage.name, value: 120000 }),
-      afterValue: JSON.stringify({ name: mortgage.name, value: 115000 }),
+      beforeValue: { name: mortgage.name, value: 120000 },
+      afterValue: { name: mortgage.name, value: 115000 },
       userId: user.id,
       entityId: mortgage.id,
     },
@@ -876,8 +951,8 @@ async function main() {
       timestamp: new Date('2025-11-10T10:00:00Z'),
       actionType: 'UPDATE',
       entityType: 'ASSET',
-      beforeValue: JSON.stringify({ name: car.name, value: 8000 }),
-      afterValue: JSON.stringify({ name: car.name, value: 6000 }),
+      beforeValue: { name: car.name, value: 8000 },
+      afterValue: { name: car.name, value: 6000 },
       userId: user.id,
       entityId: car.id,
     },

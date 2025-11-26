@@ -96,8 +96,8 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.INCOME,
         entitySubtype: 'INCOME_STATEMENT',
-        beforeValue: null,
-        afterValue: JSON.stringify({ id: incomeStatement.id, userId: newUser.id }),
+        // beforeValue: null, // Omitted to let Prisma handle it as null
+        afterValue: { id: incomeStatement.id, userId: newUser.id },
         userId: newUser.id,
         entityId: incomeStatement.id
       }
@@ -109,8 +109,8 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.CASH_SAVINGS,
         entitySubtype: null,
-        beforeValue: null,
-        afterValue: JSON.stringify({ id: cashSavings.id, userId: newUser.id, amount: 0 }),
+        // beforeValue: null, // Omitted to let Prisma handle it as null
+        afterValue: { id: cashSavings.id, userId: newUser.id, amount: 0 },
         userId: newUser.id,
         entityId: cashSavings.id
       }
@@ -122,8 +122,8 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.USER,
         entitySubtype: null,
-        beforeValue: null,
-        afterValue: JSON.stringify({ id: newUser.id, email: newUser.email, name: newUser.name }),
+        // beforeValue: null, // Omitted to let Prisma handle it as null
+        afterValue: { id: newUser.id, email: newUser.email, name: newUser.name },
         userId: newUser.id,
         entityId: newUser.id
       }

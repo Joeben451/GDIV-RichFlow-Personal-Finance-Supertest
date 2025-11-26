@@ -8,7 +8,8 @@
     "seed-currency": "ts-node prisma/seed.currency.ts",
     "seed-users": "ts-node prisma/seed.users.ts",
     "seed-timemachine": "ts-node prisma/seed.timemachine.ts",
-    "seed-timemachine-freedom": "ts-node prisma/seed.timemachine.freedom.ts"
+    "seed-timemachine-freedom": "ts-node prisma/seed.timemachine.freedom.ts",
+    "seed-timemachine-broke": "ts-node prisma/seed.timemachine.broke.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

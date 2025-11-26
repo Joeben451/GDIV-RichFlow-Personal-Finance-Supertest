@@ -1,4 +1,5 @@
 import prisma from '../config/database.config';
+import { Prisma } from '@prisma/client';
 import {
   CreateEventParams,
   EventQueryParams,
@@ -23,17 +24,17 @@ export async function createEvent(params: CreateEventParams) {
       entityId
     } = params;
 
-    // Serialize values to JSON strings
-    const beforeValueJson = beforeValue ? JSON.stringify(beforeValue) : null;
-    const afterValueJson = afterValue ? JSON.stringify(afterValue) : null;
+    // Serialize values to JSON strings - REMOVED, passing objects directly
+    // const beforeValueJson = beforeValue ? JSON.stringify(beforeValue) : null;
+    // const afterValueJson = afterValue ? JSON.stringify(afterValue) : null;
 
     const event = await prisma.event.create({
       data: {
         actionType,
         entityType,
         entitySubtype: entitySubtype || null,
-        beforeValue: beforeValueJson,
-        afterValue: afterValueJson,
+        beforeValue: beforeValue ?? Prisma.DbNull,
+        afterValue: afterValue ?? Prisma.DbNull,
         userId,
         entityId
       }
@@ -130,7 +131,7 @@ export async function getEventsByEntity(params: EventQueryParams) {
  */
 export async function getEventCount(userId: number, entityType?: EntityType): Promise<number> {
   const where: any = { userId };
-  
+
   if (entityType) {
     where.entityType = entityType;
   }
@@ -149,7 +150,7 @@ export async function logIncomeEvent(
   afterValue?: EventData
 ) {
   const subtype = afterValue?.type || beforeValue?.type || null;
-  
+
   return await createEvent({
     actionType,
     entityType: EntityType.INCOME,

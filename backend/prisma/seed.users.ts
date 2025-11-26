@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import {hashPassword} from '../src/utils/password.utils';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/utils/password.utils';
 
 const prisma = new PrismaClient();
 
@@ -81,13 +81,13 @@ async function main() {
           actionType: 'CREATE',
           entityType: 'USER',
           entitySubtype: null,
-          beforeValue: null,
-          afterValue: JSON.stringify({
+          beforeValue: Prisma.DbNull,
+          afterValue: {
             id: newUser.id,
             name: newUser.name,
             email: newUser.email,
             preferredCurrencyId: newUser.preferredCurrencyId
-          }),
+          },
           userId: newUser.id,
           entityId: newUser.id
         }
@@ -106,8 +106,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'INCOME_STATEMENT',
-            beforeValue: null,
-            afterValue: JSON.stringify({ id: incomeStatement.id, userId }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { id: incomeStatement.id, userId },
             userId,
             entityId: incomeStatement.id
           }
@@ -131,13 +131,28 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'CASH_SAVINGS',
             entitySubtype: null,
-            beforeValue: null,
-            afterValue: JSON.stringify({ id: cashSavings.id, userId, amount: 0 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { id: cashSavings.id, userId, amount: 0 },
             userId,
             entityId: cashSavings.id
           }
         });
       }
+
+      // Create initial Financial Snapshot
+      await prisma.financialSnapshot.create({
+        data: {
+          userId,
+          date: new Date(),
+          data: {
+            netWorth: 0,
+            totalAssets: 0,
+            totalLiabilities: 0,
+            totalIncome: 0,
+            totalExpenses: 0
+          }
+        }
+      });
     }
   }
 

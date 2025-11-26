@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { hashPassword } from '../src/utils/password.utils';
 
 const prisma = new PrismaClient();
@@ -70,8 +70,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'INCOME_STATEMENT',
-            beforeValue: null,
-            afterValue: JSON.stringify({ id: incomeStatement.id, userId: user.id }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { id: incomeStatement.id, userId: user.id },
             userId: user.id,
             entityId: incomeStatement.id,
         },
@@ -83,8 +83,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'CASH_SAVINGS',
             entitySubtype: null,
-            beforeValue: null,
-            afterValue: JSON.stringify({ id: cashSavings.id, userId: user.id, amount: 200 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { id: cashSavings.id, userId: user.id, amount: 200 },
             userId: user.id,
             entityId: cashSavings.id,
         },
@@ -113,8 +113,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'EARNED',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: retailJob.name, amount: 2200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: retailJob.name, amount: 2200, type: 'EARNED', quadrant: 'EMPLOYEE' },
             userId: user.id,
             entityId: retailJob.id,
         },
@@ -139,8 +139,8 @@ async function main() {
                 timestamp: new Date('2020-01-10T10:00:00Z'),
                 actionType: 'CREATE',
                 entityType: 'EXPENSE',
-                beforeValue: null,
-                afterValue: JSON.stringify({ name: exp.name, amount: exp.amount }),
+                beforeValue: Prisma.DbNull,
+                afterValue: { name: exp.name, amount: exp.amount },
                 userId: user.id,
                 entityId: exp.id,
             },
@@ -160,8 +160,8 @@ async function main() {
             timestamp: new Date('2020-01-15T10:00:00Z'),
             actionType: 'CREATE',
             entityType: 'LIABILITY',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: studentLoan.name, value: 25000 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: studentLoan.name, value: 25000 },
             userId: user.id,
             entityId: studentLoan.id,
         },
@@ -172,8 +172,8 @@ async function main() {
             timestamp: new Date('2020-01-15T10:00:00Z'),
             actionType: 'CREATE',
             entityType: 'LIABILITY',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: creditCard.name, value: 4000 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: creditCard.name, value: 4000 },
             userId: user.id,
             entityId: creditCard.id,
         },
@@ -182,6 +182,21 @@ async function main() {
     console.log('   ❌ Net Worth: -$28,800');
     console.log('   ❌ Cashflow: -$100/month (Deficit)');
     console.log('   ❌ Credit Card Debt increasing...\n');
+
+    // Snapshot Jan 2020 (The Struggle)
+    await prisma.financialSnapshot.create({
+        data: {
+            userId: user.id,
+            date: new Date('2020-01-31T23:59:59Z'),
+            data: {
+                netWorth: 200 - 25000 - 4000, // Cash - Student Loan - CC = -28800
+                totalAssets: 200,
+                totalLiabilities: 29000,
+                totalIncome: 2200,
+                totalExpenses: 800 + 1200 + 300 // 2300 (Deficit)
+            }
+        }
+    });
 
     // Late 2020 - Debt Increases due to deficit
     await prisma.liability.update({
@@ -194,8 +209,8 @@ async function main() {
             timestamp: new Date('2020-12-01T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'LIABILITY',
-            beforeValue: JSON.stringify({ name: creditCard.name, value: 4000 }),
-            afterValue: JSON.stringify({ name: creditCard.name, value: 5500 }),
+            beforeValue: { name: creditCard.name, value: 4000 },
+            afterValue: { name: creditCard.name, value: 5500 },
             userId: user.id,
             entityId: creditCard.id,
         },
@@ -219,8 +234,8 @@ async function main() {
             actionType: 'UPDATE',
             entityType: 'INCOME',
             entitySubtype: 'EARNED',
-            beforeValue: JSON.stringify({ name: 'Retail Job', amount: 2200, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-            afterValue: JSON.stringify({ name: 'Junior Tech Support', amount: 4000, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+            beforeValue: { name: 'Retail Job', amount: 2200, type: 'EARNED', quadrant: 'EMPLOYEE' },
+            afterValue: { name: 'Junior Tech Support', amount: 4000, type: 'EARNED', quadrant: 'EMPLOYEE' },
             userId: user.id,
             entityId: retailJob.id,
         },
@@ -234,8 +249,8 @@ async function main() {
             timestamp: new Date('2022-03-01T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'EXPENSE',
-            beforeValue: JSON.stringify({ name: 'Living Expenses', amount: 1200 }),
-            afterValue: JSON.stringify({ name: 'Living Expenses', amount: 1000 }),
+            beforeValue: { name: 'Living Expenses', amount: 1200 },
+            afterValue: { name: 'Living Expenses', amount: 1000 },
             userId: user.id,
             entityId: livingExpenses.id,
         },
@@ -249,8 +264,8 @@ async function main() {
             timestamp: new Date('2022-08-15T10:00:00Z'),
             actionType: 'DELETE',
             entityType: 'LIABILITY',
-            beforeValue: JSON.stringify({ name: creditCard.name, value: 5500 }),
-            afterValue: null,
+            beforeValue: { name: creditCard.name, value: 5500 },
+            afterValue: Prisma.DbNull,
             userId: user.id,
             entityId: creditCard.id,
         },
@@ -264,8 +279,8 @@ async function main() {
             timestamp: new Date('2022-12-30T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'CASH_SAVINGS',
-            beforeValue: JSON.stringify({ id: cashSavings.id, amount: 200 }),
-            afterValue: JSON.stringify({ id: cashSavings.id, amount: 5000 }),
+            beforeValue: { id: cashSavings.id, amount: 200 },
+            afterValue: { id: cashSavings.id, amount: 5000 },
             userId: user.id,
             entityId: cashSavings.id,
         },
@@ -274,6 +289,21 @@ async function main() {
     console.log('   ✅ Income doubled: $4,000');
     console.log('   ✅ Credit Card Debt Eliminated');
     console.log('   ✅ Emergency Fund: $5,000\n');
+
+    // Snapshot Dec 2022 (Turning Point)
+    await prisma.financialSnapshot.create({
+        data: {
+            userId: user.id,
+            date: new Date('2022-12-31T23:59:59Z'),
+            data: {
+                netWorth: 5000 - 25000, // Cash - Student Loan = -20000
+                totalAssets: 5000,
+                totalLiabilities: 25000,
+                totalIncome: 4000,
+                totalExpenses: 800 + 1000 + 300 // 2100 (Surplus!)
+            }
+        }
+    });
 
     // ==========================================
     // PHASE 3: ACCUMULATION (2023-2024)
@@ -293,8 +323,8 @@ async function main() {
             actionType: 'UPDATE',
             entityType: 'INCOME',
             entitySubtype: 'EARNED',
-            beforeValue: JSON.stringify({ name: 'Junior Tech Support', amount: 4000, type: 'EARNED', quadrant: 'EMPLOYEE' }),
-            afterValue: JSON.stringify({ name: 'SysAdmin', amount: 6000, type: 'EARNED', quadrant: 'EMPLOYEE' }),
+            beforeValue: { name: 'Junior Tech Support', amount: 4000, type: 'EARNED', quadrant: 'EMPLOYEE' },
+            afterValue: { name: 'SysAdmin', amount: 6000, type: 'EARNED', quadrant: 'EMPLOYEE' },
             userId: user.id,
             entityId: retailJob.id,
         },
@@ -310,8 +340,8 @@ async function main() {
             timestamp: new Date('2023-07-01T10:00:00Z'),
             actionType: 'CREATE',
             entityType: 'ASSET',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: indexFunds.name, value: 10000 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: indexFunds.name, value: 10000 },
             userId: user.id,
             entityId: indexFunds.id,
         },
@@ -328,8 +358,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'EARNED',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: sideHustle.name, amount: 1500, type: 'EARNED', quadrant: 'SELF_EMPLOYED' }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: sideHustle.name, amount: 1500, type: 'EARNED', quadrant: 'SELF_EMPLOYED' },
             userId: user.id,
             entityId: sideHustle.id,
         },
@@ -343,8 +373,8 @@ async function main() {
             timestamp: new Date('2024-06-01T10:00:00Z'),
             actionType: 'DELETE',
             entityType: 'LIABILITY',
-            beforeValue: JSON.stringify({ name: studentLoan.name, value: 25000 }),
-            afterValue: null,
+            beforeValue: { name: studentLoan.name, value: 25000 },
+            afterValue: Prisma.DbNull,
             userId: user.id,
             entityId: studentLoan.id,
         },
@@ -358,8 +388,8 @@ async function main() {
             timestamp: new Date('2024-12-01T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'ASSET',
-            beforeValue: JSON.stringify({ name: indexFunds.name, value: 10000 }),
-            afterValue: JSON.stringify({ name: indexFunds.name, value: 45000 }),
+            beforeValue: { name: indexFunds.name, value: 10000 },
+            afterValue: { name: indexFunds.name, value: 45000 },
             userId: user.id,
             entityId: indexFunds.id,
         },
@@ -368,6 +398,21 @@ async function main() {
     console.log('   ✅ Debt Free!');
     console.log('   ✅ Income: $7,500/month');
     console.log('   ✅ Portfolio: $45,000\n');
+
+    // Snapshot Dec 2024 (Accumulation)
+    await prisma.financialSnapshot.create({
+        data: {
+            userId: user.id,
+            date: new Date('2024-12-31T23:59:59Z'),
+            data: {
+                netWorth: 5000 + 45000, // Cash + Index Funds = 50000 (Debt Free!)
+                totalAssets: 50000,
+                totalLiabilities: 0,
+                totalIncome: 6000 + 1500, // 7500
+                totalExpenses: 2100 // Assumed stable
+            }
+        }
+    });
 
     // ==========================================
     // PHASE 4: FINANCIAL FREEDOM (2025)
@@ -388,8 +433,8 @@ async function main() {
             timestamp: new Date('2025-02-15T10:00:00Z'),
             actionType: 'CREATE',
             entityType: 'ASSET',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: rentalProp.name, value: 300000 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: rentalProp.name, value: 300000 },
             userId: user.id,
             entityId: rentalProp.id,
         },
@@ -400,8 +445,8 @@ async function main() {
             timestamp: new Date('2025-02-15T10:00:00Z'),
             actionType: 'CREATE',
             entityType: 'LIABILITY',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: mortgage.name, value: 240000 }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: mortgage.name, value: 240000 },
             userId: user.id,
             entityId: mortgage.id,
         },
@@ -418,8 +463,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'PASSIVE',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: rentalIncome.name, amount: 2500, type: 'PASSIVE', quadrant: 'INVESTOR' }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: rentalIncome.name, amount: 2500, type: 'PASSIVE', quadrant: 'INVESTOR' },
             userId: user.id,
             entityId: rentalIncome.id,
         },
@@ -436,8 +481,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'PORTFOLIO',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: dividends.name, amount: 300, type: 'PORTFOLIO', quadrant: 'INVESTOR' }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: dividends.name, amount: 300, type: 'PORTFOLIO', quadrant: 'INVESTOR' },
             userId: user.id,
             entityId: dividends.id,
         },
@@ -454,8 +499,8 @@ async function main() {
             actionType: 'CREATE',
             entityType: 'INCOME',
             entitySubtype: 'PASSIVE',
-            beforeValue: null,
-            afterValue: JSON.stringify({ name: digitalProduct.name, amount: 2000, type: 'PASSIVE', quadrant: 'BUSINESS_OWNER' }),
+            beforeValue: Prisma.DbNull,
+            afterValue: { name: digitalProduct.name, amount: 2000, type: 'PASSIVE', quadrant: 'BUSINESS_OWNER' },
             userId: user.id,
             entityId: digitalProduct.id,
         },
@@ -469,8 +514,8 @@ async function main() {
             timestamp: new Date('2025-11-20T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'ASSET',
-            beforeValue: JSON.stringify({ name: indexFunds.name, value: 45000 }),
-            afterValue: JSON.stringify({ name: indexFunds.name, value: 85000 }),
+            beforeValue: { name: indexFunds.name, value: 45000 },
+            afterValue: { name: indexFunds.name, value: 85000 },
             userId: user.id,
             entityId: indexFunds.id,
         },
@@ -483,8 +528,8 @@ async function main() {
             timestamp: new Date('2025-11-20T10:00:00Z'),
             actionType: 'UPDATE',
             entityType: 'CASH_SAVINGS',
-            beforeValue: JSON.stringify({ id: cashSavings.id, amount: 5000 }),
-            afterValue: JSON.stringify({ id: cashSavings.id, amount: 60000 }),
+            beforeValue: { id: cashSavings.id, amount: 5000 },
+            afterValue: { id: cashSavings.id, amount: 60000 },
             userId: user.id,
             entityId: cashSavings.id,
         },
@@ -506,6 +551,21 @@ async function main() {
     console.log('📈 ASSETS: $445,000 (Real Estate + Stocks + Cash)');
     console.log('📉 LIABILITIES: $240,000 (Mortgage)');
     console.log('🎯 NET WORTH: $205,000 (From -$28k)');
+
+    // Snapshot Nov 2025 (Freedom)
+    await prisma.financialSnapshot.create({
+        data: {
+            userId: user.id,
+            date: new Date('2025-11-30T23:59:59Z'),
+            data: {
+                netWorth: 60000 + 85000 + 300000 - 240000, // Cash + Stocks + Rental - Mortgage = 205000
+                totalAssets: 445000,
+                totalLiabilities: 240000,
+                totalIncome: 6000 + 1500 + 2500 + 2000 + 300, // 12300
+                totalExpenses: 2100 // Assumed stable base expenses
+            }
+        }
+    });
 
     console.log('\n✅ Freedom User Created!');
     console.log(`   Email: ${TEST_USER.email}`);

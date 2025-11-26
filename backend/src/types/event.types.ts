@@ -49,8 +49,8 @@ export interface Event {
   actionType: string;
   entityType: string;
   entitySubtype: string | null;
-  beforeValue: string | null;
-  afterValue: string | null;
+  beforeValue: any | null;
+  afterValue: any | null;
   userId: number;
   entityId: number;
 }
