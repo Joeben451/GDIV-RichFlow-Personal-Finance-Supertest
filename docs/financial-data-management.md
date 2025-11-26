@@ -283,4 +283,4 @@ frontend/src/
 ### Changes
 - Initial documentation for financial data management features.
 - Detailed API endpoints, data models, and architecture.
-- Outlined security considerations and future development plans.
+- Outlined security considerations.
