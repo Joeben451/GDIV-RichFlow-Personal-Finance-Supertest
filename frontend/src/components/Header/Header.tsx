@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="header-left">
         {leftContent ? leftContent : (
           <div className="logo">
-            <div className="logo-circle max-h-fit"><img src="../../../assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
+            <div className="logo-circle max-h-fit"><img src="/assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
             <div className="flex flex-col">
               <span className="logo-text">{user!.name}</span>
               <span className="text-white" style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user!.email}</span>

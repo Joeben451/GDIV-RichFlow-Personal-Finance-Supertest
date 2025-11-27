@@ -116,7 +116,7 @@ const Signup: React.FC = () => {
         <form onSubmit={handleSubmit} className="bg-opacity-60 w-full flex items-center justify-center flex-col gap-5 backdrop-blur-sm p-4 sm:p-8 rounded bg-#171717">
           <div className="flex items-center gap-3 mb-4 sm:mb-8 justify-center">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-dark rounded-full flex items-center justify-center">
-              <img src="./assets/richflow.png" alt="RichFlow Logo" />
+              <img src="/assets/richflow.png" alt="RichFlow Logo" />
             </div>
             <span className="text-3xl sm:text-5xl font-bold text-gold">RichFlow</span>
           </div>
