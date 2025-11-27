@@ -4,6 +4,8 @@
   "main": "server.js",
   "scripts": {
     "devStart": "nodemon ./backend/server.ts",
+    "build": "tsc",
+    "start": "node ./dist/server.js", 
     "dev": "nodemon ./src/server.ts",
     "seed-currency": "ts-node prisma/seed.currency.ts",
     "seed-users": "ts-node prisma/seed.users.ts",

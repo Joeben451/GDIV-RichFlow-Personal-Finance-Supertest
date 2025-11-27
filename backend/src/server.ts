@@ -33,7 +33,7 @@ app.use((req, _res, next) => {
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'], // Your frontend URLs
+  origin: ['http://localhost:3000', process.env.FRONTEND_URL].filter((url): url is string => Boolean(url)), // Your frontend URLs
   credentials: true // Allow cookies to be sent
 }));
 app.use(express.json());
