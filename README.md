@@ -162,21 +162,20 @@ Configure your `.env` file:
 
 ```env
 # Database
-DATABASE_URL="postgresql://username:password@localhost:5432/richflow"
+DATABASE_URL="postgresql://username:password@localhost:5432/richflow_db"
+
+# JWT Secrets (Change these to random secure strings in production!)
+JWT_SECRET="your-jwt-secret-change-in-production"
+ACCESS_TOKEN_SECRET="your-access-token-secret-change-in-production"
+
+# Gemini AI Integration
+# Get your API key from: https://aistudio.google.com/app/apikey
+GEMINI_API_KEY="your-gemini-api-key-here"
+GEMINI_MODEL="gemini-pro"
 
 # Server
 PORT=5000
 NODE_ENV=development
-
-# JWT
-JWT_SECRET="your-super-secret-jwt-key"
-JWT_EXPIRATION="7d"
-
-# Frontend URL (for CORS)
-FRONTEND_URL="http://localhost:3000"
-
-# AI (Optional - for Saki AI Assistant)
-GOOGLE_AI_API_KEY="your-google-ai-api-key"
 ```
 
 Run database synchronization:
