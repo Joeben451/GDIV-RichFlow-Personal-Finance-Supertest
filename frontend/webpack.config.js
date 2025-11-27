@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin'); //
 
 module.exports = {
   entry: './src/index.tsx',
@@ -34,6 +35,16 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.REACT_APP_API_URL': JSON.stringify(process.env.REACT_APP_API_URL),
     }),
+    // 🛑 NEW: Copy the public/assets directory to the root of the dist folder
+    new CopyWebpackPlugin({
+        patterns: [
+            { 
+                from: 'public/assets', 
+                to: 'assets', // Destination is dist/assets
+                noErrorOnMissing: true // Allows deployment even if folder is temporarily empty
+            }
+        ]
+    })
   ],
   devServer: {
     static: {
