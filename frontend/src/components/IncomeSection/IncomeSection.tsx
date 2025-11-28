@@ -5,6 +5,7 @@ import { passiveIncomeStore } from "../../state/passiveIncomeStore";
 import { incomeTotalsStore } from "../../state/incomeTotalsStore";
 import { useFinancialData } from "../../context/FinancialDataContext";
 import { useAuth } from "../../context/AuthContext";
+import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
 
 type IncomeQuadrant = 'EMPLOYEE' | 'SELF_EMPLOYED' | 'BUSINESS_OWNER' | 'INVESTOR';
@@ -55,7 +56,7 @@ const formatQuadrantLabel = (quadrant?: IncomeQuadrant) => {
 
 const IncomeSection: React.FC = () => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [earnedIncome, setEarnedIncome] = useState<IncomeItem[]>([]);
   const [portfolioIncome, setPortfolioIncome] = useState<IncomeItem[]>([]);
   const [passiveIncome, setPassiveIncome] = useState<IncomeItem[]>([]);

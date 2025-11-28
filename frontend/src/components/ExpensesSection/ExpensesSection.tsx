@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useExpenses } from '../../hooks/useExpenses';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
 import './ExpensesSection.css';
 
 const ExpenseSection: React.FC = () => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook, updateExpense } = useExpenses();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');

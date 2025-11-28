@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { assetsAPI } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
 import "./AssetsSection.css";
 
@@ -16,7 +17,7 @@ type Props = {
 
 const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [assets, setAssets] = useState<AssetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -3,8 +3,9 @@ import Sidebar from '../../components/Sidebar/Sidebar';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { analysisAPI } from '../../utils/api';
-import { formatCurrency as formatCurrencyValue } from '../../utils/currency.utils';
+import { formatCurrency as formatCurrencyValue, getCurrencySymbol } from '../../utils/currency.utils';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
   AreaChart, Area, LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, ComposedChart, ReferenceDot
@@ -168,6 +169,7 @@ const StatCard: React.FC<{
 
 const Analysis: React.FC = () => {
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [slowSnapshot, setSlowSnapshot] = useState(false);
@@ -227,15 +229,23 @@ const Analysis: React.FC = () => {
     }
   };
 
-  // Historical currency formatter
+  // Historical currency formatter (for comparison tables with historical data)
   const formatHistorical = React.useCallback(
-    (value: number, currency: { symbol: string; name: string }) => {
+    (value: number, currencyObj: { symbol: string; name: string }) => {
       return formatCurrencyValue(value, {
-        cur_symbol: currency.symbol,
-        cur_name: currency.name
+        cur_symbol: currencyObj.symbol,
+        cur_name: currencyObj.name
       } as any);
     },
     []
+  );
+
+  // Current data formatter (uses currency from context)
+  const formatCurrent = React.useCallback(
+    (value: number) => {
+      return formatCurrencyValue(value, currency);
+    },
+    [currency]
   );
 
   const fetchSnapshot = async (date?: string) => {
@@ -261,7 +271,7 @@ const Analysis: React.FC = () => {
 
   useEffect(() => {
     fetchSnapshot();
-  }, []);
+  }, [currency]);
 
   useEffect(() => {
     if (deferredSelectedDate) {
@@ -410,7 +420,7 @@ const Analysis: React.FC = () => {
   useEffect(() => {
     if (trajectoryStart && trajectoryEnd) fetchTrajectoryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trajectoryStart, trajectoryEnd, trajectoryInterval]);
+  }, [trajectoryStart, trajectoryEnd, trajectoryInterval, currency]);
 
   const compareMetrics = useMemo(() => {
     if (!compareResult) return null;
@@ -654,7 +664,7 @@ const Analysis: React.FC = () => {
         {payload.map((p: any) => (
           <div key={p.dataKey} className="flex justify-between gap-2">
             <span className="text-zinc-400">{p.name}</span>
-            <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, user?.preferredCurrency)) : p.value}</span>
+            <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, currency)) : p.value}</span>
           </div>
         ))}
       </div>
@@ -971,7 +981,7 @@ const Analysis: React.FC = () => {
                 {/* Hero: Net Worth */}
                 <StatCard
                   title="Net Worth"
-                  value={formatHistorical(snapshotData.balanceSheet.netWorth, snapshotData.currency)}
+                  value={formatCurrent(snapshotData.balanceSheet.netWorth)}
                   trend={snapshotData.financialHealth.trends.netWorth}
                   className="col-span-1 md:col-span-2 lg:col-span-2 min-h-[180px]"
                   accentColor="gold"
@@ -989,15 +999,15 @@ const Analysis: React.FC = () => {
                     <div className="flex gap-4 w-full justify-between">
                       <div className="text-xs">
                         <div className="text-zinc-400">Cash</div>
-                        <div className="font-semibold text-[#eaca6a]">{formatHistorical(snapshotData.balanceSheet.totalCash, snapshotData.currency)}</div>
+                        <div className="font-semibold text-[#eaca6a]">{formatCurrent(snapshotData.balanceSheet.totalCash)}</div>
                       </div>
                       <div className="text-xs">
                         <div className="text-zinc-400">Assets</div>
-                        <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalInvestedAssets, snapshotData.currency)}</div>
+                        <div className="font-semibold">{formatCurrent(snapshotData.balanceSheet.totalInvestedAssets)}</div>
                       </div>
                       <div className="text-xs">
                         <div className="text-zinc-400">Liabilities</div>
-                        <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalLiabilities, snapshotData.currency)}</div>
+                        <div className="font-semibold">{formatCurrent(snapshotData.balanceSheet.totalLiabilities)}</div>
                       </div>
                     </div>
                   </div>
@@ -1042,7 +1052,7 @@ const Analysis: React.FC = () => {
                     value={
                       <span className={snapshotData.richFlowMetrics.wealthVelocity >= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
                         {snapshotData.richFlowMetrics.wealthVelocity >= 0 ? '+' : ''}
-                        {formatHistorical(snapshotData.richFlowMetrics.wealthVelocity, snapshotData.currency)}
+                        {formatCurrent(snapshotData.richFlowMetrics.wealthVelocity)}
                       </span>
                     }
                     trend={snapshotData.richFlowMetrics.wealthVelocityPct}
@@ -1074,7 +1084,7 @@ const Analysis: React.FC = () => {
                     title="Net Cashflow"
                     value={
                       <span className={snapshotData.cashflow.netCashflow >= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
-                        {formatHistorical(snapshotData.cashflow.netCashflow, snapshotData.currency)}
+                        {formatCurrent(snapshotData.cashflow.netCashflow)}
                       </span>
                     }
                     trend={trajectoryMetrics?.recentCashflowTrend ?? snapshotData.financialHealth.trends.cashflow}
@@ -1084,11 +1094,11 @@ const Analysis: React.FC = () => {
                     <div className="mt-2 text-sm">
                       <div className="flex justify-between items-center">
                         <div className="text-zinc-400">Total Income</div>
-                        <div className="text-[#41d288] font-semibold">{formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}</div>
+                        <div className="text-[#41d288] font-semibold">{formatCurrent(snapshotData.cashflow.totalIncome)}</div>
                       </div>
                       <div className="flex justify-between items-center mt-1">
                         <div className="text-zinc-400">Total Expenses</div>
-                        <div className="text-[#ff7d7e] font-semibold">{formatHistorical(snapshotData.cashflow.totalExpenses, snapshotData.currency)}</div>
+                        <div className="text-[#ff7d7e] font-semibold">{formatCurrent(snapshotData.cashflow.totalExpenses)}</div>
                       </div>
                       <div className="my-2 h-px bg-white/5" />
                       <div className="text-xs text-zinc-500">
@@ -1131,7 +1141,7 @@ const Analysis: React.FC = () => {
                                 cursor={false}
                                 contentStyle={{ backgroundColor: 'rgba(24, 24, 27, 0.95)', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
                                 itemStyle={{ color: '#fff' }}
-                                formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
+                                formatter={(value: number) => formatCurrent(value)}
                                 wrapperStyle={{ zIndex: 1000 }}
                                 position={{ x: 0, y: 0 }}
                               />
@@ -1143,7 +1153,7 @@ const Analysis: React.FC = () => {
                           <div className="text-center">
                             <div className="text-xs text-zinc-500 mb-1">Total</div>
                             <div className="text-lg font-bold text-white whitespace-nowrap">
-                              {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                              {formatCurrent(snapshotData.cashflow.totalIncome)}
                             </div>
                           </div>
                         </div>
@@ -1153,7 +1163,7 @@ const Analysis: React.FC = () => {
                       <div className="lg:hidden text-center mt-4">
                         <div className="text-xs text-zinc-500 mb-1">Total</div>
                         <div className="text-xl font-bold text-white">
-                          {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                          {formatCurrent(snapshotData.cashflow.totalIncome)}
                         </div>
                       </div>
 
@@ -1283,7 +1293,7 @@ const Analysis: React.FC = () => {
                       title="Freedom Gap Evolution"
                       value={
                         <span className={trajectoryMetrics.freedomGap.end <= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
-                          {trajectoryMetrics.freedomGap.end <= 0 ? 0 : formatCurrencyValue(trajectoryMetrics.freedomGap.end, user?.preferredCurrency)}
+                          {trajectoryMetrics.freedomGap.end <= 0 ? 0 : formatCurrencyValue(trajectoryMetrics.freedomGap.end, currency)}
                         </span>
                       }
                       subValue={
@@ -1305,14 +1315,14 @@ const Analysis: React.FC = () => {
 
                     <StatCard
                       title="Net Worth Growth"
-                      value={formatCurrencyValue(trajectoryMetrics.netWorth.change, user?.preferredCurrency)}
+                      value={formatCurrencyValue(trajectoryMetrics.netWorth.change, currency)}
                       subValue={`${trajectoryMetrics.netWorth.growthRate.toFixed(1)}% growth`}
                       trend={trajectoryMetrics.netWorth.growthRate}
                     />
 
                     <StatCard
                       title="Passive + Portfolio Growth"
-                      value={formatCurrencyValue(trajectoryMetrics.passiveIncome.change, user?.preferredCurrency)}
+                      value={formatCurrencyValue(trajectoryMetrics.passiveIncome.change, currency)}
                       subValue={`${trajectoryMetrics.passiveIncome.growthRate.toFixed(1)}% increase`}
                       trend={trajectoryMetrics.passiveIncome.growthRate}
                       accentColor="purple"
@@ -1355,7 +1365,7 @@ const Analysis: React.FC = () => {
                             />
                             <YAxis
                               stroke="#71717a"
-                              tickFormatter={(val) => `$${val / 1000}k`}
+                              tickFormatter={(val) => `${getCurrencySymbol(currency)}${val / 1000}k`}
                               tick={{ fontSize: 12, fill: '#71717a' }}
                               style={{ background: 'none' }}
                               domain={['auto', 'auto']}
@@ -1411,7 +1421,7 @@ const Analysis: React.FC = () => {
                             <YAxis
                               yAxisId="left"
                               stroke="#eaca6a"
-                              tickFormatter={(val) => `$${val / 1000}k`}
+                              tickFormatter={(val) => `${getCurrencySymbol(currency)}${val / 1000}k`}
                               tick={{ fontSize: 12, fill: '#eaca6a' }}
                               style={{ background: 'none' }}
                               domain={['auto', 'auto']}

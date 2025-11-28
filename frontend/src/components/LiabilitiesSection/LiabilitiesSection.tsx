@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { liabilitiesAPI } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
 import "./LiabilitiesSection.css";
 
@@ -16,7 +17,7 @@ type Props = {
 
 const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [liabilities, setLiabilities] = useState<LiabilityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

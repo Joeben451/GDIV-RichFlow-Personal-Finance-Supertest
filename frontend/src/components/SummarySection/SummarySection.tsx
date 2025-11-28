@@ -3,6 +3,7 @@ import { useExpenses } from '../../hooks/useExpenses';
 import { cashSavingsAPI, incomeAPI, assetsAPI, liabilitiesAPI } from '../../utils/api';
 import { incomeTotalsStore } from '../../state/incomeTotalsStore';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
 import './SummarySection.css';
 
@@ -21,7 +22,7 @@ const SummarySection: React.FC<Props> = ({
   totalLiabilitiesProp,
 }) => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('0');
