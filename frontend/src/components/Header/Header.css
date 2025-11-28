@@ -13,7 +13,7 @@
 
 @media (max-width: 1024px) {
   .header {
-    padding: 0.75rem 1rem 0.75rem 4.5rem;
+    padding: 0.75rem 1rem;
     height: auto;
     min-height: 56px;
     flex-wrap: wrap;
@@ -22,7 +22,7 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 0.75rem 1rem 0.75rem 4.5rem;
+    padding: 0.75rem 1rem;
     height: auto;
     min-height: 56px;
     flex-wrap: wrap;
@@ -31,13 +31,58 @@
 
 @media (max-width: 480px) {
   .header {
-    padding: 0.5rem 0.75rem 0.5rem 4rem;
+    padding: 0.5rem 0.75rem;
   }
 }
 
 .header-left {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sidebar-hamburger {
+  background-color: #EDCA69;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.sidebar-hamburger:hover {
+  background-color: #f5d57e;
+  transform: scale(1.05);
+}
+
+.sidebar-hamburger-line {
+  width: 24px;
+  height: 3px;
+  background-color: #1E1E1E;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.sidebar-hamburger.open .sidebar-hamburger-line:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.sidebar-hamburger.open .sidebar-hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.sidebar-hamburger.open .sidebar-hamburger-line:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 @media (max-width: 768px) {

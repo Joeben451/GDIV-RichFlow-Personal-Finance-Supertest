@@ -172,6 +172,7 @@ const Analysis: React.FC = () => {
   const { currency } = useCurrency();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [slowSnapshot, setSlowSnapshot] = useState(false);
   const [snapshotError, setSnapshotError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -685,9 +686,18 @@ const Analysis: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-full bg-black text-white overflow-hidden  selection:bg-[#eaca6a]/30">
-      <Header title="Analysis" hideActions rightContent={headerRight} />
+      <Header 
+        title="Analysis" 
+        hideActions 
+        rightContent={headerRight}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
+      />
       <div className="flex flex-1 overflow-hidden relative">
-        <Sidebar />
+        <Sidebar 
+          mobileOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* Background Ambient Glow */}
           <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#794cb5]/20 rounded-full blur-[120px] pointer-events-none" />

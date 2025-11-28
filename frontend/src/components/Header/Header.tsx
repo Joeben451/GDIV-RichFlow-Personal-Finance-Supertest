@@ -11,6 +11,8 @@ interface HeaderProps {
   hideActions?: boolean;
   rightContent?: React.ReactNode;
   leftContent?: React.ReactNode;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -21,7 +23,9 @@ const Header: React.FC<HeaderProps> = ({
   title = 'Dashboard', 
   hideActions = false,
   rightContent,
-  leftContent
+  leftContent,
+  onToggleSidebar,
+  sidebarOpen = false
 }) => {
   const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -62,13 +66,26 @@ const Header: React.FC<HeaderProps> = ({
     <header className={`header ${hideActions ? 'no-actions' : ''}`}>
       <div className="header-left">
         {leftContent ? leftContent : (
-          <div className="logo">
-            <div className="logo-circle max-h-fit"><img src="/assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
-            <div className="flex flex-col">
-              <span className="logo-text">{user!.name}</span>
-              <span className="text-white" style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user!.email}</span>
+          <>
+            <div className="logo">
+              <div className="logo-circle max-h-fit"><img src="/assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
+              <div className="flex flex-col">
+                <span className="logo-text">{user!.name}</span>
+                <span className="text-white" style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user!.email}</span>
+              </div>
             </div>
-          </div>
+            {onToggleSidebar && (
+              <button 
+                className={`sidebar-hamburger ${sidebarOpen ? 'open' : ''}`}
+                onClick={onToggleSidebar}
+                aria-label="Toggle menu"
+              >
+                <span className="sidebar-hamburger-line"></span>
+                <span className="sidebar-hamburger-line"></span>
+                <span className="sidebar-hamburger-line"></span>
+              </button>
+            )}
+          </>
         )}
       </div>
       <div className="header-center">
