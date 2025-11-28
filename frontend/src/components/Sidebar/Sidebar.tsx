@@ -74,7 +74,7 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
   return (
     <>
       {/* Hamburger Menu Button - Mobile Only */}
-      <button 
+      <button
         className={`sidebar-hamburger ${mobileOpen ? 'open' : ''}`}
         onClick={() => setMobileOpen(!mobileOpen)}
         aria-label="Toggle menu"
@@ -85,171 +85,173 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant }) => {
       </button>
 
       {/* Mobile Overlay */}
-      <div 
+      <div
         className={`sidebar-overlay ${mobileOpen ? 'active' : ''}`}
         onClick={() => setMobileOpen(false)}
       ></div>
 
-      <aside 
-        className={`sidebar ${expanded ? 'expanded' : ''} ${mobileOpen ? 'mobile-open' : ''}`} 
-        onMouseEnter={handleSidebarEnter} 
+      <aside
+        className={`sidebar ${expanded ? 'expanded' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
+        onMouseEnter={handleSidebarEnter}
         onMouseLeave={handleSidebarLeave}
         onClick={handleSidebarClick}
       >
-      
-      {/* Home Button */}
-      <div className="sidebar-section">
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate("/"); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text home"> Home </span>
-        </button>
-      </div>
 
-      {/* General Section */}
-      <div className="sidebar-section">
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> General </span>
-        </button>
+        {/* Home Button */}
+        <div className="sidebar-section">
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate("/"); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text home"> Home </span>
+          </button>
+        </div>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate("/user-guide"); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> User Guide </span>
-        </button>
+        {/* General Section */}
+        <div className="sidebar-section">
+          <button className="selection small">
+            <div className="sidebar-button small"></div>
+            <span className="sidebar-text"> General </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => setShowCurrencyModal(true)); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Currency </span>
-        </button>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate("/user-guide"); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> User Guide </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => onOpenAssistant && onOpenAssistant()); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Saki Assistant </span>
-        </button>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => setShowCurrencyModal(true));
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> Change Currency </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate('/event-log'); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        >
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> View Event Log </span>
-        </button> 
-        
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate(dynamicPageRoute); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> {dynamicPageLabel} </span>
-        </button>
-      </div>
+          {!isAnalysisPage && (
+            <button
+              className="selection large"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleButtonClick(() => onOpenAssistant && onOpenAssistant());
+              }}
+              disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+            >
+              <div className="sidebar-button large"></div>
+              <span className="sidebar-text"> Saki Assistant </span>
+            </button>
+          )}
 
-      {/* Settings Section */}
-      <div className="sidebar-section">
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> Settings </span>
-        </button>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate('/event-log'); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> View Event Log </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate('/change-username'); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Username </span>
-        </button>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate(dynamicPageRoute); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> {dynamicPageLabel} </span>
+          </button>
+        </div>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate('/change-email'); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Email </span>
-        </button>
+        {/* Settings Section */}
+        <div className="sidebar-section">
+          <button className="selection small">
+            <div className="sidebar-button small"></div>
+            <span className="sidebar-text"> Settings </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { navigate('/change-password'); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Password </span>
-        </button>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate('/change-username'); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> Change Username </span>
+          </button>
 
-        <button 
-          className="selection large" 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            handleButtonClick(() => { handleLogout(); setMobileOpen(false); }); 
-          }}
-          disabled={isTouchDevice && !expanded && window.innerWidth > 768}
-        > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Log Out </span>
-        </button>
-      </div>
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate('/change-email'); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> Change Email </span>
+          </button>
 
-      {/* Currency Selection Modal */}
-      {showCurrencyModal && (
-        <div className="currency-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
-          <div className="currency-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="currency-modal-header">
-              <h2>Select Currency</h2>
-              <button className="currency-modal-close" onClick={() => setShowCurrencyModal(false)}>×</button>
-            </div>
-            <div className="currency-modal-body">
-              <CurrencySelector onCurrencyChange={() => setShowCurrencyModal(false)} />
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { navigate('/change-password'); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> Change Password </span>
+          </button>
+
+          <button
+            className="selection large"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleButtonClick(() => { handleLogout(); setMobileOpen(false); });
+            }}
+            disabled={isTouchDevice && !expanded && window.innerWidth > 768}
+          >
+            <div className="sidebar-button large"></div>
+            <span className="sidebar-text"> Log Out </span>
+          </button>
+        </div>
+
+        {/* Currency Selection Modal */}
+        {showCurrencyModal && (
+          <div className="currency-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
+            <div className="currency-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="currency-modal-header">
+                <h2>Select Currency</h2>
+                <button className="currency-modal-close" onClick={() => setShowCurrencyModal(false)}>×</button>
+              </div>
+              <div className="currency-modal-body">
+                <CurrencySelector onCurrencyChange={() => setShowCurrencyModal(false)} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       </aside>
     </>
