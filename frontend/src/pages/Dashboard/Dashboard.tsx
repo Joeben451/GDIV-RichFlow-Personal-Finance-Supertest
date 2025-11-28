@@ -61,7 +61,6 @@ const Dashboard: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Error checking balance sheet:', error);
         setBalanceSheetExists(false);
       }
     };
@@ -89,7 +88,7 @@ const Dashboard: React.FC = () => {
       setBalanceSheetExists(true);
       setShowBalanceSheet(true);
     } catch (error) {
-      console.error('Error creating balance sheet:', error);
+      // Error creating balance sheet - silently fail
     }
   };
 

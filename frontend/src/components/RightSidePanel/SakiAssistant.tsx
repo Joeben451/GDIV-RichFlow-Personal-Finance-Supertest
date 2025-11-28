@@ -77,7 +77,6 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
   const prevOpenRef = useRef<boolean>(false);
 
   const loadAnalysis = useCallback(async () => {
-    console.log('SakiAssistant: loadAnalysis called');
     setLoading(true);
     setError(null);
     try {
@@ -101,7 +100,6 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
     const prev = prevOpenRef.current;
     if (!prev && isOpen) {
       // transition false -> true
-      console.log('SakiAssistant: panel opened, loading analysis');
       loadAnalysis();
     }
     prevOpenRef.current = isOpen;

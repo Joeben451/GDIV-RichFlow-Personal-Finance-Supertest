@@ -254,7 +254,6 @@ const EventLog: React.FC = () => {
 
         setCurrencySegments(segments);
       } catch (err) {
-        console.error("Failed to fetch currency history", err);
         setCurrencySegments([{ startDate: 0, symbol: user?.preferredCurrency?.cur_symbol || '$' }]);
       } finally {
         setHistoryLoaded(true);

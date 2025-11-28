@@ -97,26 +97,26 @@ const QUADRANT_COLORS = {
 // Helper to format freedom date for display
 const formatFreedomDate = (freedomDate: string | null): string => {
   if (!freedomDate) return 'Not Projected';
-  
+
   // Handle special status strings
   const specialStatuses = ['Achieved', 'No Passive Income', 'Insufficient Data', 'Stagnant/Declining', '> 50 Years'];
   if (specialStatuses.includes(freedomDate)) {
     return freedomDate;
   }
-  
+
   // Try to parse as ISO date (YYYY-MM-DD)
   const dateMatch = freedomDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (dateMatch) {
     const date = new Date(freedomDate + 'T00:00:00');
     if (!isNaN(date.getTime())) {
-      return date.toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
     }
   }
-  
+
   // Return as-is if we can't parse it
   return freedomDate;
 };
@@ -251,7 +251,6 @@ const Analysis: React.FC = () => {
       setSnapshotData(data);
       if (!date) setSelectedDate('');
     } catch (error) {
-      console.error('Failed to fetch snapshot:', error);
       setSnapshotError(formatError(error));
     } finally {
       clearTimeout(slowTimer);
@@ -319,7 +318,6 @@ const Analysis: React.FC = () => {
       if (reqId !== compareReqIdRef.current) return; // stale
       setCompareResult({ start: startSnap, end: endSnap });
     } catch (e) {
-      console.error('Failed to fetch comparison report:', e);
       setCompareError(formatError(e));
     } finally {
       clearTimeout(slowTimer);
@@ -376,10 +374,8 @@ const Analysis: React.FC = () => {
         trajectoryEnd,
         trajectoryInterval
       );
-      console.log('Trajectory data loaded:', data?.length || 0, 'points');
       setTrajectoryData(data);
     } catch (e) {
-      console.error('Failed to fetch trajectory data:', e);
       setTrajectoryData([]);
     } finally {
       clearTimeout(slowTimer);
@@ -448,7 +444,7 @@ const Analysis: React.FC = () => {
       const specialStatuses = ['No Passive Income', 'Insufficient Data', 'Stagnant/Declining', '> 50 Years'];
       const startIsDate = !specialStatuses.includes(freedomStart) && /^\d{4}-\d{2}-\d{2}$/.test(freedomStart);
       const endIsDate = !specialStatuses.includes(freedomEnd) && /^\d{4}-\d{2}-\d{2}$/.test(freedomEnd);
-      
+
       if (startIsDate && endIsDate) {
         const m = monthsBetween(freedomStart, freedomEnd);
         freedomChangeText = `${formatFreedomDate(freedomStart)} → ${formatFreedomDate(freedomEnd)} (${m === 0 ? 'no change' : `${m > 0 ? '+' : ''}${m} mo`})`;
@@ -607,15 +603,7 @@ const Analysis: React.FC = () => {
     };
   }, [trajectoryData]);
 
-  // Debug log
-  useEffect(() => {
-    console.log('Chart render check:', {
-      hasMetrics: !!trajectoryMetrics,
-      hasSnapshotData: !!snapshotData,
-      trajectoryDataLength: trajectoryData?.length || 0,
-      processedLength: processedTrajectory?.length || 0
-    });
-  }, [trajectoryMetrics, snapshotData, trajectoryData, processedTrajectory]);
+
 
   // Timeline controller (date picker)
   const timelineController = (
@@ -657,14 +645,11 @@ const Analysis: React.FC = () => {
     if (!active || !payload || payload.length === 0) return null;
     return (
       <div
-        onClick={() => handleJumpToSnapshot(label)}
-        className="rounded-md border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm p-3 text-xs shadow-xl min-w-[180px] cursor-pointer hover:border-[#eaca6a] transition-colors"
+        className="rounded-md border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm p-3 text-xs shadow-xl min-w-[180px] transition-colors"
         style={{ zIndex: 1000, pointerEvents: 'auto' }}
-        title="Click to view snapshot"
       >
         <div className="font-semibold text-white mb-1 flex items-center justify-between">
           <span>{new Date(label).toLocaleDateString()}</span>
-          <span className="text-[#eaca6a] text-[10px]">📸 SNAPSHOT</span>
         </div>
         {payload.map((p: any) => (
           <div key={p.dataKey} className="flex justify-between gap-2">
@@ -672,9 +657,6 @@ const Analysis: React.FC = () => {
             <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, user?.preferredCurrency)) : p.value}</span>
           </div>
         ))}
-        <div className="mt-2 pt-2 border-t border-zinc-700 text-center text-[10px] text-zinc-500">
-          Click to jump to this date
-        </div>
       </div>
     );
   };

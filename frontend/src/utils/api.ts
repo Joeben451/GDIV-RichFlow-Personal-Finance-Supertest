@@ -32,6 +32,22 @@ export const isAuthenticated = (): boolean => {
   return !!accessToken;
 };
 
+// Check if we likely have a session (to avoid unnecessary refresh requests)
+const hasSessionFlag = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem('hasSession') === 'true';
+};
+
+// Set session flag
+const setSessionFlag = (value: boolean): void => {
+  if (typeof window === 'undefined') return;
+  if (value) {
+    localStorage.setItem('hasSession', 'true');
+  } else {
+    localStorage.removeItem('hasSession');
+  }
+};
+
 // API request wrapper with authentication
 interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
@@ -47,6 +63,11 @@ export const apiRequest = async (
     'Content-Type': 'application/json',
     ...(headers as Record<string, string>),
   };
+
+  // If auth is required but we have no session, fail fast without making the request
+  if (requiresAuth && !hasSessionFlag() && !getAccessToken()) {
+    throw new Error('Session expired. Please login again.');
+  }
 
   // Only add Authorization header if authentication is required
   if (requiresAuth) {
@@ -110,13 +131,17 @@ export const apiRequest = async (
 
     return data;
   } catch (error: any) {
-    console.error('API request error:', error);
     throw error;
   }
 };
 
 // Refresh access token using refresh token cookie
 export const refreshAccessToken = async (): Promise<boolean> => {
+  // Skip the request if we know we're not authenticated
+  if (!hasSessionFlag()) {
+    return false;
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'POST',
@@ -126,8 +151,9 @@ export const refreshAccessToken = async (): Promise<boolean> => {
       credentials: 'include' // Send refresh token cookie
     });
 
-    // If 401 or 403, it means no refresh token or expired - this is normal for logged out users
+    // If 401 or 403, it means no refresh token or expired - clear session flag
     if (response.status === 401 || response.status === 403) {
+      setSessionFlag(false);
       return false;
     }
 
@@ -139,7 +165,6 @@ export const refreshAccessToken = async (): Promise<boolean> => {
 
     // Store new access token in memory
     setAccessToken(data.accessToken);
-    console.log('Access token refreshed successfully');
     return true;
   } catch (error) {
     // Silent fail - no refresh token is normal for logged out users
@@ -166,13 +191,11 @@ export const authAPI = {
       throw new Error(data.error || 'Login failed');
     }
 
-    console.log('Login response:', data);
-    console.log('Access token received:', data.accessToken);
-
     // Store access token in memory
     setAccessToken(data.accessToken);
-
-    console.log('Access token stored, current token:', getAccessToken());
+    
+    // Set session flag for future refresh attempts
+    setSessionFlag(true);
 
     // Notify app that auth/user context changed (reset stores)
     broadcastAuthChanged();
@@ -182,11 +205,22 @@ export const authAPI = {
 
   // Signup
   signup: async (name: string, email: string, password: string) => {
-    const response = await apiRequest('/auth/signup', {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ name, email, password }),
+      credentials: 'include'
     });
-    return response;
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Signup failed');
+    }
+
+    return data;
   },
 
   // Get user profile
@@ -207,6 +241,7 @@ export const authAPI = {
       });
     } finally {
       clearAccessToken();
+      setSessionFlag(false);
       broadcastAuthChanged();
     }
   },
@@ -220,6 +255,7 @@ export const authAPI = {
       });
     } finally {
       clearAccessToken();
+      setSessionFlag(false);
       broadcastAuthChanged();
     }
   },
@@ -565,7 +601,6 @@ export const currencyAPI = {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching currencies:', error);
       throw error;
     }
   },

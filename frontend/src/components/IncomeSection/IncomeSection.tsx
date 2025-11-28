@@ -78,8 +78,6 @@ const IncomeSection: React.FC = () => {
       setError(null);
       const response = await incomeAPI.getIncomeLines();
       
-      console.log('Income API response:', response);
-      
       // Ensure response is an array
       const incomeLines = Array.isArray(response) ? response : [];
       
@@ -119,7 +117,6 @@ const IncomeSection: React.FC = () => {
       const portfolioTotal = portfolio.reduce((sum, item) => sum + item.amount, 0);
       incomeTotalsStore.replace({ earned: earnedTotal, portfolio: portfolioTotal, passive: passiveTotal });
     } catch (err: any) {
-      console.error('Error fetching income:', err);
       setError('Failed to load income data');
       // Set empty arrays on error
       setEarnedIncome([]);
@@ -185,7 +182,6 @@ const IncomeSection: React.FC = () => {
       // Trigger financial data update for AI insights
       triggerDataUpdate();
     } catch (err: any) {
-      console.error('Error adding income:', err);
       setError('Failed to add income');
     } finally {
       setIsAdding(false);
@@ -242,7 +238,6 @@ const IncomeSection: React.FC = () => {
       setEditingItem(null);
       triggerDataUpdate();
     } catch (err: any) {
-      console.error('Error updating income:', err);
       setError('Failed to update income');
     } finally {
       setIsUpdating(null);
@@ -282,7 +277,6 @@ const IncomeSection: React.FC = () => {
       // Trigger financial data update for AI insights
       triggerDataUpdate();
     } catch (err: any) {
-      console.error('Error deleting income:', err);
       setError('Failed to delete income');
     } finally {
       setIsDeleting(null);

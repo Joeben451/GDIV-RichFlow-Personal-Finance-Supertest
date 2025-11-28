@@ -40,7 +40,6 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error fetching assets:", err);
       setError("Failed to load assets data");
       setAssets([]);
     } finally {
@@ -62,7 +61,6 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error adding asset:", err);
       setError("Failed to add asset");
     } finally {
       setIsAdding(false);
@@ -93,7 +91,6 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
       setAssetName("");
       setAssetAmount("");
     } catch (err: any) {
-      console.error("Error updating asset:", err);
       setError("Failed to update asset");
     } finally {
       setIsUpdating(null);
@@ -120,7 +117,6 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error deleting asset:", err);
       setError("Failed to delete asset");
     } finally {
       setIsDeleting(null);

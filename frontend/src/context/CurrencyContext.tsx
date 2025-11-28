@@ -14,9 +14,13 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currency, setCurrency] = useState<Currency | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    // Only fetch currency once auth is ready and we haven't initialized yet
+    if (authLoading || hasInitialized) return;
+
     const fetchCurrency = async () => {
       setLoading(true);
       try {
@@ -35,11 +39,12 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         setCurrency({ id: 1, cur_name: 'US Dollar', cur_symbol: '$' });
       } finally {
         setLoading(false);
+        setHasInitialized(true);
       }
     };
 
     fetchCurrency();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading, hasInitialized]);
 
   const handleSetCurrency = (newCurrency: Currency) => {
     setCurrency(newCurrency);
