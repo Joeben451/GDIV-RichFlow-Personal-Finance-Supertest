@@ -1,6 +1,7 @@
 import './RightSidePanel.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { aiAPI } from '../../utils/api';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface Props {
   isOpen?: boolean;
@@ -73,6 +74,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { currency } = useCurrency();
 
   const prevOpenRef = useRef<boolean>(false);
 
@@ -80,7 +82,8 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
     setLoading(true);
     setError(null);
     try {
-      const res = await aiAPI.getFinancialAnalysis(includeBalanceSheet);
+      const currencySymbol = currency?.cur_symbol || '$';
+      const res = await aiAPI.getFinancialAnalysis(includeBalanceSheet, currencySymbol);
       if (res?.success) {
         setAnalysis(res.data ?? res.analysis ?? res);
       } else {
@@ -93,7 +96,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
     } finally {
       setLoading(false);
     }
-  }, [includeBalanceSheet]);
+  }, [includeBalanceSheet, currency]);
 
   // trigger when panel opens (on mount this will also load if isOpen is true)
   useEffect(() => {

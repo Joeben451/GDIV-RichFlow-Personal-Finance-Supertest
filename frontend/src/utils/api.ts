@@ -477,8 +477,8 @@ export const liabilitiesAPI = {
 
 // Financial Analysis API call
 export const aiAPI = {
-  getFinancialAnalysis: async (includeBalanceSheet: boolean = true) => {
-    return await apiRequest(`/ai/showinformation?includeBalanceSheet=${includeBalanceSheet}`, {
+  getFinancialAnalysis: async (includeBalanceSheet: boolean = true, currencySymbol: string = '$') => {
+    return await apiRequest(`/ai/showinformation?includeBalanceSheet=${includeBalanceSheet}&currencySymbol=${encodeURIComponent(currencySymbol)}`, {
       method: 'GET',
       requiresAuth: true,
     });
