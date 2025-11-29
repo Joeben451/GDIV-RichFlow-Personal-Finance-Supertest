@@ -12,14 +12,6 @@
   gap: 1rem;
 }
 
-@media (max-width: 480px) {
-  .header {
-    padding: 0.5rem 0.75rem;
-    height: 56px;
-    gap: 0.5rem;
-  }
-}
-
 .sidebar-hamburger {
   background-color: #EDCA69;
   border: none;
@@ -62,29 +54,7 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-@media (max-width: 480px) {
-  .sidebar-hamburger {
-    width: 40px;
-    height: 40px;
-    gap: 3px;
-  }
-
-  .sidebar-hamburger-line {
-    width: 18px;
-    height: 2px;
-  }
-
-  .sidebar-hamburger.open .sidebar-hamburger-line:nth-child(1) {
-    transform: translateY(5px) rotate(45deg);
-  }
-
-  .sidebar-hamburger.open .sidebar-hamburger-line:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg);
-  }
-}
-
 .header-title {
-  flex: 1;
   font-size: 1.25rem;
   font-weight: bold;
   color: #EDCA69;
@@ -93,12 +63,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-@media (max-width: 480px) {
-  .header-title {
-    font-size: 1rem;
-  }
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 50%;
 }
 
 .add-button-container {
@@ -123,7 +91,57 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 0.5rem 0.5rem 0 !important;
+    min-height: 56px;
+    height: auto;
+    gap: 0.5rem;
+    position: relative;
+  }
+  
+  .sidebar-hamburger {
+    margin-left: 1rem !important;
+    border-radius: 50%;
+  }
+
+  .header-title {
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    transform: translate(-50%, -50%);
+    max-width: 60%;
+    text-align: center;
+    padding-left: 0;
+    margin: 0;
+    width: auto;
+  }
+}
+
 @media (max-width: 480px) {
+  .sidebar-hamburger {
+    width: 40px;
+    height: 40px;
+    gap: 3px;
+  }
+
+  .sidebar-hamburger-line {
+    width: 18px;
+    height: 2px;
+  }
+
+  .sidebar-hamburger.open .sidebar-hamburger-line:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  .sidebar-hamburger.open .sidebar-hamburger-line:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+  
+  .header-title {
+    font-size: 1rem;
+  }
+  
   .add-button {
     width: 40px;
     height: 40px;
