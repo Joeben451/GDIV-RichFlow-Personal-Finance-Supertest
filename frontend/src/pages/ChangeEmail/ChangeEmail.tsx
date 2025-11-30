@@ -41,7 +41,7 @@ const ChangeEmail: React.FC = () => {
 
     try {
       setIsSaving(true);
-      const data = await updateEmail(newEmail.trim());
+      await updateEmail(newEmail.trim());
       setSuccess('Email updated successfully');
       setCurrentConfirm('');
       setNewEmail('');

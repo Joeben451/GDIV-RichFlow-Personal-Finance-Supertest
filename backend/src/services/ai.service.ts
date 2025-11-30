@@ -28,7 +28,7 @@ export async function collectUserFinancialStatus(userId: number, includeBalanceS
     return { incomes, expenses, cashSavings, balanceSheet: includeBalanceSheet ? balanceSheet : null };
 }
 
-export async function analyzeFinance(userId: number, includeBalanceSheet: boolean = true) {
+export async function analyzeFinance(userId: number, includeBalanceSheet: boolean = true, currencySymbol: string = '$') {
     const { incomes, expenses, cashSavings, balanceSheet } = await collectUserFinancialStatus(userId, includeBalanceSheet);
 
     // Build user data string conditionally
@@ -62,11 +62,13 @@ export async function analyzeFinance(userId: number, includeBalanceSheet: boolea
         contents: `You are a financial adivsor. Given this user data, return only valid json with keys:
         ${categoriesText}
 
+        Important: When mentioning any monetary values, use the currency symbol "${currencySymbol}" (e.g., ${currencySymbol}1,000).
+
         User Data:
         ${userDataString}
         `,
         config: {
-            systemInstruction: " return in this format, at most 3 sentences per category and just put the main takeaways { 'Income analysis': '', 'Expense behavior': '', 'Cashflow and savings': '', 'Assets and liabilities': '', 'Financial Freedom Progress': '' }",
+            systemInstruction: ` return in this format, at most 3 sentences per category and just put the main takeaways. Use ${currencySymbol} for all monetary values. { 'Income analysis': '', 'Expense behavior': '', 'Cashflow and savings': '', 'Assets and liabilities': '', 'Financial Freedom Progress': '' }`,
         }
     });
 

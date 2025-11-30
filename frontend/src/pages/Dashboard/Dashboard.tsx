@@ -20,6 +20,7 @@ const Dashboard: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
 
   const [panelOpen, setPanelOpen] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [showBalanceSheet, setShowBalanceSheet] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('balanceSheetVisible');
@@ -61,7 +62,6 @@ const Dashboard: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Error checking balance sheet:', error);
         setBalanceSheetExists(false);
       }
     };
@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
       setBalanceSheetExists(true);
       setShowBalanceSheet(true);
     } catch (error) {
-      console.error('Error creating balance sheet:', error);
+      // Error creating balance sheet - silently fail
     }
   };
 
@@ -105,9 +105,20 @@ const Dashboard: React.FC = () => {
   return (
     <FinancialDataProvider>
       <div className="dashboard-container">
-        <Header onAddBalanceSheet={handleAddBalanceSheet} onToggleBalanceSheet={handleToggleBalanceSheet} balanceSheetExists={balanceSheetExists} balanceSheetVisible={showBalanceSheet} />
+        <Header 
+          onAddBalanceSheet={handleAddBalanceSheet} 
+          onToggleBalanceSheet={handleToggleBalanceSheet} 
+          balanceSheetExists={balanceSheetExists} 
+          balanceSheetVisible={showBalanceSheet}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          sidebarOpen={sidebarOpen}
+        />
         <div className="dashboard-main">
-          <Sidebar onOpenAssistant={() => setPanelOpen(true)} />
+          <Sidebar 
+            onOpenAssistant={() => setPanelOpen(true)} 
+            mobileOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          />
           <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
             <div className="dashboard-grid">
               <div className="grid-left">

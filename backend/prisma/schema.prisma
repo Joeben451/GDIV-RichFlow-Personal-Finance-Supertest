@@ -20,10 +20,10 @@ model User {
   BalanceSheet        BalanceSheet?
   CashSavings         CashSavings?
   Event               Event[]
+  financialSnapshots  FinancialSnapshot[]
   IncomeStatement     IncomeStatement?
   Session             Session[]
   PreferredCurrency   Currency            @relation(fields: [preferredCurrencyId], references: [id])
-  financialSnapshots  FinancialSnapshot[]
 }
 
 model Session {
@@ -106,10 +106,10 @@ model Event {
   actionType    String
   entityType    String
   entitySubtype String?
-  beforeValue   Json?
-  afterValue    Json?
   userId        Int
   entityId      Int
+  beforeValue   Json?
+  afterValue    Json?
   User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

@@ -48,7 +48,6 @@ const AdminPanel: React.FC = () => {
         setUsers(transformedUsers);
         setFilteredUsers(transformedUsers);
       } catch (err) {
-        console.error('Error fetching users:', err);
         setError('Failed to load users. Please try again.');
       } finally {
         setLoading(false);
@@ -78,7 +77,6 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleEdit = (userId: number) => {
-    console.log('Edit user:', userId);
     // Add your edit logic here
   };
 
@@ -100,7 +98,6 @@ const AdminPanel: React.FC = () => {
       ));
       alert('User deleted successfully');
     } catch (err) {
-      console.error('Delete user error:', err);
       alert('Failed to delete user. Please try again.');
     }
   };

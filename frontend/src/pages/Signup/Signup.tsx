@@ -65,7 +65,6 @@ const Signup: React.FC = () => {
       const data = await authAPI.signup(formData.username, formData.email, formData.password);
 
       // Success - clear form and redirect to login
-      console.log('User created successfully:', data.user);
       setFormData({
         username: '',
         email: '',

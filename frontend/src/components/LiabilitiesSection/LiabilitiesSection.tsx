@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { liabilitiesAPI } from "../../utils/api";
 import { useAuth } from "../../context/AuthContext";
+import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
 import "./LiabilitiesSection.css";
 
@@ -16,7 +17,7 @@ type Props = {
 
 const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [liabilities, setLiabilities] = useState<LiabilityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +42,6 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error fetching liabilities:", err);
       setError("Failed to load liabilities data");
       setLiabilities([]);
     } finally {
@@ -63,7 +63,6 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error adding liability:", err);
       setError("Failed to add liability");
     } finally {
       setIsAdding(false);
@@ -94,7 +93,6 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
       setLiabilityName("");
       setLiabilityAmount("");
     } catch (err: any) {
-      console.error("Error updating liability:", err);
       setError("Failed to update liability");
     } finally {
       setIsUpdating(null);
@@ -121,7 +119,6 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
       const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
       onTotalsChange?.(total);
     } catch (err: any) {
-      console.error("Error deleting liability:", err);
       setError("Failed to delete liability");
     } finally {
       setIsDeleting(null);

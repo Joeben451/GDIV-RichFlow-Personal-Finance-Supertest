@@ -56,3 +56,6 @@ coverage/
 *.sqlite3
 *.db
 /generated/prisma
+
+# seed files
+seed-files/

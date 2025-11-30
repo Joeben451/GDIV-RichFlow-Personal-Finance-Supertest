@@ -25,6 +25,7 @@ export async function getEventsHandler(req: Request, res: Response, next: NextFu
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 100;
     const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+    const search = req.query.search as string | undefined;
 
     // Validate entity type if provided
     if (entityType && !Object.values(EntityType).includes(entityType)) {
@@ -38,11 +39,12 @@ export async function getEventsHandler(req: Request, res: Response, next: NextFu
       ...(entityType && { entityType }),
       ...(startDate && { startDate }),
       ...(endDate && { endDate }),
+      ...(search && { search }),
       limit,
       offset
     });
 
-    const totalCount = await getEventCount(userId, entityType);
+    const totalCount = await getEventCount(userId, entityType, search);
 
     return res.status(200).json({
       events,

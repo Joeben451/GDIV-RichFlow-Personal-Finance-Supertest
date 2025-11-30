@@ -25,6 +25,8 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.set('trust proxy', 1);
+
 // Simple request logger to help debug routing issues
 app.use((req, _res, next) => {
   console.log(`[server] ${req.method} ${req.url}`);

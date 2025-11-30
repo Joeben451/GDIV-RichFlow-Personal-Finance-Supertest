@@ -3,6 +3,7 @@ import { useExpenses } from '../../hooks/useExpenses';
 import { cashSavingsAPI, incomeAPI, assetsAPI, liabilitiesAPI } from '../../utils/api';
 import { incomeTotalsStore } from '../../state/incomeTotalsStore';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
 import './SummarySection.css';
 
@@ -21,7 +22,7 @@ const SummarySection: React.FC<Props> = ({
   totalLiabilitiesProp,
 }) => {
   const { user } = useAuth();
-  const currency = user?.preferredCurrency;
+  const { currency } = useCurrency();
   const [cashSavings, setCashSavings] = useState<number>(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('0');
@@ -87,7 +88,7 @@ const SummarySection: React.FC<Props> = ({
       setTotalAssets(assetTotal);
       setTotalLiabilities(liabilityTotal);
     } catch (err: any) {
-      console.error('Error fetching balance sheet totals:', err);
+      // Error fetching balance sheet totals - silently fail
     } finally {
       setBalanceSheetLoading(false);
     }
@@ -118,7 +119,7 @@ const SummarySection: React.FC<Props> = ({
           .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
         incomeTotalsStore.replace({ earned, portfolio, passive });
       } catch (e) {
-        console.error('Error fetching income totals:', e);
+        // Error fetching income totals - silently fail
       }
     };
     fetchTotals();
@@ -134,7 +135,6 @@ const SummarySection: React.FC<Props> = ({
       setCashSavings(response.amount || 0);
       setEditValue((response.amount || 0).toString());
     } catch (err: any) {
-      console.error('Error fetching cash savings:', err);
       setError('Failed to load cash savings');
       setCashSavings(0);
     } finally {
@@ -168,7 +168,6 @@ const SummarySection: React.FC<Props> = ({
       setCashSavings(response.cashSavings.amount);
       setIsEditing(false);
     } catch (err: any) {
-      console.error('Error updating cash savings:', err);
       setError(err.message || 'Failed to update cash savings');
     } finally {
       setSaving(false);

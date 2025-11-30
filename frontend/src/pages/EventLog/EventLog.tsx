@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { JSX, useEffect, useMemo, useState } from 'react';
+import { JSX, useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { eventLogsAPI } from '../../utils/api';
 
-type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Removed' | 'Cash' | 'User';
+type EventType = 'Income' | 'Expense' | 'Asset' | 'Liability' | 'Cash' | 'User';
 
 interface FinancialEvent {
   id: string;
@@ -30,48 +30,23 @@ const parseJsonIfNeeded = (val: any) => {
   return val;
 };
 
-const usePerUserKeys = (user: any) => {
-  const uid = (user && (user.id || user.userId || user.uid)) || 'anon';
-  return {
-    removedKey: `eventlog:removed:user:${uid}`,
-  };
-};
-
-const loadRemovedEvents = (key: string): FinancialEvent[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(key);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveRemovedEvents = (key: string, events: FinancialEvent[]) => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(events));
-  } catch { }
-};
-
 // Map server entity types to display types
 const mapEntityType = (entityType: string, actionType?: string): EventType => {
   switch ((entityType || '').toUpperCase()) {
     case 'INCOME':
-      return actionType === 'DELETE' ? 'Removed' : 'Income';
+      return 'Income';
     case 'EXPENSE':
-      return actionType === 'DELETE' ? 'Removed' : 'Expense';
+      return 'Expense';
     case 'ASSET':
-      return actionType === 'DELETE' ? 'Removed' : 'Asset';
+      return 'Asset';
     case 'LIABILITY':
-      return actionType === 'DELETE' ? 'Removed' : 'Liability';
+      return 'Liability';
     case 'CASH_SAVINGS':
       return 'Cash';
     case 'USER':
       return 'User';
     default:
-      return 'Removed';
+      return 'User';
   }
 };
 
@@ -104,113 +79,45 @@ const computeValueChange = (
   return 0;
 };
 
+const ITEMS_PER_PAGE = 50;
+
 const EventLog: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [events, setEvents] = useState<FinancialEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currencySegments, setCurrencySegments] = useState<{ startDate: number; symbol: string }[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
 
   const [typeFilter, setTypeFilter] = useState<EventType | 'All'>('All');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
 
-  const { removedKey } = usePerUserKeys(user);
-
-  useEffect(() => {
-    if (!historyLoaded) return;
-
-    const loadFromApi = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const params: any = {};
-        if (startDate) params.startDate = startDate; // backend accepts ISO/DATE
-        if (endDate) params.endDate = endDate;       // inclusive handled backend-side
-        // apply entity type filter if not All
-        if (typeFilter !== 'All') {
-          const map: Record<string, string> = {
-            Income: 'INCOME',
-            Expense: 'EXPENSE',
-            Asset: 'ASSET',
-            Liability: 'LIABILITY',
-            Removed: '',
-            Cash: 'CASH_SAVINGS',
-            User: 'USER',
-          };
-          if (map[typeFilter]) params.entityType = map[typeFilter];
-        }
-
-        const data = await eventLogsAPI.getEvents(params);
-        const apiEvents: any[] = Array.isArray(data?.events) ? data.events : [];
-
-        const transformed: FinancialEvent[] = apiEvents.map((ev: any) => {
-          const afterValue = parseJsonIfNeeded(ev.afterValue);
-          const beforeValue = parseJsonIfNeeded(ev.beforeValue);
-          const type = mapEntityType(ev.entityType, ev.actionType);
-          const valueChange = computeValueChange(ev.entityType, ev.actionType, beforeValue, afterValue);
-
-          let desc = '';
-          const name = (afterValue?.name || beforeValue?.name || '').toString();
-          const prefix = ev.actionType === 'DELETE' ? 'Removed' : ev.actionType === 'UPDATE' ? 'Updated' : 'Created';
-          switch ((ev.entityType || '').toUpperCase()) {
-            case 'INCOME': desc = `${prefix}: Income${name ? ' - ' + name : ''}`; break;
-            case 'EXPENSE': desc = `${prefix}: Expense${name ? ' - ' + name : ''}`; break;
-            case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
-            case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
-            case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
-            case 'USER':
-              if (ev.actionType === 'UPDATE' && afterValue?.currencyCode) {
-                desc = `Currency Changed: ${beforeValue?.currencyCode || '?'} → ${afterValue.currencyCode}`;
-              } else {
-                desc = `Account Created`;
-              }
-              break;
-            default: desc = `${prefix}: ${ev.entityType}`;
-          }
-
-          // Determine historical currency symbol
-          const evTime = new Date(ev.timestamp).getTime();
-          let symbol = '$';
-          for (const seg of currencySegments) {
-            if (seg.startDate <= evTime) {
-              symbol = seg.symbol;
-            } else {
-              break;
-            }
-          }
-
-          return {
-            id: String(ev.id),
-            timestamp: ev.timestamp,
-            type,
-            description: desc,
-            valueChange,
-            currencySymbol: symbol,
-          } as FinancialEvent;
-        });
-
-        // Keep any locally persisted "Removed" events if present
-        const existingRemoved = loadRemovedEvents(removedKey);
-
-        // Filter out locally deleted ids
-        const merged = [...transformed, ...existingRemoved];
-
-        merged.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-        setEvents(merged);
-      } catch (err: any) {
-        setError(err?.message || 'Failed to fetch events');
-        setEvents([]);
-      } finally {
-        setLoading(false);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastEventElementRef = useCallback((node: HTMLTableRowElement | null) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadEvents(false);
       }
-    };
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
 
-    loadFromApi();
-  }, [typeFilter, startDate, endDate, removedKey, historyLoaded, currencySegments]);
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Fetch currency history to determine historical symbols
   useEffect(() => {
@@ -254,7 +161,6 @@ const EventLog: React.FC = () => {
 
         setCurrencySegments(segments);
       } catch (err) {
-        console.error("Failed to fetch currency history", err);
         setCurrencySegments([{ startDate: 0, symbol: user?.preferredCurrency?.cur_symbol || '$' }]);
       } finally {
         setHistoryLoaded(true);
@@ -264,30 +170,112 @@ const EventLog: React.FC = () => {
     fetchHistory();
   }, [user]);
 
-  const filtered = useMemo(() => {
-    return events
-      .filter(ev => {
-        // Exclude Starting Balance from type-filtered views unless "All"
-        if (ev.id === 'start' && typeFilter !== 'All') return false;
-        if (typeFilter !== 'All' && ev.type !== typeFilter) return false;
-        if (startDate && new Date(ev.timestamp) < new Date(startDate)) return false;
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59, 999);
-          if (new Date(ev.timestamp) > end) return false;
+  const loadEvents = async (isReset: boolean = false) => {
+    if (!historyLoaded) return;
+
+    const currentOffset = isReset ? 0 : offset;
+    if (isReset) {
+      setLoading(true);
+      setEvents([]);
+    } else {
+      setLoadingMore(true);
+    }
+    setError(null);
+
+    try {
+      const params: any = {
+        limit: ITEMS_PER_PAGE,
+        offset: currentOffset
+      };
+
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      if (debouncedSearch) params.search = debouncedSearch;
+
+      if (typeFilter !== 'All') {
+        const map: Record<string, string> = {
+          Income: 'INCOME',
+          Expense: 'EXPENSE',
+          Asset: 'ASSET',
+          Liability: 'LIABILITY',
+          Cash: 'CASH_SAVINGS',
+          User: 'USER',
+        };
+        if (map[typeFilter]) params.entityType = map[typeFilter];
+      }
+
+      const data = await eventLogsAPI.getEvents(params);
+      const apiEvents: any[] = Array.isArray(data?.events) ? data.events : [];
+
+      const transformed: FinancialEvent[] = apiEvents.map((ev: any) => {
+        const afterValue = parseJsonIfNeeded(ev.afterValue);
+        const beforeValue = parseJsonIfNeeded(ev.beforeValue);
+        const type = mapEntityType(ev.entityType, ev.actionType);
+        const valueChange = computeValueChange(ev.entityType, ev.actionType, beforeValue, afterValue);
+
+        let desc = '';
+        const name = (afterValue?.name || beforeValue?.name || '').toString();
+        const prefix = ev.actionType === 'DELETE' ? 'Removed' : ev.actionType === 'UPDATE' ? 'Updated' : 'Created';
+        switch ((ev.entityType || '').toUpperCase()) {
+          case 'INCOME': desc = `${prefix}: Income${name ? ' - ' + name : ''}`; break;
+          case 'EXPENSE': desc = `${prefix}: Expense${name ? ' - ' + name : ''}`; break;
+          case 'ASSET': desc = `${prefix}: Asset${name ? ' - ' + name : ''}`; break;
+          case 'LIABILITY': desc = `${prefix}: Liability${name ? ' - ' + name : ''}`; break;
+          case 'CASH_SAVINGS': desc = `${prefix}: Cash Savings`; break;
+          case 'USER':
+            if (ev.actionType === 'UPDATE' && afterValue?.currencyCode) {
+              desc = `Currency Changed: ${beforeValue?.currencyCode || '?'} → ${afterValue.currencyCode}`;
+            } else {
+              desc = `Account Created`;
+            }
+            break;
+          default: desc = `${prefix}: ${ev.entityType}`;
         }
-        if (search) {
-          const s = search.toLowerCase();
-          return (ev.description + ' ' + ev.type).toLowerCase().includes(s);
+
+        // Determine historical currency symbol
+        const evTime = new Date(ev.timestamp).getTime();
+        let symbol = '$';
+        for (const seg of currencySegments) {
+          if (seg.startDate <= evTime) {
+            symbol = seg.symbol;
+          } else {
+            break;
+          }
         }
-        return true;
+
+        return {
+          id: String(ev.id),
+          timestamp: ev.timestamp,
+          type,
+          description: desc,
+          valueChange,
+          currencySymbol: symbol,
+        } as FinancialEvent;
       });
-  }, [events, typeFilter, startDate, endDate, search]);
+
+      setEvents(prev => isReset ? transformed : [...prev, ...transformed]);
+      setHasMore(transformed.length === ITEMS_PER_PAGE);
+      setOffset(currentOffset + ITEMS_PER_PAGE);
+
+    } catch (err: any) {
+      setError(err?.message || 'Failed to fetch events');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Initial load and filter changes
+  useEffect(() => {
+    if (historyLoaded) {
+      loadEvents(true);
+    }
+  }, [historyLoaded, typeFilter, startDate, endDate, debouncedSearch]);
 
   const highlight = (text: string) => {
-    if (!search) return text;
+    if (!debouncedSearch) return text;
     const lc = text.toLowerCase();
-    const s = search.toLowerCase();
+    const s = debouncedSearch.toLowerCase();
     const parts: (string | JSX.Element)[] = [];
     let idx = 0;
     while (true) {
@@ -335,7 +323,6 @@ const EventLog: React.FC = () => {
               <option value="Expense">Expense</option>
               <option value="Asset">Asset</option>
               <option value="Liability">Liability</option>
-              <option value="Removed">Removed</option>
               <option value="Cash">Cash</option>
               <option value="User">User</option>
             </select>
@@ -353,7 +340,7 @@ const EventLog: React.FC = () => {
             <div className="search-row">
               <input
                 type="text"
-                placeholder="Search description or type..."
+                placeholder="Search events..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -372,10 +359,10 @@ const EventLog: React.FC = () => {
       <div className="event-log-body">
         {loading && <div className="status-msg">Loading events...</div>}
         {!loading && error && <div className="status-msg">{error}</div>}
-        {!loading && !error && filtered.length === 0 && (
-          <div className="status-empty">No matching events.</div>
+        {!loading && !error && events.length === 0 && (
+          <div className="status-empty">No matching events found.</div>
         )}
-        {!loading && !error && filtered.length > 0 && (
+        {!loading && !error && events.length > 0 && (
           <table className="event-table">
             <thead>
               <tr>
@@ -386,32 +373,29 @@ const EventLog: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(ev => {
+              {events.map((ev, index) => {
                 const ts = new Date(ev.timestamp);
-                // Updated to always show + or - explicitly
-                const changeFmt =
-                  (ev.valueChange >= 0 ? '+' : '-') + Math.abs(ev.valueChange).toLocaleString();
+                const isLast = index === events.length - 1;
                 return (
-                  <tr key={ev.id} className={`row-${ev.type.toLowerCase()}`}>
+                  <tr
+                    key={ev.id}
+                    className={`row-${ev.type.toLowerCase()}`}
+                    ref={isLast ? lastEventElementRef : null}
+                  >
                     <td>
                       <div className="ts-main">{ts.toLocaleString()}</div>
-                      <div className="ts-sub">{ts.toISOString()}</div>
                     </td>
                     <td className="type-cell">
-                      {/* Hide type badge for Starting Balance row */}
                       {ev.id !== 'start' ? (
                         <span className={`badge badge-${ev.type.toLowerCase().replace('_', '-')}`}>
                           {ev.type.replace('_', ' ')}
                         </span>
-                      ) : (
-                        null
-                      )}
+                      ) : null}
                     </td>
                     <td className="desc-cell">{highlight(ev.description)}</td>
                     <td className={`change-cell ${ev.valueChange >= 0 ? 'pos' : 'neg'}`}>
                       {(() => {
                         const sym = ev.currencySymbol || '$';
-                        // keep explicit sign (+/-) and prepend currency symbol
                         const abs = Math.abs(ev.valueChange).toLocaleString();
                         return (ev.id === 'start')
                           ? `${sym}${abs}`
@@ -424,6 +408,7 @@ const EventLog: React.FC = () => {
             </tbody>
           </table>
         )}
+        {loadingMore && <div className="status-msg-small">Loading more...</div>}
       </div>
     </div>
   );

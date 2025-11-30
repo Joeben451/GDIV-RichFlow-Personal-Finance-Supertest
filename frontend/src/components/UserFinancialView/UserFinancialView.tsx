@@ -89,11 +89,6 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
         const response = await adminAPI.getUserFinancials(userId);
         // Extract the data from the wrapped response
         const data = response.data || response;
-        console.log('Received financial data:', data);
-        console.log('Income data:', data.income);
-        console.log('Balance sheet:', data.balanceSheet);
-        console.log('Income statement:', data.incomeStatement);
-        console.log('Cash savings:', data.cashSavings);
         setFinancialData(data);
         // Set user's preferred currency
         if (data.user?.preferredCurrency) {
@@ -104,7 +99,6 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
           setUserCurrency(data.user.preferredCurrency);
         }
       } catch (err: any) {
-        console.error('Error fetching financial data:', err);
         setError(err.message || 'Failed to fetch financial data');
       } finally {
         setLoading(false);
@@ -176,16 +170,9 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
   const totalLiabilities = financialData.balanceSheet?.liabilities.reduce((sum, liability) => sum + liability.value, 0) || 0;
   const netWorth = totalAssets - totalLiabilities;
 
-  console.log('Processing income data:', financialData.income);
-  console.log('Is income an array?', Array.isArray(financialData.income));
-  
   const earnedIncome = financialData.income?.filter(i => i.type === 'Earned') || [];
   const portfolioIncome = financialData.income?.filter(i => i.type === 'Portfolio') || [];
   const passiveIncome = financialData.income?.filter(i => i.type === 'Passive') || [];
-  
-  console.log('Earned income:', earnedIncome);
-  console.log('Portfolio income:', portfolioIncome);
-  console.log('Passive income:', passiveIncome);
   
   const totalEarnedIncome = earnedIncome.reduce((sum, i) => sum + i.amount, 0);
   const totalPortfolioIncome = portfolioIncome.reduce((sum, i) => sum + i.amount, 0);

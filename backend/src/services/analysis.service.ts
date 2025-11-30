@@ -55,6 +55,190 @@ function serializeStateForSnapshot(state: FinancialState): any {
   };
 }
 
+/**
+ * Get the first day of a month for a given date
+ */
+function getFirstOfMonth(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0, 0));
+}
+
+/**
+ * Check if two dates represent the same month (year + month)
+ */
+function isSameMonth(date1: Date, date2: Date): boolean {
+  return date1.getUTCFullYear() === date2.getUTCFullYear() &&
+         date1.getUTCMonth() === date2.getUTCMonth();
+}
+
+/**
+ * Ensure monthly checkpoints exist for a user from account creation to now
+ * This is a self-healing mechanism that fills gaps in snapshot history
+ * to limit event replay depth for long-term users (5+ years of data)
+ */
+export async function ensureMonthlyCheckpoints(userId: number): Promise<void> {
+  // 1. Get user creation date and currency
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { PreferredCurrency: true }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const userCreatedAt = user.createdAt;
+  const now = new Date();
+
+  // 2. Find the latest existing snapshot to use as cursor (optimization)
+  const latestSnapshot = await prisma.financialSnapshot.findFirst({
+    where: { userId },
+    orderBy: { date: 'desc' }
+  });
+
+  // Determine the starting point for checkpoint creation
+  // Use the month AFTER the latest snapshot, or user creation month if no snapshots
+  let cursorDate: Date;
+  if (latestSnapshot) {
+    const snapshotDate = new Date(latestSnapshot.date);
+    // Move to the first of the NEXT month after the snapshot
+    cursorDate = new Date(Date.UTC(snapshotDate.getUTCFullYear(), snapshotDate.getUTCMonth() + 1, 1, 0, 0, 0, 0));
+  } else {
+    // Start from the first of the month of user creation
+    cursorDate = getFirstOfMonth(userCreatedAt);
+  }
+
+  // 3. Get all existing snapshot dates for this user to avoid duplicates
+  const existingSnapshots = await prisma.financialSnapshot.findMany({
+    where: { userId },
+    select: { date: true }
+  });
+  
+  const existingSnapshotMonths = new Set(
+    existingSnapshots.map(s => {
+      const d = new Date(s.date);
+      return `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+    })
+  );
+
+  // 4. Calculate the first of the current month as the end boundary
+  const currentMonthFirst = getFirstOfMonth(now);
+
+  // If cursor is already past or at current month, no checkpoints needed
+  if (cursorDate >= currentMonthFirst) {
+    return;
+  }
+
+  // 5. Collect missing months
+  const missingMonths: Date[] = [];
+  let checkDate = new Date(cursorDate);
+
+  while (checkDate < currentMonthFirst) {
+    const monthKey = `${checkDate.getUTCFullYear()}-${checkDate.getUTCMonth()}`;
+    if (!existingSnapshotMonths.has(monthKey)) {
+      missingMonths.push(new Date(checkDate));
+    }
+    // Move to next month
+    checkDate = new Date(Date.UTC(checkDate.getUTCFullYear(), checkDate.getUTCMonth() + 1, 1, 0, 0, 0, 0));
+  }
+
+  // If no missing months, return early
+  if (missingMonths.length === 0) {
+    return;
+  }
+
+  // 6. Fetch all events for this user (needed for reconstruction)
+  const events = await getEventsByUser({ userId, limit: 100000 });
+  const typedEvents = events as unknown as Event[];
+  
+  // Sort events chronologically
+  typedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  // Determine initial currency
+  let initialCurrency = {
+    symbol: user.PreferredCurrency?.cur_symbol || '$',
+    name: user.PreferredCurrency?.cur_name || 'USD'
+  };
+
+  // Check for first currency update event to get original currency
+  const firstCurrencyEvent = typedEvents.find(e =>
+    e.entityType === EntityType.USER &&
+    e.actionType === ActionType.UPDATE &&
+    e.beforeValue &&
+    (typeof e.beforeValue === 'string' ? JSON.parse(e.beforeValue).currencyCode : (e.beforeValue as any).currencyCode)
+  );
+
+  if (firstCurrencyEvent && firstCurrencyEvent.beforeValue) {
+    const before = typeof firstCurrencyEvent.beforeValue === 'string'
+      ? JSON.parse(firstCurrencyEvent.beforeValue)
+      : firstCurrencyEvent.beforeValue;
+
+    if (before.currencyCode) {
+      initialCurrency = {
+        symbol: before.currencyCode,
+        name: before.currencyName || before.currencyCode
+      };
+    }
+  }
+
+  // 7. Use incremental reconstruction for efficiency
+  // Find the best starting point (latest snapshot before first missing month)
+  let state: FinancialState;
+  let eventIndex = 0;
+
+  const baseSnapshot = await prisma.financialSnapshot.findFirst({
+    where: {
+      userId,
+      date: { lt: missingMonths[0]! }
+    },
+    orderBy: { date: 'desc' }
+  });
+
+  if (baseSnapshot) {
+    state = hydrateStateFromSnapshot(baseSnapshot.data);
+    const snapshotDate = new Date(baseSnapshot.date);
+    
+    // Find first event after the base snapshot
+    eventIndex = typedEvents.findIndex(e => new Date(e.timestamp) > snapshotDate);
+    if (eventIndex === -1) eventIndex = typedEvents.length;
+  } else {
+    // Start from scratch
+    state = {
+      assets: new Map(),
+      liabilities: new Map(),
+      incomeLines: new Map(),
+      expenses: new Map(),
+      cashSavings: 0,
+      currency: { ...initialCurrency }
+    };
+  }
+
+  // 8. Iterate through missing months and create snapshots
+  const snapshotsToCreate: { userId: number; date: Date; data: any }[] = [];
+
+  for (const targetDate of missingMonths) {
+    // Apply events up to this target date
+    while (eventIndex < typedEvents.length && new Date(typedEvents[eventIndex]!.timestamp) <= targetDate) {
+      state = rootReducer(state, typedEvents[eventIndex]!);
+      eventIndex++;
+    }
+
+    // Serialize and queue for creation
+    snapshotsToCreate.push({
+      userId,
+      date: targetDate,
+      data: serializeStateForSnapshot(state)
+    });
+  }
+
+  // 9. Batch insert all missing snapshots
+  if (snapshotsToCreate.length > 0) {
+    await prisma.financialSnapshot.createMany({
+      data: snapshotsToCreate,
+      skipDuplicates: true
+    });
+  }
+}
+
 // --- Pure Reducers ---
 
 const assetReducer = (state: FinancialState, event: Event): FinancialState => {
@@ -445,7 +629,6 @@ function calculateSnapshotFromState(
   const qSelf = Number(quadrantTotals.SELF_EMPLOYED);
   const qBus = Number(quadrantTotals.BUSINESS_OWNER);
   const qInv = Number(quadrantTotals.INVESTOR);
-  const totalQuadrant = qEmployee + qSelf + qBus + qInv;
 
   const incomeQuadrantData = {
     EMPLOYEE: { amount: qEmployee, pct: totalIncome > 0 ? (qEmployee / totalIncome) * 100 : 0 },
@@ -618,7 +801,6 @@ async function getCurrentFinancialSnapshot(userId: number) {
   const qSelf = Number(quadrantTotals.SELF_EMPLOYED);
   const qBus = Number(quadrantTotals.BUSINESS_OWNER);
   const qInv = Number(quadrantTotals.INVESTOR);
-  const totalQ = qEmployee + qSelf + qBus + qInv;
 
   const incomeQuadrantData = {
     EMPLOYEE: { amount: qEmployee, pct: totalIncome > 0 ? (qEmployee / totalIncome) * 100 : 0 },
@@ -848,6 +1030,10 @@ export const getFinancialTrajectory = async (
   endDate: string,
   interval: 'daily' | 'weekly' | 'monthly' = 'monthly'
 ): Promise<any[]> => {
+  // Self-healing: Ensure monthly checkpoints exist before generating trajectory
+  // This limits event replay depth for long-term users (5+ years of data)
+  await ensureMonthlyCheckpoints(userId);
+
   const start = new Date(startDate);
   const end = new Date(endDate);
   const trajectoryPoints: any[] = [];

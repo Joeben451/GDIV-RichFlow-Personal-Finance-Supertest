@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing/Landing';
 import Signup from './pages/Signup/Signup';
@@ -25,61 +26,63 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route 
-            path="/analysis" 
-            element={
-              <ProtectedRoute>
-                <Analysis />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/user-guide" 
-            element={
-              <ProtectedRoute>
-                <UserGuide />
-              </ProtectedRoute>
-            } 
-          />
-          <Route
-            path="/change-username"
-            element={
-              <ProtectedRoute>
-                <ChangeUsername />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/change-email"
-            element={
-              <ProtectedRoute>
-                <ChangeEmail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/change-password"
-            element={
-              <ProtectedRoute>
-                <ChangePassword />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/admin" element={<Admin />} />
-          <Route
-            path="/event-log"
-            element={
-              <ProtectedRoute>
-                <EventLog />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <CurrencyProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route 
+              path="/analysis" 
+              element={
+                <ProtectedRoute>
+                  <Analysis />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/user-guide" 
+              element={
+                <ProtectedRoute>
+                  <UserGuide />
+                </ProtectedRoute>
+              } 
+            />
+            <Route
+              path="/change-username"
+              element={
+                <ProtectedRoute>
+                  <ChangeUsername />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/change-email"
+              element={
+                <ProtectedRoute>
+                  <ChangeEmail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/change-password"
+              element={
+                <ProtectedRoute>
+                  <ChangePassword />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/admin" element={<Admin />} />
+            <Route
+              path="/event-log"
+              element={
+                <ProtectedRoute>
+                  <EventLog />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </CurrencyProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

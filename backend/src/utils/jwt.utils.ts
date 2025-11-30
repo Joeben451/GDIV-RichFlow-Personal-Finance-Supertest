@@ -43,18 +43,3 @@ export function verifyAccessToken(token: string): TokenPayload | null {
 export function getRefreshTokenExpiration(): Date {
   return new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 }
-
-// Legacy function for backward compatibility
-export function generateToken(userId: number): string {
-  return generateAccessToken({ userId, email: '' });
-}
-
-// Legacy function for backward compatibility
-export function verifyToken(token: string): { userId: number } | null {
-  return verifyAccessToken(token);
-}
-
-// Legacy function for backward compatibility
-export function generateSessionExpiry(): Date {
-  return getRefreshTokenExpiration();
-}

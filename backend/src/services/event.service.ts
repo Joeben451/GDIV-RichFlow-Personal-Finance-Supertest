@@ -57,7 +57,8 @@ export async function getEventsByUser(params: EventQueryParams) {
     startDate,
     endDate,
     limit = 100,
-    offset = 0
+    offset = 0,
+    search
   } = params;
 
   if (!userId) {
@@ -80,6 +81,26 @@ export async function getEventsByUser(params: EventQueryParams) {
     if (endDate) {
       where.timestamp.lte = endDate;
     }
+  }
+
+  if (search) {
+    where.OR = [
+      { entityType: { contains: search, mode: 'insensitive' } },
+      { actionType: { contains: search, mode: 'insensitive' } },
+      // Search within JSON 'name' field
+      {
+        afterValue: {
+          path: ['name'],
+          string_contains: search
+        }
+      },
+      {
+        beforeValue: {
+          path: ['name'],
+          string_contains: search
+        }
+      }
+    ];
   }
 
   const events = await prisma.event.findMany({
@@ -129,11 +150,30 @@ export async function getEventsByEntity(params: EventQueryParams) {
 /**
  * Get total count of events for a user
  */
-export async function getEventCount(userId: number, entityType?: EntityType): Promise<number> {
+export async function getEventCount(userId: number, entityType?: EntityType, search?: string): Promise<number> {
   const where: any = { userId };
 
   if (entityType) {
     where.entityType = entityType;
+  }
+
+  if (search) {
+    where.OR = [
+      { entityType: { contains: search, mode: 'insensitive' } },
+      { actionType: { contains: search, mode: 'insensitive' } },
+      {
+        afterValue: {
+          path: ['name'],
+          string_contains: search
+        }
+      },
+      {
+        beforeValue: {
+          path: ['name'],
+          string_contains: search
+        }
+      }
+    ];
   }
 
   return await prisma.event.count({ where });

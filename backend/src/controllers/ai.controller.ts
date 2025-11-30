@@ -10,8 +10,11 @@ export async function analyzeFinanceController(req: Request, res: Response, next
 
     // Get includeBalanceSheet from query parameter, default to true
     const includeBalanceSheet = req.query.includeBalanceSheet !== 'false';
+    
+    // Get currency symbol from query parameter, default to $
+    const currencySymbol = (req.query.currencySymbol as string) || '$';
 
-    const financialInformation = await analyzeFinance(userId, includeBalanceSheet);
+    const financialInformation = await analyzeFinance(userId, includeBalanceSheet, currencySymbol);
 
     if (!financialInformation) {
       return res.status(404).json({ error: 'Missing or insufficient information' });

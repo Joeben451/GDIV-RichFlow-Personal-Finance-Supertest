@@ -63,4 +63,5 @@ export interface EventQueryParams {
   endDate?: Date;
   limit?: number;
   offset?: number;
+  search?: string;
 }

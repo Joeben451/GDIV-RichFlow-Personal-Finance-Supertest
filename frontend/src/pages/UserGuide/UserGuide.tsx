@@ -25,7 +25,7 @@ const UserGuide: React.FC = () => {
 
         {/* Table of Contents */}
         <nav className="table-of-contents">
-          <h2 className="toc-title">📖 Table of Contents</h2>
+          <h2 className="toc-title">Table of Contents</h2>
           <div className="toc-grid">
             <div className="toc-column">
               <div className="toc-category">Getting Started</div>

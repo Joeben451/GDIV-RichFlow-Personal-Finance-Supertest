@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, useDeferredValue } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
-import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { analysisAPI } from '../../utils/api';
-import { formatCurrency as formatCurrencyValue } from '../../utils/currency.utils';
+import { formatCurrency as formatCurrencyValue, getCurrencySymbol } from '../../utils/currency.utils';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
   AreaChart, Area, LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, ComposedChart, ReferenceDot
@@ -59,12 +59,6 @@ type SnapshotData = {
   currency: { symbol: string; name: string };
 };
 
-type SavedSnapshot = {
-  id: string;
-  date: string;
-  data: SnapshotData;
-};
-
 type TrajectoryPoint = {
   date: string;
   netWorth: number;
@@ -97,26 +91,26 @@ const QUADRANT_COLORS = {
 // Helper to format freedom date for display
 const formatFreedomDate = (freedomDate: string | null): string => {
   if (!freedomDate) return 'Not Projected';
-  
+
   // Handle special status strings
   const specialStatuses = ['Achieved', 'No Passive Income', 'Insufficient Data', 'Stagnant/Declining', '> 50 Years'];
   if (specialStatuses.includes(freedomDate)) {
     return freedomDate;
   }
-  
+
   // Try to parse as ISO date (YYYY-MM-DD)
   const dateMatch = freedomDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (dateMatch) {
     const date = new Date(freedomDate + 'T00:00:00');
     if (!isNaN(date.getTime())) {
-      return date.toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
     }
   }
-  
+
   // Return as-is if we can't parse it
   return freedomDate;
 };
@@ -168,8 +162,9 @@ const StatCard: React.FC<{
 
 const Analysis: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const { currency } = useCurrency();
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [slowSnapshot, setSlowSnapshot] = useState(false);
   const [snapshotError, setSnapshotError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -202,7 +197,6 @@ const Analysis: React.FC = () => {
 
   // Performance constants
   const SLOW_THRESHOLD_MS = 200;
-  const MAX_TRAJECTORY_POINTS = 1500;
 
   const formatError = (err: unknown): string => {
     if (!err) return 'Unknown error';
@@ -227,15 +221,23 @@ const Analysis: React.FC = () => {
     }
   };
 
-  // Historical currency formatter
+  // Historical currency formatter (for comparison tables with historical data)
   const formatHistorical = React.useCallback(
-    (value: number, currency: { symbol: string; name: string }) => {
+    (value: number, currencyObj: { symbol: string; name: string }) => {
       return formatCurrencyValue(value, {
-        cur_symbol: currency.symbol,
-        cur_name: currency.name
+        cur_symbol: currencyObj.symbol,
+        cur_name: currencyObj.name
       } as any);
     },
     []
+  );
+
+  // Current data formatter (uses currency from context)
+  const formatCurrent = React.useCallback(
+    (value: number) => {
+      return formatCurrencyValue(value, currency);
+    },
+    [currency]
   );
 
   const fetchSnapshot = async (date?: string) => {
@@ -251,7 +253,6 @@ const Analysis: React.FC = () => {
       setSnapshotData(data);
       if (!date) setSelectedDate('');
     } catch (error) {
-      console.error('Failed to fetch snapshot:', error);
       setSnapshotError(formatError(error));
     } finally {
       clearTimeout(slowTimer);
@@ -262,7 +263,7 @@ const Analysis: React.FC = () => {
 
   useEffect(() => {
     fetchSnapshot();
-  }, []);
+  }, [currency]);
 
   useEffect(() => {
     if (deferredSelectedDate) {
@@ -319,49 +320,12 @@ const Analysis: React.FC = () => {
       if (reqId !== compareReqIdRef.current) return; // stale
       setCompareResult({ start: startSnap, end: endSnap });
     } catch (e) {
-      console.error('Failed to fetch comparison report:', e);
       setCompareError(formatError(e));
     } finally {
       clearTimeout(slowTimer);
       setCompareLoading(false);
     }
   };
-
-  // Downsampling (simple bucket average)
-  const downsample = useCallback((data: TrajectoryPoint[], max: number): TrajectoryPoint[] => {
-    if (data.length <= max) return data;
-    const bucketSize = data.length / max;
-    const result: TrajectoryPoint[] = [];
-    for (let i = 0; i < max; i++) {
-      const start = Math.floor(i * bucketSize);
-      const end = Math.min(Math.floor((i + 1) * bucketSize), data.length);
-      const slice = data.slice(start, end);
-      if (!slice.length) continue;
-      const mid = slice[Math.floor(slice.length / 2)];
-      const sum = (key: keyof TrajectoryPoint) => slice.reduce((acc, p) => acc + (p[key] as number), 0);
-      result.push({
-        date: mid.date,
-        netWorth: sum('netWorth') / slice.length,
-        netWorthDelta: sum('netWorthDelta') / slice.length,
-        passiveIncome: sum('passiveIncome') / slice.length,
-        portfolioIncome: sum('portfolioIncome') / slice.length,
-        totalExpenses: sum('totalExpenses') / slice.length,
-        freedomGap: sum('freedomGap') / slice.length,
-        wealthVelocity: sum('wealthVelocity') / slice.length,
-        assetEfficiency: sum('assetEfficiency') / slice.length,
-        netCashflow: sum('netCashflow') / slice.length,
-        totalIncome: sum('totalIncome') / slice.length,
-        incomeQuadrant: {
-          EMPLOYEE: slice.reduce((a, p) => a + p.incomeQuadrant.EMPLOYEE, 0) / slice.length,
-          SELF_EMPLOYED: slice.reduce((a, p) => a + p.incomeQuadrant.SELF_EMPLOYED, 0) / slice.length,
-          BUSINESS_OWNER: slice.reduce((a, p) => a + p.incomeQuadrant.BUSINESS_OWNER, 0) / slice.length,
-          INVESTOR: slice.reduce((a, p) => a + p.incomeQuadrant.INVESTOR, 0) / slice.length,
-        },
-        currency: mid.currency
-      });
-    }
-    return result;
-  }, []);
 
   const fetchTrajectoryData = async () => {
     if (!trajectoryStart || !trajectoryEnd) return;
@@ -376,10 +340,8 @@ const Analysis: React.FC = () => {
         trajectoryEnd,
         trajectoryInterval
       );
-      console.log('Trajectory data loaded:', data?.length || 0, 'points');
       setTrajectoryData(data);
     } catch (e) {
-      console.error('Failed to fetch trajectory data:', e);
       setTrajectoryData([]);
     } finally {
       clearTimeout(slowTimer);
@@ -414,7 +376,7 @@ const Analysis: React.FC = () => {
   useEffect(() => {
     if (trajectoryStart && trajectoryEnd) fetchTrajectoryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trajectoryStart, trajectoryEnd, trajectoryInterval]);
+  }, [trajectoryStart, trajectoryEnd, trajectoryInterval, currency]);
 
   const compareMetrics = useMemo(() => {
     if (!compareResult) return null;
@@ -448,7 +410,7 @@ const Analysis: React.FC = () => {
       const specialStatuses = ['No Passive Income', 'Insufficient Data', 'Stagnant/Declining', '> 50 Years'];
       const startIsDate = !specialStatuses.includes(freedomStart) && /^\d{4}-\d{2}-\d{2}$/.test(freedomStart);
       const endIsDate = !specialStatuses.includes(freedomEnd) && /^\d{4}-\d{2}-\d{2}$/.test(freedomEnd);
-      
+
       if (startIsDate && endIsDate) {
         const m = monthsBetween(freedomStart, freedomEnd);
         freedomChangeText = `${formatFreedomDate(freedomStart)} → ${formatFreedomDate(freedomEnd)} (${m === 0 ? 'no change' : `${m > 0 ? '+' : ''}${m} mo`})`;
@@ -607,15 +569,7 @@ const Analysis: React.FC = () => {
     };
   }, [trajectoryData]);
 
-  // Debug log
-  useEffect(() => {
-    console.log('Chart render check:', {
-      hasMetrics: !!trajectoryMetrics,
-      hasSnapshotData: !!snapshotData,
-      trajectoryDataLength: trajectoryData?.length || 0,
-      processedLength: processedTrajectory?.length || 0
-    });
-  }, [trajectoryMetrics, snapshotData, trajectoryData, processedTrajectory]);
+
 
   // Timeline controller (date picker)
   const timelineController = (
@@ -649,32 +603,22 @@ const Analysis: React.FC = () => {
     </div>
   );
 
-  const handleJumpToSnapshot = (date: string) => {
-    setSelectedDate(date);
-  };
-
   const ChartTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || payload.length === 0) return null;
     return (
       <div
-        onClick={() => handleJumpToSnapshot(label)}
-        className="rounded-md border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm p-3 text-xs shadow-xl min-w-[180px] cursor-pointer hover:border-[#eaca6a] transition-colors"
+        className="rounded-md border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm p-3 text-xs shadow-xl min-w-[180px] transition-colors"
         style={{ zIndex: 1000, pointerEvents: 'auto' }}
-        title="Click to view snapshot"
       >
         <div className="font-semibold text-white mb-1 flex items-center justify-between">
           <span>{new Date(label).toLocaleDateString()}</span>
-          <span className="text-[#eaca6a] text-[10px]">📸 SNAPSHOT</span>
         </div>
         {payload.map((p: any) => (
           <div key={p.dataKey} className="flex justify-between gap-2">
             <span className="text-zinc-400">{p.name}</span>
-            <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, user?.preferredCurrency)) : p.value}</span>
+            <span className="text-white">{typeof p.value === 'number' ? (p.dataKey.includes('Pct') || p.name?.includes('%') || p.dataKey === 'assetEfficiency' || p.dataKey === 'wealthVelocity' ? `${p.value.toFixed(2)}%` : formatCurrencyValue(p.value, currency)) : p.value}</span>
           </div>
         ))}
-        <div className="mt-2 pt-2 border-t border-zinc-700 text-center text-[10px] text-zinc-500">
-          Click to jump to this date
-        </div>
       </div>
     );
   };
@@ -693,9 +637,18 @@ const Analysis: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen w-full bg-black text-white overflow-hidden  selection:bg-[#eaca6a]/30">
-      <Header title="Analysis" hideActions rightContent={headerRight} />
+      <Header 
+        title="Analysis" 
+        hideActions 
+        rightContent={headerRight}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
+      />
       <div className="flex flex-1 overflow-hidden relative">
-        <Sidebar />
+        <Sidebar 
+          mobileOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
         <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* Background Ambient Glow */}
           <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#794cb5]/20 rounded-full blur-[120px] pointer-events-none" />
@@ -989,7 +942,7 @@ const Analysis: React.FC = () => {
                 {/* Hero: Net Worth */}
                 <StatCard
                   title="Net Worth"
-                  value={formatHistorical(snapshotData.balanceSheet.netWorth, snapshotData.currency)}
+                  value={formatCurrent(snapshotData.balanceSheet.netWorth)}
                   trend={snapshotData.financialHealth.trends.netWorth}
                   className="col-span-1 md:col-span-2 lg:col-span-2 min-h-[180px]"
                   accentColor="gold"
@@ -1007,15 +960,15 @@ const Analysis: React.FC = () => {
                     <div className="flex gap-4 w-full justify-between">
                       <div className="text-xs">
                         <div className="text-zinc-400">Cash</div>
-                        <div className="font-semibold text-[#eaca6a]">{formatHistorical(snapshotData.balanceSheet.totalCash, snapshotData.currency)}</div>
+                        <div className="font-semibold text-[#eaca6a]">{formatCurrent(snapshotData.balanceSheet.totalCash)}</div>
                       </div>
                       <div className="text-xs">
                         <div className="text-zinc-400">Assets</div>
-                        <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalInvestedAssets, snapshotData.currency)}</div>
+                        <div className="font-semibold">{formatCurrent(snapshotData.balanceSheet.totalInvestedAssets)}</div>
                       </div>
                       <div className="text-xs">
                         <div className="text-zinc-400">Liabilities</div>
-                        <div className="font-semibold">{formatHistorical(snapshotData.balanceSheet.totalLiabilities, snapshotData.currency)}</div>
+                        <div className="font-semibold">{formatCurrent(snapshotData.balanceSheet.totalLiabilities)}</div>
                       </div>
                     </div>
                   </div>
@@ -1060,7 +1013,7 @@ const Analysis: React.FC = () => {
                     value={
                       <span className={snapshotData.richFlowMetrics.wealthVelocity >= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
                         {snapshotData.richFlowMetrics.wealthVelocity >= 0 ? '+' : ''}
-                        {formatHistorical(snapshotData.richFlowMetrics.wealthVelocity, snapshotData.currency)}
+                        {formatCurrent(snapshotData.richFlowMetrics.wealthVelocity)}
                       </span>
                     }
                     trend={snapshotData.richFlowMetrics.wealthVelocityPct}
@@ -1092,7 +1045,7 @@ const Analysis: React.FC = () => {
                     title="Net Cashflow"
                     value={
                       <span className={snapshotData.cashflow.netCashflow >= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
-                        {formatHistorical(snapshotData.cashflow.netCashflow, snapshotData.currency)}
+                        {formatCurrent(snapshotData.cashflow.netCashflow)}
                       </span>
                     }
                     trend={trajectoryMetrics?.recentCashflowTrend ?? snapshotData.financialHealth.trends.cashflow}
@@ -1102,11 +1055,11 @@ const Analysis: React.FC = () => {
                     <div className="mt-2 text-sm">
                       <div className="flex justify-between items-center">
                         <div className="text-zinc-400">Total Income</div>
-                        <div className="text-[#41d288] font-semibold">{formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}</div>
+                        <div className="text-[#41d288] font-semibold">{formatCurrent(snapshotData.cashflow.totalIncome)}</div>
                       </div>
                       <div className="flex justify-between items-center mt-1">
                         <div className="text-zinc-400">Total Expenses</div>
-                        <div className="text-[#ff7d7e] font-semibold">{formatHistorical(snapshotData.cashflow.totalExpenses, snapshotData.currency)}</div>
+                        <div className="text-[#ff7d7e] font-semibold">{formatCurrent(snapshotData.cashflow.totalExpenses)}</div>
                       </div>
                       <div className="my-2 h-px bg-white/5" />
                       <div className="text-xs text-zinc-500">
@@ -1149,7 +1102,7 @@ const Analysis: React.FC = () => {
                                 cursor={false}
                                 contentStyle={{ backgroundColor: 'rgba(24, 24, 27, 0.95)', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
                                 itemStyle={{ color: '#fff' }}
-                                formatter={(value: number) => formatHistorical(value, snapshotData.currency)}
+                                formatter={(value: number) => formatCurrent(value)}
                                 wrapperStyle={{ zIndex: 1000 }}
                                 position={{ x: 0, y: 0 }}
                               />
@@ -1161,7 +1114,7 @@ const Analysis: React.FC = () => {
                           <div className="text-center">
                             <div className="text-xs text-zinc-500 mb-1">Total</div>
                             <div className="text-lg font-bold text-white whitespace-nowrap">
-                              {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                              {formatCurrent(snapshotData.cashflow.totalIncome)}
                             </div>
                           </div>
                         </div>
@@ -1171,7 +1124,7 @@ const Analysis: React.FC = () => {
                       <div className="lg:hidden text-center mt-4">
                         <div className="text-xs text-zinc-500 mb-1">Total</div>
                         <div className="text-xl font-bold text-white">
-                          {formatHistorical(snapshotData.cashflow.totalIncome, snapshotData.currency)}
+                          {formatCurrent(snapshotData.cashflow.totalIncome)}
                         </div>
                       </div>
 
@@ -1301,7 +1254,7 @@ const Analysis: React.FC = () => {
                       title="Freedom Gap Evolution"
                       value={
                         <span className={trajectoryMetrics.freedomGap.end <= 0 ? 'text-[#41d288]' : 'text-[#ff7d7e]'}>
-                          {trajectoryMetrics.freedomGap.end <= 0 ? 0 : formatCurrencyValue(trajectoryMetrics.freedomGap.end, user?.preferredCurrency)}
+                          {trajectoryMetrics.freedomGap.end <= 0 ? 0 : formatCurrencyValue(trajectoryMetrics.freedomGap.end, currency)}
                         </span>
                       }
                       subValue={
@@ -1323,14 +1276,14 @@ const Analysis: React.FC = () => {
 
                     <StatCard
                       title="Net Worth Growth"
-                      value={formatCurrencyValue(trajectoryMetrics.netWorth.change, user?.preferredCurrency)}
+                      value={formatCurrencyValue(trajectoryMetrics.netWorth.change, currency)}
                       subValue={`${trajectoryMetrics.netWorth.growthRate.toFixed(1)}% growth`}
                       trend={trajectoryMetrics.netWorth.growthRate}
                     />
 
                     <StatCard
                       title="Passive + Portfolio Growth"
-                      value={formatCurrencyValue(trajectoryMetrics.passiveIncome.change, user?.preferredCurrency)}
+                      value={formatCurrencyValue(trajectoryMetrics.passiveIncome.change, currency)}
                       subValue={`${trajectoryMetrics.passiveIncome.growthRate.toFixed(1)}% increase`}
                       trend={trajectoryMetrics.passiveIncome.growthRate}
                       accentColor="purple"
@@ -1373,7 +1326,7 @@ const Analysis: React.FC = () => {
                             />
                             <YAxis
                               stroke="#71717a"
-                              tickFormatter={(val) => `$${val / 1000}k`}
+                              tickFormatter={(val) => `${getCurrencySymbol(currency)}${val / 1000}k`}
                               tick={{ fontSize: 12, fill: '#71717a' }}
                               style={{ background: 'none' }}
                               domain={['auto', 'auto']}
@@ -1429,7 +1382,7 @@ const Analysis: React.FC = () => {
                             <YAxis
                               yAxisId="left"
                               stroke="#eaca6a"
-                              tickFormatter={(val) => `$${val / 1000}k`}
+                              tickFormatter={(val) => `${getCurrencySymbol(currency)}${val / 1000}k`}
                               tick={{ fontSize: 12, fill: '#eaca6a' }}
                               style={{ background: 'none' }}
                               domain={['auto', 'auto']}

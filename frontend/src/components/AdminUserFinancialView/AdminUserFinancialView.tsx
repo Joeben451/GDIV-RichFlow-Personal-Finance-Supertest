@@ -95,7 +95,6 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
           setUserCurrency(data.user.preferredCurrency);
         }
       } catch (err: any) {
-        console.error('Error fetching financial data:', err);
         setError(err.message || 'Failed to fetch financial data');
       } finally {
         setLoading(false);

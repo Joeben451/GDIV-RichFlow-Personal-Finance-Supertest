@@ -75,6 +75,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+
     // Generate tokens
     const accessToken = generateAccessToken({
       userId: user.id,
@@ -88,9 +89,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     // Set refresh token as httpOnly cookie
     res.cookie('refreshToken', session.token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      sameSite: 'strict',
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
     return res.status(200).json({
@@ -344,4 +345,3 @@ export async function updatePasswordHandler(req: Request, res: Response, next: N
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
-

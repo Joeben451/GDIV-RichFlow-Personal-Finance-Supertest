@@ -1,7 +1,7 @@
 import prisma from '../config/database.config';
+import { Prisma } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/password.utils';
 import { generateRefreshToken, getRefreshTokenExpiration } from '../utils/jwt.utils';
-import { createEvent } from './event.service';
 import { ActionType, EntityType } from '../types/event.types';
 
 interface CreateUserData {
@@ -96,7 +96,7 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.INCOME,
         entitySubtype: 'INCOME_STATEMENT',
-        // beforeValue: null, // Omitted to let Prisma handle it as null
+        beforeValue: Prisma.DbNull,
         afterValue: { id: incomeStatement.id, userId: newUser.id },
         userId: newUser.id,
         entityId: incomeStatement.id
@@ -109,7 +109,7 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.CASH_SAVINGS,
         entitySubtype: null,
-        // beforeValue: null, // Omitted to let Prisma handle it as null
+        beforeValue: Prisma.DbNull,
         afterValue: { id: cashSavings.id, userId: newUser.id, amount: 0 },
         userId: newUser.id,
         entityId: cashSavings.id
@@ -122,10 +122,32 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
         actionType: ActionType.CREATE,
         entityType: EntityType.USER,
         entitySubtype: null,
-        // beforeValue: null, // Omitted to let Prisma handle it as null
+        beforeValue: Prisma.DbNull,
         afterValue: { id: newUser.id, email: newUser.email, name: newUser.name },
         userId: newUser.id,
         entityId: newUser.id
+      }
+    });
+
+    // Create initial "Day 0" FinancialSnapshot for the new user
+    // This serves as the starting point for monthly checkpoint strategy
+    const initialSnapshotData = {
+      assets: [],           // Empty array (serialized Map format)
+      liabilities: [],      // Empty array (serialized Map format)
+      incomeLines: [],      // Empty array (serialized Map format)
+      expenses: [],         // Empty array (serialized Map format)
+      cashSavings: 0,
+      currency: {
+        symbol: '$',        // Default to USD
+        name: 'USD'
+      }
+    };
+
+    await tx.financialSnapshot.create({
+      data: {
+        userId: newUser.id,
+        date: newUser.createdAt,
+        data: initialSnapshotData
       }
     });
 

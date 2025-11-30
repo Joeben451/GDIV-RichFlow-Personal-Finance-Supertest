@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
-import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
   onAddBalanceSheet?: () => void;
@@ -11,6 +10,8 @@ interface HeaderProps {
   hideActions?: boolean;
   rightContent?: React.ReactNode;
   leftContent?: React.ReactNode;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -21,9 +22,10 @@ const Header: React.FC<HeaderProps> = ({
   title = 'Dashboard', 
   hideActions = false,
   rightContent,
-  leftContent
+  leftContent,
+  onToggleSidebar,
+  sidebarOpen = false
 }) => {
-  const { user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -60,21 +62,20 @@ const Header: React.FC<HeaderProps> = ({
   
   return (
     <header className={`header ${hideActions ? 'no-actions' : ''}`}>
-      <div className="header-left">
         {leftContent ? leftContent : (
-          <div className="logo">
-            <div className="logo-circle max-h-fit"><img src="/assets/richflow.png" alt="RichFlow Logo" className="logo-icon" /></div>
-            <div className="flex flex-col">
-              <span className="logo-text">{user!.name}</span>
-              <span className="text-white" style={{ fontSize: '0.875rem', opacity: 0.8 }}>{user!.email}</span>
-            </div>
-          </div>
+          onToggleSidebar && (
+            <button 
+              className={`sidebar-hamburger ${sidebarOpen ? 'open' : ''}`}
+              onClick={onToggleSidebar}
+              aria-label="Toggle menu"
+            >
+              <span className="sidebar-hamburger-line"></span>
+              <span className="sidebar-hamburger-line"></span>
+              <span className="sidebar-hamburger-line"></span>
+            </button>
+          )
         )}
-      </div>
-      <div className="header-center">
         <h1 className="header-title">{title}</h1>
-      </div>
-      <div className="header-right">
         {rightContent}
         {!hideActions && (
           <div className="add-button-container" ref={dropdownRef}>
@@ -94,7 +95,6 @@ const Header: React.FC<HeaderProps> = ({
             )}
           </div>
         )}
-      </div>
     </header>
   );
 };

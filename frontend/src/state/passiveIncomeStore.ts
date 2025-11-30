@@ -22,17 +22,6 @@ export const passiveIncomeStore = {
   },
 };
 
-export const sumPassiveFromLines = (lines: any[]): number => {
-  if (!Array.isArray(lines)) return 0;
-  return lines
-    .filter((item: any) => item?.type === 'Passive')
-    .reduce(
-      (sum: number, item: any) =>
-        sum + (typeof item.amount === 'number' ? item.amount : parseFloat(item.amount)),
-      0
-    );
-};
-
 // Reset on auth change so previous user's data isn't shown
 if (typeof window !== 'undefined') {
   window.addEventListener('auth:changed', () => {

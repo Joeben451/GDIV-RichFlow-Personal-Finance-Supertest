@@ -68,11 +68,9 @@ const fetchExpensesInternal = async () => {
   try {
     setState({ loading: true, error: null });
     const response = await expensesAPI.getExpenses();
-    // console.log('Expenses API response:', response);
     const expensesData = normalizeExpenses(response);
     setState({ expenses: expensesData, loading: false, initialized: true });
   } catch (err) {
-    console.error('Error fetching expenses:', err);
     setState({ error: 'Failed to load expenses', expenses: [], loading: false, initialized: true });
   }
 };
@@ -91,7 +89,6 @@ const addExpenseInternal = async (name: string, amount: number) => {
     notifyDataChange(); // Notify data change listeners
     return newExpense;
   } catch (err) {
-    console.error('Error adding expense:', err);
     setState({ error: 'Failed to add expense' });
     throw err;
   }
@@ -111,7 +108,6 @@ const updateExpenseInternal = async (id: number, name: string, amount: number) =
     notifyDataChange(); // Notify data change listeners
     return updatedExpense;
   } catch (err) {
-    console.error('Error updating expense:', err);
     setState({ error: 'Failed to update expense' });
     throw err;
   }
@@ -124,7 +120,6 @@ const deleteExpenseInternal = async (id: number) => {
     setState({ expenses: store.expenses.filter((e) => e.id !== id) });
     notifyDataChange(); // Notify data change listeners
   } catch (err) {
-    console.error('Error deleting expense:', err);
     setState({ error: 'Failed to delete expense' });
     throw err;
   }
