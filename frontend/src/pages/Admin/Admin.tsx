@@ -5,11 +5,19 @@ import AdminPanel from '../../components/AdminPanel/AdminPanel';
 import './Admin.css';
 
 const Admin: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+
   return (
     <div className="dashboard-container">
-      <AdminHeader />
+      <AdminHeader 
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
+      />
       <div className="dashboard-main">
-        <AdminSidebar />
+        <AdminSidebar 
+          mobileOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
         <AdminPanel />
       </div>
     </div>

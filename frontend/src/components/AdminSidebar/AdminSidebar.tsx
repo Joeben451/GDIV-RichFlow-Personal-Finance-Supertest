@@ -3,11 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './AdminSidebar.css';
 
-const AdminSidebar: React.FC = () => {
-  const [expanded, setExpanded] = React.useState(false);
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+interface AdminSidebarProps {
+  mobileOpen?: boolean;
+  onToggleSidebar?: () => void;
+}
+
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ mobileOpen = false, onToggleSidebar }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const closeSidebar = () => {
+    if (mobileOpen && onToggleSidebar) {
+      onToggleSidebar();
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -20,33 +29,31 @@ const AdminSidebar: React.FC = () => {
 
   return (
     <>
-      {/* Hamburger Menu Button - Mobile Only */}
-      <button 
-        className={`admin-sidebar-hamburger ${mobileOpen ? 'open' : ''}`}
-        onClick={() => setMobileOpen(!mobileOpen)}
-        aria-label="Toggle admin menu"
-      >
-        <span className="admin-sidebar-hamburger-line"></span>
-        <span className="admin-sidebar-hamburger-line"></span>
-        <span className="admin-sidebar-hamburger-line"></span>
-      </button>
-
       {/* Mobile Overlay */}
       <div 
         className={`admin-sidebar-overlay ${mobileOpen ? 'active' : ''}`}
-        onClick={() => setMobileOpen(false)}
+        onClick={closeSidebar}
       ></div>
 
       <aside 
-        className={`admin-sidebar ${expanded ? 'expanded' : ''} ${mobileOpen ? 'mobile-open' : ''}`} 
-        onMouseEnter={() => setExpanded(true)} 
-        onMouseLeave={() => setExpanded(false)}
+        className={`admin-sidebar ${mobileOpen ? 'mobile-open' : ''}`} 
       >
-      {/* Logout Button */}
+      {/* User Info Section */}
+      <div className="admin-sidebar-user-info">
+        <div className="admin-sidebar-user-avatar">
+          <img src="/assets/richflow.png" alt="RichFlow Logo" className="admin-sidebar-user-logo" />
+        </div>
+        <div className="admin-sidebar-user-details">
+          <span className="admin-sidebar-user-name">{user?.name || 'Admin'}</span>
+          <span className="admin-sidebar-user-email">{user?.email || 'admin@richflow.com'}</span>
+        </div>
+      </div>
+
+      {/* Navigation Section */}
       <div className="admin-sidebar-section">
-        <button className="admin-sidebar-item" onClick={() => { handleLogout(); setMobileOpen(false); }}> 
-          <div className="admin-sidebar-icon"></div>
-          <span className="admin-sidebar-text">Log Out</span>
+        <button className="selection large" onClick={() => { handleLogout(); closeSidebar(); }}> 
+          <div className="admin-sidebar-button large"></div>
+          <span className="admin-sidebar-text"> Log Out </span>
         </button>
       </div>
       </aside>

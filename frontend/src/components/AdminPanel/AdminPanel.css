@@ -87,8 +87,11 @@
   font-size: 1.8rem;
   font-weight: bold;
   color: #ffffff;
-  text-align: left;
+  text-align: center;
   flex-shrink: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 @media (max-width: 1024px) {
@@ -101,6 +104,8 @@
   .admin-title {
     font-size: 1.5rem;
     width: 100%;
+    position: static;
+    transform: none;
   }
 }
 
