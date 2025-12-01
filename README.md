@@ -54,7 +54,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Financial Snapshot** | Comprehensive view of your current financial state with key metrics |
+| **Financial Snapshot** | Performance checkpoints that cache financial state, enabling instant historical reconstruction without full event replay |
 | **Time Machine** | Reconstruct your financial state for any historical date using event-sourced data |
 | **Trajectory Analysis** | Track your financial progress over time through comprehensive visualizations |
 | **Comparison Reports** | Compare financial states between two dates to measure progress |
@@ -363,31 +363,81 @@ GDIV-RichFlow-Personal-Finance/
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Event-Sourcing Pattern
+### Event-Sourcing Architecture
 
-RichFlow uses an **event-sourcing architecture** for the analysis system, enabling powerful features like time-travel and complete audit trails:
+RichFlow implements a **Hybrid Event-Sourcing** engine. Instead of simple CRUD, every financial action is logged as an immutable event. To reconstruct the user's financial state at any point in time, the system employs a **Reducer Pattern** optimized by **Snapshot Checkpoints**.
+
+**State Reconstruction Pipeline:**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│           🔍 User Request: View History for Date X                          │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                  │
+                  ▼
+          ┌─────────────────────────────┐
+          │  📸 Snapshot Exists         │
+          │     Before Date X?          │
+          └──────────┬──────────────────┘
+                 │
+        ┌────────────────┴────────────────┐
+        │                                 │
+     ✅ Yes                            ❌ No
+        │                                 │
+        ▼                                 ▼
+┌─────────────────────────┐       ┌─────────────────────────┐
+│  Load Cached State      │       │  Initialize Empty State │
+│  from FinancialSnapshot │       │  (Zero Balances)        │
+└───────────┬─────────────┘       └───────────┬─────────────┘
+      │                                 │
+      ▼                                 ▼
+┌─────────────────────────┐       ┌─────────────────────────┐
+│  Fetch Events           │       │  Fetch All Events       │
+│  from Snapshot → Date X │       │  up to Date X           │
+└───────────┬─────────────┘       └───────────┬─────────────┘
+      │                                 │
+      └────────────────┬────────────────┘
+               │
+               ▼
+        ┌─────────────────────────────┐
+        │  🔄 Apply Pure Reducers      │
+        │     (Event by Event)        │
+        └──────────────┬──────────────┘
+               │
+               ▼
+        ┌─────────────────────────────┐
+        │  ✨ Final Financial State    │
+        │     for Date X              │
+        └─────────────────────────────┘
+```
+
+**Core Components:**
+
+1.  **Immutable Event Log**: The single source of truth. No financial data is ever overwritten; only new events (CREATE, UPDATE, DELETE) are appended.
+2.  **Pure Reducers**: Deterministic functions that take the *Current State* + *Event* and return the *New State*. This ensures perfect consistency when replaying history.
+3.  **Self-Healing Snapshots**: The system automatically generates monthly `FinancialSnapshot` checkpoints to prevent performance degradation over years of data. Trajectory analysis only needs to replay events *after* the nearest snapshot.
+
+<!-- end list -->
 
 ```
-User Action → Event Created → Event Stored → State Reconstructed
-                    ↓
-           ┌───────────────────┐
-           │   Event Types     │
-           ├───────────────────┤
-           │ • CREATE          │
-           │ • UPDATE          │
-           │ • DELETE          │
-           └───────────────────┘
-                    ↓
-           ┌───────────────────┐
-           │   Entity Types    │
-           ├───────────────────┤
-           │ • INCOME          │
-           │ • EXPENSE         │
-           │ • ASSET           │
-           │ • LIABILITY       │
-           │ • CASH_SAVINGS    │
-           │ • USER            │
-           └───────────────────┘
+           ┌───────────────────┐       ┌───────────────────┐
+           │   Event Types     │       │   Entity Types    │
+           ├───────────────────┤       ├───────────────────┤
+           │ • CREATE          │       │ • INCOME          │
+           │ • UPDATE          │       │ • EXPENSE         │
+           │ • DELETE          │       │ • ASSET           │
+           └─────────┬─────────┘       │ • LIABILITY       │
+                     │                 │ • CASH_SAVINGS    │
+                     │                 │ • USER            │
+                     ▼                 └───────────────────┘
+            ┌─────────────────┐
+            │  Root Reducer   │
+            └────────┬────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │  Financial State    │
+          │ (Map-based Model)   │
+          └─────────────────────┘
 ```
 
 ### Database Schema
