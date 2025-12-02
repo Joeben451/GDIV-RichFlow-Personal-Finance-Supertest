@@ -1,52 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { assetsAPI } from "../../utils/api";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState } from "react";
+import { useUnifiedFinancialData, AssetItem } from "../../hooks/useFinancialData";
 import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
-import "./AssetsSection.css";
 
-interface AssetItem {
-  id: number;
-  name: string;
-  value: number;
-}
-
-type Props = {
-  onTotalsChange?: (total: number) => void;
-};
-
-const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
-  const { user } = useAuth();
+const AssetsSection: React.FC = () => {
   const { currency } = useCurrency();
-  const [assets, setAssets] = useState<AssetItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use the unified financial data hook
+  const {
+    assets,
+    loading,
+    error,
+    initialized,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+  } = useUnifiedFinancialData();
+
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-
-  // Fetch assets data on component mount
-  useEffect(() => {
-    fetchAssetsData();
-  }, []);
-
-  const fetchAssetsData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await assetsAPI.getAssets();
-      const list = Array.isArray(response) ? response : [];
-      setAssets(list);
-      const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to load assets data");
-      setAssets([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // handle add asset
   const handleAddAsset = async (name: string, amount: string) => {
@@ -54,15 +29,10 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsAdding(true);
-      setError(null);
-      const response = await assetsAPI.addAsset(name, parseFloat(amount));
-      const newItem: AssetItem = response.asset || response;
-      const updated = [...assets, newItem];
-      setAssets(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to add asset");
+      setLocalError(null);
+      await addAsset(name, parseFloat(amount));
+    } catch (err: unknown) {
+      setLocalError("Failed to add asset");
     } finally {
       setIsAdding(false);
     }
@@ -81,18 +51,13 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsUpdating(editingId);
-      setError(null);
-      const response = await assetsAPI.updateAsset(editingId, assetName, parseFloat(assetAmount));
-      const updatedItem: AssetItem = response.asset || response;
-      const updated = assets.map((i) => i.id === editingId ? updatedItem : i);
-      setAssets(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
+      setLocalError(null);
+      await updateAsset(editingId, assetName, parseFloat(assetAmount));
       setEditingId(null);
       setAssetName("");
       setAssetAmount("");
-    } catch (err: any) {
-      setError("Failed to update asset");
+    } catch (err: unknown) {
+      setLocalError("Failed to update asset");
     } finally {
       setIsUpdating(null);
     }
@@ -111,14 +76,10 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsDeleting(id);
-      setError(null);
-      await assetsAPI.deleteAsset(id);
-      const updated = assets.filter((i) => i.id !== id);
-      setAssets(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to delete asset");
+      setLocalError(null);
+      await deleteAsset(id);
+    } catch (err: unknown) {
+      setLocalError("Failed to delete asset");
     } finally {
       setIsDeleting(null);
     }
@@ -138,27 +99,29 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
     }
   };
 
-  if (loading) {
-    return <div className="asset-card">Loading...</div>;
+  if (loading && !initialized) {
+    return <div className="rf-card">Loading...</div>;
   }
 
-  return (
-    <div className="asset-card">
-      <div className="asset-card-header">Assets</div>
+  const displayError = localError || error;
 
-      {error && <p className="asset-error">{error}</p>}
+  return (
+    <div className="rf-card text-white">
+      <div className="rf-section-header">Assets</div>
+
+      {displayError && <p className="rf-error">{displayError}</p>}
 
       {assets.length === 0 ? (
-        <p className="asset-empty">No assets added yet.</p>
+        <p className="rf-empty">No assets added yet.</p>
       ) : (
-        <div className="asset-list">
+        <div className="rf-scroll-list">
           {assets.map((item) => (
-            <div key={item.id} className="asset-item">
-              <span>{item.name}</span>
-              <span>{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
-              <div className="asset-item-actions">
+            <div key={item.id} className="rf-list-item">
+              <span className="rf-list-item-name">{item.name}</span>
+              <span className="rf-list-item-amount">{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
+              <div className="rf-list-item-actions">
                 <button
-                  className="edit-btn"
+                  className="rf-btn-edit"
                   onClick={() => handleEdit(item.id, item.name, item.value)}
                   disabled={editingId !== null || isDeleting !== null}
                   title="Edit"
@@ -166,7 +129,7 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
                   Edit
                 </button>
                 <button
-                  className="delete-btn"
+                  className="rf-btn-delete"
                   onClick={() => handleDelete(item.id)}
                   disabled={isDeleting === item.id || editingId !== null}
                 >
@@ -178,8 +141,9 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="asset-form">
+      <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
         <input
+          className="rf-input flex-1 min-w-[120px]"
           type="text"
           placeholder="Asset name"
           value={assetName}
@@ -187,6 +151,7 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
           disabled={isAdding}
         />
         <input
+          className="rf-input flex-1 min-w-[120px]"
           type="number"
           placeholder="Total Value"
           step="0.01"
@@ -195,10 +160,10 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
           disabled={isAdding || isUpdating !== null}
         />
         {editingId !== null ? (
-          <div className="asset-edit-actions">
+          <div className="rf-edit-actions w-full">
             <button 
               type="button" 
-              className="save-btn"
+              className="rf-btn-save"
               onClick={handleUpdate}
               disabled={isUpdating !== null || !assetName.trim() || !assetAmount.trim()}
             >
@@ -206,7 +171,7 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
             </button>
             <button 
               type="button" 
-              className="cancel-btn"
+              className="rf-btn-cancel"
               onClick={handleCancelEdit}
               disabled={isUpdating !== null}
             >
@@ -214,7 +179,11 @@ const AssetsSection: React.FC<Props> = ({ onTotalsChange }) => {
             </button>
           </div>
         ) : (
-          <button type="submit" disabled={isAdding}>
+          <button 
+            className="rf-btn-primary w-full" 
+            type="submit" 
+            disabled={isAdding}
+          >
             {isAdding ? "Adding..." : "Add Asset"}
           </button>
         )}

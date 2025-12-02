@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { JSX, useEffect, useMemo, useState, useRef, useCallback } from 'react';
-import './EventLog.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { eventLogsAPI } from '../../utils/api';

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import './ChangeEmail.css';
 
 const ChangeEmail: React.FC = () => {
   const { user, updateEmail } = useAuth();
@@ -55,17 +54,17 @@ const ChangeEmail: React.FC = () => {
   };
 
   return (
-    <div className="change-email-page">
-      <div className="change-email-card">
-        <button type="button" className="change-email-back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+    <div className="rf-settings-page">
+      <div className="rf-settings-card">
+        <button type="button" className="rf-settings-back-btn" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
         <h2>Change Email</h2>
-        <p className="change-email-small-note">Your current email: <strong>{user?.email || '—'}</strong></p>
+        <p className="rf-settings-note">Your current email: <strong>{user?.email || '—'}</strong></p>
 
-        <form className="change-email-form" onSubmit={handleSubmit}>
-          {error && <div className="change-email-error">{error}</div>}
-          {success && <div className="change-email-success">{success}</div>}
+        <form className="rf-settings-form" onSubmit={handleSubmit}>
+          {error && <div className="rf-settings-error">{error}</div>}
+          {success && <div className="rf-settings-success">{success}</div>}
 
-          <label className="full">
+          <label>
             Confirm current email
             <input
               type="email"
@@ -98,7 +97,7 @@ const ChangeEmail: React.FC = () => {
             />
           </label>
 
-          <button className="full" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Change Email'}</button>
+          <button type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Change Email'}</button>
         </form>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './Header.css';
 
 interface HeaderProps {
   onAddBalanceSheet?: () => void;
@@ -61,34 +60,34 @@ const Header: React.FC<HeaderProps> = ({
   }, [isDropdownOpen]);
   
   return (
-    <header className={`header ${hideActions ? 'no-actions' : ''}`}>
+    <header className="rf-header">
         {leftContent ? leftContent : (
           onToggleSidebar && (
             <button 
-              className={`sidebar-hamburger ${sidebarOpen ? 'open' : ''}`}
+              className={`rf-hamburger ${sidebarOpen ? 'open' : ''}`}
               onClick={onToggleSidebar}
               aria-label="Toggle menu"
             >
-              <span className="sidebar-hamburger-line"></span>
-              <span className="sidebar-hamburger-line"></span>
-              <span className="sidebar-hamburger-line"></span>
+              <span className="rf-hamburger-line"></span>
+              <span className="rf-hamburger-line"></span>
+              <span className="rf-hamburger-line"></span>
             </button>
           )
         )}
-        <h1 className="header-title">{title}</h1>
+        <h1 className="rf-header-title">{title}</h1>
         {rightContent}
         {!hideActions && (
-          <div className="add-button-container" ref={dropdownRef}>
+          <div className="relative shrink-0" ref={dropdownRef}>
             <button
-              className={`add-button ${balanceSheetExists ? 'minus-button' : ''}`}
+              className={`rf-btn-gold ${balanceSheetExists ? 'bg-(--color-purple) text-white hover:bg-(--color-purple-light)]' : ''}`}
               onClick={toggleDropdown}
               title={balanceSheetExists ? 'Modify Balance Sheet' : 'Add new item'}
             >
               {balanceSheetExists ? '-' : '+'}
             </button>
             {isDropdownOpen && (
-              <div className="dropdown-menu">
-                <button className="dropdown-item" onClick={handleBalanceSheetAction}>
+              <div className="rf-dropdown">
+                <button className="rf-dropdown-item" onClick={handleBalanceSheetAction}>
                   {balanceSheetExists ? (balanceSheetVisible ? 'Hide Balance Sheet' : 'Show Balance Sheet') : 'Add Balance Sheet'}
                 </button>
               </div>

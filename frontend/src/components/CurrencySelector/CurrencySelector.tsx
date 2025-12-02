@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { currencyAPI } from '../../utils/api';
 import { useCurrency } from '../../context/CurrencyContext';
 import { Currency } from '../../types/currency.types';
-import './CurrencySelector.css';
 
 interface CurrencySelectorProps {
   onCurrencyChange?: (currency: Currency) => void;
@@ -11,10 +10,8 @@ interface CurrencySelectorProps {
 const CurrencySelector: React.FC<CurrencySelectorProps> = ({ onCurrencyChange }) => {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const { currency: selectedCurrency, setCurrency: setSelectedCurrency, loading: currencyLoading } = useCurrency();
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch all currencies
   useEffect(() => {
@@ -44,76 +41,46 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({ onCurrencyChange })
     fetchCurrencies();
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const handleCurrencySelect = async (currency: Currency) => {
     setSelectedCurrency(currency);
-    setIsOpen(false);
     if (onCurrencyChange) {
       onCurrencyChange(currency);
     }
   };
 
-  if (currencyLoading) {
-    return <div className="currency-selector-loading">Loading currencies...</div>;
+  if (currencyLoading || loading) {
+    return (
+      <div className="rf-currency-loading">
+        <span>Loading currencies...</span>
+      </div>
+    );
   }
 
-  if (error && !selectedCurrency) {
-    return <div className="currency-selector-error">{error}</div>;
+  if (error && currencies.length === 0) {
+    return <div className="rf-settings-error">{error}</div>;
   }
 
   return (
-    <div className="currency-selector" ref={dropdownRef}>
-      <button
-        className="currency-selector-button"
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={loading}
-      >
-        <span className="currency-symbol">
-          {selectedCurrency?.cur_symbol || '$'}
-        </span>
-        <span className="currency-name">
-          {selectedCurrency?.cur_name || 'US Dollar'}
-        </span>
-        <span className={`dropdown-arrow ${isOpen ? 'open' : ''}`}>▼</span>
-      </button>
-
-      {isOpen && (
-        <div className="currency-dropdown">
-          <div className="currency-dropdown-header">Select Currency</div>
-          <div className="currency-list">
-            {currencies.map((currency) => (
-              <button
-                key={currency.id}
-                className={`currency-option ${
-                  selectedCurrency?.id === currency.id ? 'selected' : ''
-                }`}
-                onClick={() => handleCurrencySelect(currency)}
-                disabled={loading}
-              >
-                <span className="currency-symbol">{currency.cur_symbol}</span>
-                <span className="currency-info">
-                  <span className="currency-name">{currency.cur_name}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+    <div className="rf-currency-list-container">
+      {error && (
+        <div className="rf-currency-warning">{error}</div>
       )}
-
-      {error && selectedCurrency && (
-        <div className="currency-selector-error-toast">{error}</div>
-      )}
+      <div className="rf-currency-grid">
+        {currencies.map((currency) => (
+          <button
+            key={currency.id}
+            className={`rf-currency-card ${selectedCurrency?.id === currency.id ? 'selected' : ''}`}
+            onClick={() => handleCurrencySelect(currency)}
+            disabled={loading}
+          >
+            <span className="rf-currency-card-symbol">{currency.cur_symbol}</span>
+            <span className="rf-currency-card-name">{currency.cur_name}</span>
+            {selectedCurrency?.id === currency.id && (
+              <span className="rf-currency-card-check">✓</span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

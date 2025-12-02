@@ -1,53 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { liabilitiesAPI } from "../../utils/api";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState } from "react";
+import { useUnifiedFinancialData, LiabilityItem } from "../../hooks/useFinancialData";
 import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
-import "./LiabilitiesSection.css";
 
-interface LiabilityItem {
-  id: number;
-  name: string;
-  value: number;
-}
-
-type Props = {
-  onTotalsChange?: (total: number) => void;
-};
-
-const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
-  const { user } = useAuth();
+const LiabilitiesSection: React.FC = () => {
   const { currency } = useCurrency();
-  const [liabilities, setLiabilities] = useState<LiabilityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use the unified financial data hook
+  const {
+    liabilities,
+    loading,
+    error,
+    initialized,
+    addLiability,
+    updateLiability,
+    deleteLiability,
+  } = useUnifiedFinancialData();
+
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-
-  // Fetch liabilities data on component mount
-  useEffect(() => {
-    fetchLiabilitiesData();
-  }, []);
-
-  const fetchLiabilitiesData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await liabilitiesAPI.getLiabilities();
-      const list = Array.isArray(response) ? response : [];
-      setLiabilities(list);
-      // notify parent of total
-      const total = list.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to load liabilities data");
-      setLiabilities([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // handle add liability
   const handleAddLiability = async (name: string, amount: string) => {
@@ -55,15 +29,10 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsAdding(true);
-      setError(null);
-      const response = await liabilitiesAPI.addLiability(name, parseFloat(amount));
-      const newItem: LiabilityItem = response.liability || response;
-      const updated = [...liabilities, newItem];
-      setLiabilities(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to add liability");
+      setLocalError(null);
+      await addLiability(name, parseFloat(amount));
+    } catch (err: unknown) {
+      setLocalError("Failed to add liability");
     } finally {
       setIsAdding(false);
     }
@@ -82,18 +51,13 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsUpdating(editingId);
-      setError(null);
-      const response = await liabilitiesAPI.updateLiability(editingId, liabilityName, parseFloat(liabilityAmount));
-      const updatedItem: LiabilityItem = response.liability || response;
-      const updated = liabilities.map((i) => i.id === editingId ? updatedItem : i);
-      setLiabilities(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
+      setLocalError(null);
+      await updateLiability(editingId, liabilityName, parseFloat(liabilityAmount));
       setEditingId(null);
       setLiabilityName("");
       setLiabilityAmount("");
-    } catch (err: any) {
-      setError("Failed to update liability");
+    } catch (err: unknown) {
+      setLocalError("Failed to update liability");
     } finally {
       setIsUpdating(null);
     }
@@ -112,14 +76,10 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
 
     try {
       setIsDeleting(id);
-      setError(null);
-      await liabilitiesAPI.deleteLiability(id);
-      const updated = liabilities.filter((i) => i.id !== id);
-      setLiabilities(updated);
-      const total = updated.reduce((s: number, i: any) => s + (typeof i.value === 'number' ? i.value : parseFloat(i.value || 0)), 0);
-      onTotalsChange?.(total);
-    } catch (err: any) {
-      setError("Failed to delete liability");
+      setLocalError(null);
+      await deleteLiability(id);
+    } catch (err: unknown) {
+      setLocalError("Failed to delete liability");
     } finally {
       setIsDeleting(null);
     }
@@ -139,27 +99,29 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
     }
   };
 
-  if (loading) {
-    return <div className="liability-card">Loading...</div>;
+  if (loading && !initialized) {
+    return <div className="rf-card">Loading...</div>;
   }
 
-  return (
-    <div className="liability-card">
-      <div className="liability-card-header">Liabilities</div>
+  const displayError = localError || error;
 
-      {error && <p className="liability-error">{error}</p>}
+  return (
+    <div className="rf-card text-white">
+      <div className="rf-section-header">Liabilities</div>
+
+      {displayError && <p className="rf-error">{displayError}</p>}
 
       {liabilities.length === 0 ? (
-        <p className="liability-empty">No liabilities added yet.</p>
+        <p className="rf-empty">No liabilities added yet.</p>
       ) : (
-        <div className="liability-list">
+        <div className="rf-scroll-list">
           {liabilities.map((item) => (
-            <div key={item.id} className="liability-item">
-              <span>{item.name}</span>
-              <span>{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
-              <div className="liability-item-actions">
+            <div key={item.id} className="rf-list-item">
+              <span className="rf-list-item-name">{item.name}</span>
+              <span className="rf-list-item-amount">{formatCurrency(typeof item.value === "number" ? item.value : 0, currency)}</span>
+              <div className="rf-list-item-actions">
                 <button
-                  className="edit-btn"
+                  className="rf-btn-edit"
                   onClick={() => handleEdit(item.id, item.name, item.value)}
                   disabled={editingId !== null || isDeleting !== null}
                   title="Edit"
@@ -167,7 +129,7 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
                   Edit
                 </button>
                 <button
-                  className="delete-btn"
+                  className="rf-btn-delete"
                   onClick={() => handleDelete(item.id)}
                   disabled={isDeleting === item.id || editingId !== null}
                 >
@@ -179,8 +141,9 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="liability-form">
+      <form onSubmit={handleSubmit} className="flex flex-wrap gap-3">
         <input
+          className="rf-input flex-1 min-w-[120px]"
           type="text"
           placeholder="Liability name"
           value={liabilityName}
@@ -188,6 +151,7 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
           disabled={isAdding}
         />
         <input
+          className="rf-input flex-1 min-w-[120px]"
           type="number"
           placeholder="Total Cost"
           step="0.01"
@@ -196,10 +160,10 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
           disabled={isAdding || isUpdating !== null}
         />
         {editingId !== null ? (
-          <div className="liability-edit-actions">
+          <div className="rf-edit-actions w-full">
             <button 
               type="button" 
-              className="save-btn"
+              className="rf-btn-save"
               onClick={handleUpdate}
               disabled={isUpdating !== null || !liabilityName.trim() || !liabilityAmount.trim()}
             >
@@ -207,7 +171,7 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
             </button>
             <button 
               type="button" 
-              className="cancel-btn"
+              className="rf-btn-cancel"
               onClick={handleCancelEdit}
               disabled={isUpdating !== null}
             >
@@ -215,7 +179,11 @@ const LiabilitiesSection: React.FC<Props> = ({ onTotalsChange }) => {
             </button>
           </div>
         ) : (
-          <button type="submit" disabled={isAdding}>
+          <button 
+            className="rf-btn-primary w-full" 
+            type="submit" 
+            disabled={isAdding}
+          >
             {isAdding ? "Adding..." : "Add Liability"}
           </button>
         )}

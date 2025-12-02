@@ -1,146 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useExpenses } from '../../hooks/useExpenses';
-import { cashSavingsAPI, incomeAPI, assetsAPI, liabilitiesAPI } from '../../utils/api';
-import { incomeTotalsStore } from '../../state/incomeTotalsStore';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState } from 'react';
+import { useUnifiedFinancialData } from '../../hooks/useFinancialData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
-import './SummarySection.css';
 
 type Props = {
-  passiveIncome?: number;
-  totalExpenses?: number;
-  totalIncome?: number;
   balanceSheetVisible?: boolean;
-  totalAssetsProp?: number;
-  totalLiabilitiesProp?: number;
 };
 
 const SummarySection: React.FC<Props> = ({
   balanceSheetVisible = false,
-  totalAssetsProp,
-  totalLiabilitiesProp,
 }) => {
-  const { user } = useAuth();
   const { currency } = useCurrency();
-  const [cashSavings, setCashSavings] = useState<number>(0);
+  
+  // Use the unified financial data hook - replaces store subscriptions and API calls
+  const {
+    cashSavings,
+    incomeTotals,
+    totalExpenses,
+    totalAssets,
+    totalLiabilities,
+    cashflow,
+    netWorth,
+    passiveAndPortfolioIncome,
+    progressPercent,
+    loading,
+    error,
+    initialized,
+    updateCashSavings,
+  } = useUnifiedFinancialData();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('0');
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Income totals from store
-  const [incomeTotals, setIncomeTotals] = useState({ earned: 0, portfolio: 0, passive: 0, total: 0 });
-
-  // Pull total expenses from backend via custom hook
-  const { totalExpenses: totalExpensesDb } = useExpenses();
-
-  // Balance sheet totals
-  const [totalAssets, setTotalAssets] = useState<number>(0);
-  const [totalLiabilities, setTotalLiabilities] = useState<number>(0);
-  const [balanceSheetLoading, setBalanceSheetLoading] = useState(false);
-
-  // Fetch cash savings on component mount
-  useEffect(() => {
-    fetchCashSavings();
-  }, []);
-
-  // Fetch assets and liabilities when balance sheet visibility changes
-  useEffect(() => {
-    if (balanceSheetVisible) {
-      // If parent provided live totals, use them; otherwise fetch from API
-      if (typeof totalAssetsProp === 'number' && typeof totalLiabilitiesProp === 'number') {
-        setBalanceSheetLoading(false);
-        setTotalAssets(totalAssetsProp);
-        setTotalLiabilities(totalLiabilitiesProp);
-      } else {
-        fetchBalanceSheetTotals();
-      }
-    } else {
-      setTotalAssets(0);
-      setTotalLiabilities(0);
-    }
-  }, [balanceSheetVisible]);
-
-  // Update when props change (live totals from parent)
-  useEffect(() => {
-    if (balanceSheetVisible && typeof totalAssetsProp === 'number') {
-      setTotalAssets(totalAssetsProp);
-    }
-    if (balanceSheetVisible && typeof totalLiabilitiesProp === 'number') {
-      setTotalLiabilities(totalLiabilitiesProp);
-    }
-  }, [totalAssetsProp, totalLiabilitiesProp, balanceSheetVisible]);
-
-  const fetchBalanceSheetTotals = async () => {
-    try {
-      setBalanceSheetLoading(true);
-      const assetsResponse = await assetsAPI.getAssets();
-      const liabilitiesResponse = await liabilitiesAPI.getLiabilities();
-
-      const assets = Array.isArray(assetsResponse) ? assetsResponse : [];
-      const liabilities = Array.isArray(liabilitiesResponse) ? liabilitiesResponse : [];
-
-      const assetTotal = assets.reduce((sum: number, a: any) => sum + (typeof a.value === 'number' ? a.value : 0), 0);
-      const liabilityTotal = liabilities.reduce((sum: number, l: any) => sum + (typeof l.value === 'number' ? l.value : 0), 0);
-
-      setTotalAssets(assetTotal);
-      setTotalLiabilities(liabilityTotal);
-    } catch (err: any) {
-      // Error fetching balance sheet totals - silently fail
-    } finally {
-      setBalanceSheetLoading(false);
-    }
-  };
-
-  // Subscribe to income totals store for live updates
-  useEffect(() => {
-    // Seed from store immediately
-    setIncomeTotals(incomeTotalsStore.get());
-
-    const unsub = incomeTotalsStore.subscribe(() => {
-      setIncomeTotals(incomeTotalsStore.get());
-    });
-
-    // Fetch income data once to prime the store if needed
-    const fetchTotals = async () => {
-      try {
-        const response = await incomeAPI.getIncomeLines();
-        const lines = Array.isArray(response) ? response : [];
-        const earned = lines
-          .filter((i: any) => i.type?.toUpperCase() === 'EARNED')
-          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
-        const portfolio = lines
-          .filter((i: any) => i.type?.toUpperCase() === 'PORTFOLIO')
-          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
-        const passive = lines
-          .filter((i: any) => i.type?.toUpperCase() === 'PASSIVE')
-          .reduce((s: number, i: any) => s + (typeof i.amount === 'number' ? i.amount : parseFloat(i.amount)), 0);
-        incomeTotalsStore.replace({ earned, portfolio, passive });
-      } catch (e) {
-        // Error fetching income totals - silently fail
-      }
-    };
-    fetchTotals();
-
-    return () => { unsub(); };
-  }, []);
-
-  const fetchCashSavings = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await cashSavingsAPI.getCashSavings();
-      setCashSavings(response.amount || 0);
-      setEditValue((response.amount || 0).toString());
-    } catch (err: any) {
-      setError('Failed to load cash savings');
-      setCashSavings(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -150,25 +42,24 @@ const SummarySection: React.FC<Props> = ({
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditValue(cashSavings.toString());
-    setError(null);
+    setLocalError(null);
   };
 
   const handleSaveClick = async () => {
     const numValue = parseFloat(editValue);
     
     if (isNaN(numValue) || numValue < 0) {
-      setError('Please enter a valid positive number');
+      setLocalError('Please enter a valid positive number');
       return;
     }
 
     try {
       setSaving(true);
-      setError(null);
-      const response = await cashSavingsAPI.updateCashSavings(numValue);
-      setCashSavings(response.cashSavings.amount);
+      setLocalError(null);
+      await updateCashSavings(numValue);
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update cash savings');
+    } catch (err: unknown) {
+      setLocalError('Failed to update cash savings');
     } finally {
       setSaving(false);
     }
@@ -176,7 +67,7 @@ const SummarySection: React.FC<Props> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditValue(e.target.value);
-    setError(null);
+    setLocalError(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -187,41 +78,41 @@ const SummarySection: React.FC<Props> = ({
     }
   };
   
-  // Calculate values for the summary section
-  // Progress bar: (Passive Income + Portfolio Income) / Total Expenses
-  const passiveAndPortfolioIncome = incomeTotals.passive + incomeTotals.portfolio;
-  const progressPercent = (() => {
-    if (!totalExpensesDb || totalExpensesDb <= 0) return 0;
-    const ratio = passiveAndPortfolioIncome / totalExpensesDb;
-    return Math.min(100, Math.max(0, Math.round(ratio * 100)));
-  })();
-
-  // Cashflow: Total Income - Total Expenses
+  // Use computed values from the unified hook
   const totalIncomeLive = incomeTotals.total;
-  const cashFlow = totalIncomeLive - totalExpensesDb;
-
-  // Net Worth: Total Assets - Total Liabilities (only when balance sheet is visible)
-  const netWorth = totalAssets - totalLiabilities;
   const shouldShowNetWorth = balanceSheetVisible && (totalAssets > 0 || totalLiabilities > 0);
+  const displayError = localError || error;
 
   return (
-    <section className="summary-section">
-      <div className="section-header">
-        <h2 className="section-title">Summary</h2>
+    <section className="flex flex-col h-full min-h-0 overflow-hidden">
+      {/* Section Header */}
+      <div 
+        className="py-4 px-8 text-center font-bold text-white shrink-0"
+        style={{
+          background: 'linear-gradient(135deg, var(--color-purple) 0%, var(--color-purple-light) 100%)',
+          borderRadius: '8px 8px 0 0',
+          fontSize: 'clamp(1.25rem, 3vw + 0.5rem, 1.8rem)'
+        }}
+      >
+        <h2 className="m-0">Summary</h2>
       </div>
 
-      <div className="summary-content">
+      {/* Content */}
+      <div 
+        className="flex-1 p-8 min-h-0 overflow-y-auto"
+        style={{ backgroundColor: 'var(--color-dark)' }}
+      >
         {/* Progress block tracking passive + portfolio income */}
-        <div className="progress-container">
-          <div className="progress-header">
-            <span className="progress-label">Passive + Portfolio Income</span>
-            <span className="progress-amount">
+        <div className="w-full max-w-[820px] mx-auto mb-5 flex flex-col gap-2">
+          <div className="flex justify-between items-center text-[#e8e8f0] text-[0.95rem] font-semibold">
+            <span className="opacity-90">Passive + Portfolio Income</span>
+            <span className="bg-white/5 py-1 px-2.5 rounded-full font-bold text-white text-[0.95rem]">
               {formatCurrency(passiveAndPortfolioIncome, currency)}
             </span>
           </div>
 
           <div
-            className="progress-track"
+            className="rf-progress-track"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -229,112 +120,119 @@ const SummarySection: React.FC<Props> = ({
             aria-label="Passive and portfolio income progress"
           >
             <div
-              className="progress-fill"
+              className="rf-progress-fill"
               style={{ width: `${progressPercent}%` }}
               aria-hidden="true"
             />
           </div>
 
-          <div className="progress-footer">
-            <span className="progress-percent">{progressPercent}%</span>
-            <span className="progress-target">
-              of {formatCurrency(totalExpensesDb, currency)} (Total Expenses)
+          <div className="flex justify-between text-[0.85rem] items-center">
+            <span className="font-bold text-white">{progressPercent}%</span>
+            <span style={{ color: 'var(--color-gold)' }}>
+              of {formatCurrency(totalExpenses, currency)} (Total Expenses)
             </span>
           </div>
         </div>
 
         {/* Bar chart showing Total Income, Total Expenses, and Cashflow */}
-        <div className="graph-card" aria-hidden={false}>
-          <div className="horizontal-graph">
-            <div className="hbar">
-              <div className="hbar-label">Total Income</div>
+        <div className="rf-graph-card" aria-hidden={false}>
+          <div className="flex flex-col gap-3 py-1">
+            <div className="rf-hbar">
+              <div className="rf-hbar-label">Total Income</div>
               <div
-                className="hbar-track"
+                className="rf-hbar-track"
                 role="img"
                 aria-label={`Total income ${totalIncomeLive}`}
               >
                 <div
-                  className="hbar-fill income"
+                  className="rf-hbar-fill rf-hbar-fill-income"
                   style={{ width: `${totalIncomeLive > 0 ? 100 : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">{formatCurrency(totalIncomeLive, currency)}</div>
+              <div className="rf-hbar-value">{formatCurrency(totalIncomeLive, currency)}</div>
             </div>
 
-            <div className="hbar">
-              <div className="hbar-label">Total Expenses</div>
+            <div className="rf-hbar">
+              <div className="rf-hbar-label">Total Expenses</div>
               <div
-                className="hbar-track"
+                className="rf-hbar-track"
                 role="img"
-                aria-label={`Total expenses ${totalExpensesDb}`}
+                aria-label={`Total expenses ${totalExpenses}`}
               >
                 <div
-                  className="hbar-fill expenses"
-                  style={{ width: `${totalExpensesDb > 0 ? Math.min(100, (totalExpensesDb / Math.max(totalIncomeLive, totalExpensesDb, 1)) * 100) : 0}%` }}
+                  className="rf-hbar-fill rf-hbar-fill-expense"
+                  style={{ width: `${totalExpenses > 0 ? Math.min(100, (totalExpenses / Math.max(totalIncomeLive, totalExpenses, 1)) * 100) : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <div className="hbar-value">{formatCurrency(totalExpensesDb, currency)}</div>
+              <div className="rf-hbar-value">{formatCurrency(totalExpenses, currency)}</div>
             </div>
           </div>
 
           {/* Cashflow row inside the same card */}
           <div
-            className={`cashflow-row ${cashFlow < 0 ? 'negative' : 'positive'}`}
+            className={`rf-total-row ${cashflow < 0 ? 'rf-total-negative' : 'rf-total-positive'}`}
           >
-            <div className="cashflow-label">Cashflow</div>
-            <div className="cashflow-amount">
-              {formatCurrency(Math.abs(cashFlow), currency)}
-              {cashFlow < 0 && ' (deficit)'}
+            <div className="rf-total-label">Cashflow</div>
+            <div className="rf-total-amount">
+              {formatCurrency(Math.abs(cashflow), currency)}
+              {cashflow < 0 && ' (deficit)'}
             </div>
           </div>
         </div>
 
         {/* Net Worth row - only shown when balance sheet is visible and there's data */}
         {shouldShowNetWorth && (
-          <div className="graph-card net-worth-card" aria-hidden={!shouldShowNetWorth}>
+          <div className="rf-graph-card" aria-hidden={!shouldShowNetWorth}>
             {/* Horizontal bars for Assets / Liabilities to mirror Income/Expenses visuals */}
-            <div className="horizontal-graph">
-              <div className="hbar">
-                <div className="hbar-label">Total Assets</div>
+            <div className="flex flex-col gap-3 mb-3">
+              <div className="rf-hbar">
+                <div className="rf-hbar-label">Total Assets</div>
                 <div
-                  className="hbar-track"
+                  className="rf-hbar-track"
                   role="img"
                   aria-label={`Total assets ${totalAssets}`}
                 >
                   <div
-                    className="hbar-fill assets"
+                    className="rf-hbar-fill rf-hbar-fill-asset h-full"
                     style={{ width: `${totalAssets > 0 ? Math.min(100, (totalAssets / Math.max(totalAssets, totalLiabilities, 1)) * 100) : 0}%` }}
                     aria-hidden="true"
                   />
                 </div>
-                <div className="hbar-value">{balanceSheetLoading ? '...' : formatCurrency(totalAssets, currency)}</div>
+                <div className="rf-hbar-value">{loading ? '...' : formatCurrency(totalAssets, currency)}</div>
               </div>
 
-              <div className="hbar">
-                <div className="hbar-label">Total Liabilities</div>
+              <div className="rf-hbar">
+                <div className="rf-hbar-label">Total Liabilities</div>
                 <div
-                  className="hbar-track"
+                  className="rf-hbar-track"
                   role="img"
                   aria-label={`Total liabilities ${totalLiabilities}`}
                 >
                   <div
-                    className="hbar-fill liabilities"
+                    className="rf-hbar-fill rf-hbar-fill-liability h-full"
                     style={{ width: `${totalLiabilities > 0 ? Math.min(100, (totalLiabilities / Math.max(totalAssets, totalLiabilities, 1)) * 100) : 0}%` }}
                     aria-hidden="true"
                   />
                 </div>
-                <div className="hbar-value">{balanceSheetLoading ? '...' : formatCurrency(totalLiabilities, currency)}</div>
+                <div className="rf-hbar-value">{loading ? '...' : formatCurrency(totalLiabilities, currency)}</div>
               </div>
             </div>
 
-            <div className={`net-worth-row net-worth-total ${netWorth < 0 ? 'negative' : 'positive'}`}>
-              <div className="net-worth-label">
+            <div 
+              className={`rf-total-row font-bold ${netWorth < 0 ? 'rf-total-negative' : 'rf-total-positive'}`}
+              style={{
+                border: '1px solid rgba(255,255,255,0.03)',
+                padding: '12px 14px',
+                background: 'linear-gradient(90deg, rgba(115,69,175,0.06), rgba(157,109,212,0.03))'
+              }}
+            >
+              <div className="rf-total-label">
                 Net Worth
               </div>
-              <div className="net-worth-amount">
-                {balanceSheetLoading ? '...' : formatCurrency(Math.abs(netWorth), currency)}
+              <div className="rf-total-amount bg-white/5 py-1.5 px-3 rounded-md">
+                {loading ? '...' : formatCurrency(Math.abs(netWorth), currency)}
                 {netWorth < 0 && ' (negative)'}
               </div>
             </div>
@@ -343,17 +241,17 @@ const SummarySection: React.FC<Props> = ({
       </div>
 
       {/* Bottom savings row - User-editable, not auto-calculated */}
-      <div className="savings-bar">
-        <span className="savings-label">Cash / Savings</span>
-        <div className="savings-edit-container">
+      <div className="rf-savings-bar shrink-0 mt-auto">
+        <span className="rf-savings-label">Cash / Savings</span>
+        <div className="flex items-center gap-2">
           {!isEditing ? (
             <>
-              <span className="savings-amount">
+              <span className="rf-savings-amount">
                 {loading ? 'Loading...' : formatCurrency(cashSavings, currency)}
               </span>
               {!loading && (
                 <button 
-                  className="edit-button" 
+                  className="bg-white/5 border border-white/10 text-[#c69df7] py-1.5 px-2 rounded cursor-pointer text-[0.9rem] transition-all duration-200 hover:bg-white/10 hover:scale-105" 
                   onClick={handleEditClick}
                   aria-label="Edit cash savings"
                 >
@@ -362,10 +260,10 @@ const SummarySection: React.FC<Props> = ({
               )}
             </>
           ) : (
-            <div className="savings-edit-form">
+            <div className="flex items-center gap-1.5">
               <input
                 type="number"
-                className="savings-input"
+                className="bg-white/8 border border-white/15 text-white py-1.5 px-2.5 rounded text-[0.95rem] font-bold w-[120px] outline-none transition-all duration-200 focus:bg-white/12 focus:border-(--color-purple) focus:shadow-[0_0_0_2px_rgba(115,69,175,0.2)] disabled:opacity-60 disabled:cursor-not-allowed"
                 value={editValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -376,14 +274,20 @@ const SummarySection: React.FC<Props> = ({
                 disabled={saving}
               />
               <button 
-                className="save-button" 
+                className="py-1.5 px-3 rounded cursor-pointer text-base font-bold transition-all duration-200 border text-white disabled:opacity-60 disabled:cursor-not-allowed hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, var(--color-purple) 0%, var(--color-purple-light) 100%)',
+                  borderColor: 'rgba(115,69,175,0.6)',
+                  boxShadow: '0 2px 8px rgba(115,69,175,0.2)'
+                }}
                 onClick={handleSaveClick}
                 disabled={saving}
               >
                 {saving ? '...' : '✓'}
               </button>
               <button 
-                className="cancel-button" 
+                className="bg-white/5 border border-white/15 py-1.5 px-3 rounded cursor-pointer text-base font-bold transition-all duration-200 hover:bg-white/10 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ color: 'var(--color-gold)' }}
                 onClick={handleCancelEdit}
                 disabled={saving}
               >
@@ -393,9 +297,9 @@ const SummarySection: React.FC<Props> = ({
           )}
         </div>
       </div>
-      {error && (
-        <div className="error-message">
-          {error}
+      {displayError && (
+        <div className="rf-error -mt-2">
+          {displayError}
         </div>
       )}
     </section>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../utils/api';
 import { Currency } from '../../types/currency.types';
 import { formatCurrency } from '../../utils/currency.utils';
-import './UserFinancialView.css';
 
 interface UserFinancialViewProps {
   userId: number;

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './UserGuide.css';
 
 const UserGuide: React.FC = () => {
   const navigate = useNavigate();
@@ -13,108 +12,108 @@ const UserGuide: React.FC = () => {
   };
 
   return (
-    <div className="user-guide-container">
-      <div className="user-guide-content">
-        <h1 className="user-guide-title">Welcome to RichFlow!</h1>
+    <div className="min-h-screen p-4 sm:p-8 flex justify-center items-start" style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}>
+      <div className="max-w-[900px] w-full bg-[#1a1a1a] rounded-xl p-6 sm:p-12 shadow-lg">
+        <h1 className="text-(--color-gold) text-2xl sm:text-4xl font-bold mb-6 text-center border-b-[3px] border-(--color-gold) pb-4">Welcome to RichFlow!</h1>
         
-        <p className="user-guide-intro">
+        <p className="text-white text-base sm:text-lg leading-relaxed mb-8 text-center font-light">
           Hello there, and a warm welcome to the RichFlow family! We're thrilled to have you on board. 
           You've just taken a powerful first step towards mastering your money and building a future of 
           financial freedom. Let's get you started on this exciting journey!
         </p>
 
         {/* Table of Contents */}
-        <nav className="table-of-contents">
-          <h2 className="toc-title">Table of Contents</h2>
-          <div className="toc-grid">
-            <div className="toc-column">
-              <div className="toc-category">Getting Started</div>
-              <ul className="toc-list">
-                <li><button onClick={() => scrollToSection('what-is-richflow')}>What is RichFlow?</button></li>
-                <li><button onClick={() => scrollToSection('dashboard-tour')}>Your Financial Dashboard</button></li>
+        <nav className="bg-linear-to-br from-[rgba(115,69,175,0.15)] to-[rgba(30,30,30,0.8)] border border-[rgba(237,202,105,0.3)] rounded-xl px-4 sm:px-8 py-6 mb-12">
+          <h2 className="text-(--color-gold) text-lg sm:text-xl font-semibold mb-5 text-center border-b-2 border-[rgba(237,202,105,0.3)] pb-3">Table of Contents</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+            <div className="flex flex-col gap-2">
+              <div className="text-(--color-gold) text-xs font-semibold uppercase tracking-wider mt-4 first:mt-0 mb-2 pl-2 border-l-[3px] border-(--color-purple)">Getting Started</div>
+              <ul className="list-none p-0 m-0">
+                <li className="mb-1"><button onClick={() => scrollToSection('what-is-richflow')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">What is RichFlow?</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('dashboard-tour')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">Your Financial Dashboard</button></li>
               </ul>
               
-              <div className="toc-category">Advanced Features</div>
-              <ul className="toc-list">
-                <li><button onClick={() => scrollToSection('analysis-page')}>The Analysis Page</button></li>
-                <li><button onClick={() => scrollToSection('trajectory-charts')}>Financial Trajectory Charts</button></li>
-                <li><button onClick={() => scrollToSection('event-log')}>The Event Log</button></li>
+              <div className="text-(--color-gold) text-xs font-semibold uppercase tracking-wider mt-4 mb-2 pl-2 border-l-[3px] border-(--color-purple)">Advanced Features</div>
+              <ul className="list-none p-0 m-0">
+                <li className="mb-1"><button onClick={() => scrollToSection('analysis-page')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">The Analysis Page</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('trajectory-charts')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">Financial Trajectory Charts</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('event-log')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">The Event Log</button></li>
               </ul>
             </div>
             
-            <div className="toc-column">
-              <div className="toc-category">Key Concepts</div>
-              <ul className="toc-list">
-                <li><button onClick={() => scrollToSection('cashflow-quadrant')}>The CASHFLOW Quadrant</button></li>
-                <li><button onClick={() => scrollToSection('terminology')}>RichFlow Terminology</button></li>
+            <div className="flex flex-col gap-2">
+              <div className="text-(--color-gold) text-xs font-semibold uppercase tracking-wider mt-4 first:mt-0 mb-2 pl-2 border-l-[3px] border-(--color-purple)">Key Concepts</div>
+              <ul className="list-none p-0 m-0">
+                <li className="mb-1"><button onClick={() => scrollToSection('cashflow-quadrant')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">The CASHFLOW Quadrant</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('terminology')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">RichFlow Terminology</button></li>
               </ul>
               
-              <div className="toc-category">Best Practices</div>
-              <ul className="toc-list">
-                <li><button onClick={() => scrollToSection('how-to-use')}>How to Use RichFlow Wisely</button></li>
-                <li><button onClick={() => scrollToSection('path-to-freedom')}>Path to Financial Freedom</button></li>
-                <li><button onClick={() => scrollToSection('journey-starts')}>Your Journey Starts Now</button></li>
+              <div className="text-(--color-gold) text-xs font-semibold uppercase tracking-wider mt-4 mb-2 pl-2 border-l-[3px] border-(--color-purple)">Best Practices</div>
+              <ul className="list-none p-0 m-0">
+                <li className="mb-1"><button onClick={() => scrollToSection('how-to-use')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">How to Use RichFlow Wisely</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('path-to-freedom')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">Path to Financial Freedom</button></li>
+                <li className="mb-1"><button onClick={() => scrollToSection('journey-starts')} className="bg-none border-none text-gray-300 text-sm sm:text-base cursor-pointer py-1.5 px-3 text-left w-full rounded-md transition-all hover:text-(--color-gold) hover:bg-[rgba(237,202,105,0.1)] hover:pl-4">Your Journey Starts Now</button></li>
               </ul>
             </div>
           </div>
         </nav>
 
-        <section id="what-is-richflow" className="guide-section">
-          <h2>What is RichFlow? The 'Why' Behind Your Wealth</h2>
-          <p>
+        <section id="what-is-richflow" className="mb-10 scroll-mt-4">
+          <h2 className="text-(--color-gold) text-xl sm:text-2xl font-semibold mb-4 border-l-4 border-(--color-gold) pl-4">What is RichFlow? The 'Why' Behind Your Wealth</h2>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
             Ever felt like you're stuck in a loop of earning and spending, without ever getting ahead? 
             Robert Kiyosaki, in his groundbreaking book "Rich Dad Poor Dad," calls this the 'Rat Race.' 
             RichFlow is your digital key to breaking free from that cycle.
           </p>
-          <p>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
             We built RichFlow based on one simple, yet profound, principle from the book: 
-            <strong> It's not about how much money you make. It's about how much money you keep.</strong>
+            <strong className="text-(--color-gold) font-semibold"> It's not about how much money you make. It's about how much money you keep.</strong>
           </p>
-          <p>
-            RichFlow helps you do exactly that. It's a personal finance tracker that lets you <em>see</em> exactly 
-            where your money is going, <em>track</em> your income and expense sources, and most importantly, <em>visualize</em> your cash flow. 
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
+            RichFlow helps you do exactly that. It's a personal finance tracker that lets you <em className="text-white italic">see</em> exactly 
+            where your money is going, <em className="text-white italic">track</em> your income and expense sources, and most importantly, <em className="text-white italic">visualize</em> your cash flow. 
             By understanding your financial statement, you can start making informed decisions to grow 
             your wealth and secure your financial future.
           </p>
         </section>
 
-        <section id="dashboard-tour" className="guide-section">
-          <h2>A Quick Tour of RichFlow: Your Financial Dashboard</h2>
-          <p>Let's walk through the features that will become your command center for building wealth.</p>
-          <ul className="feature-list">
-            <li>
-              <strong>The Dashboard:</strong> Your financial world at a glance. The first thing you'll see is an income table and
+        <section id="dashboard-tour" className="mb-10 scroll-mt-4">
+          <h2 className="text-(--color-gold) text-xl sm:text-2xl font-semibold mb-4 border-l-4 border-(--color-gold) pl-4">A Quick Tour of RichFlow: Your Financial Dashboard</h2>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">Let's walk through the features that will become your command center for building wealth.</p>
+          <ul className="list-none pl-0 mt-4">
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">The Dashboard:</strong> Your financial world at a glance. The first thing you'll see is an income table and
               a summary. On the bottom right there is an expense table, for tracking your expenses. Both these tables 
               are part of your income statement, and they are summarized in the summary section. It's designed for clarity, not complexity.
             </li>
-            <li>
-              <strong>Income & Expense Tracking (Income Statement):</strong> Easily add your sources of income and your daily, 
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Income & Expense Tracking (Income Statement):</strong> Easily add your sources of income and your daily, 
               weekly, or monthly expenses. Your income is categorized into three types: Earned, Portfolio, and Passive Income. 
               The more accurately you track, the clearer your financial picture becomes.
             </li>
-            <li>
-              <strong>Summary Section:</strong> This is where the magic happens! The summary section gathers all the data you input in your income 
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Summary Section:</strong> This is where the magic happens! The summary section gathers all the data you input in your income 
               statement and calculates your cashflow based on your total income and expenses.
             </li>
-            <li>
-              <strong>Cash Flow Visualization:</strong> We turn the numbers into a story. With beautiful graphs, you can visually track your cash flow over time. 
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Cash Flow Visualization:</strong> We turn the numbers into a story. With beautiful graphs, you can visually track your cash flow over time. 
               This section also includes a progress bar, which lets you also track how close you are to financial freedom. 
               Financial freedom, as defined in the book, occurs when your passive and portfolio income
               are more than enough to cover your total expenses. Is your money working for you? 
               The visuals will tell you.
             </li>
-            <li>
-              <strong>Cash Savings:</strong> This section in the summary lets you manually set a value for your current savings, or the cash that you currently have at your
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Cash Savings:</strong> This section in the summary lets you manually set a value for your current savings, or the cash that you currently have at your
               disposal. Set at a default value of 0 upon signing up, your cash savings are earned from your income streams and are used to buy assets and pay for 
               liabilities and expenses.
             </li>
-            <li>
-              <strong>Assets & Liabilities Tracking (Balance Sheet):</strong> If you choose to enable the balance sheet, you are provided with an assets and liabilities section.
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Assets & Liabilities Tracking (Balance Sheet):</strong> If you choose to enable the balance sheet, you are provided with an assets and liabilities section.
               This lets you track your assets and liabilities in the same way as your income and expenses. 
               They will also appear on the summary section as your total net worth.
             </li>
-            <li>
-              <strong>Saki AI Assistant:</strong> Saki is RichFlow's integrated AI assistant that gathers the data from your summary section and statements 
+            <li className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4 pl-6 relative before:content-['●'] before:text-(--color-gold) before:text-lg before:absolute before:left-0 before:top-0">
+              <strong className="text-(--color-gold) font-semibold">Saki AI Assistant:</strong> Saki is RichFlow's integrated AI assistant that gathers the data from your summary section and statements 
               and turns them into brief insights and actionable tips on the end of the user.
             </li>
           </ul>
@@ -441,31 +440,31 @@ const UserGuide: React.FC = () => {
           </ul>
         </section>
 
-        <section id="journey-starts" className="guide-section">
-          <h2>Your Journey Starts Now</h2>
-          <p>
+        <section id="journey-starts" className="mb-10 scroll-mt-4">
+          <h2 className="text-(--color-gold) text-xl sm:text-2xl font-semibold mb-4 border-l-4 border-(--color-gold) pl-4">Your Journey Starts Now</h2>
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
             Thank you for choosing RichFlow as your partner in building wealth. Remember, the path to financial 
             independence is a marathon, not a sprint. Every entry you make, every insight you gain, is a step in 
             the right direction.
           </p>
-          <p>
-            As Robert Kiyosaki says: <em>"The single most powerful asset we all have is our mind. If it is 
+          <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-4">
+            As Robert Kiyosaki says: <em className="text-white italic">"The single most powerful asset we all have is our mind. If it is 
             trained well, it can create enormous wealth."</em> RichFlow is here to train your financial mind 
             and give you the tools to create that wealth.
           </p>
-          <p className="closing-message">
+          <p className="text-base sm:text-lg font-medium text-(--color-gold) text-center mt-6">
             Welcome once again to RichFlow. We can't wait to see you escape the Rat Race and thrive!
           </p>
         </section>
 
-        <button className="user-guide-back-button" onClick={() => navigate('/dashboard')}>
+        <button className="block mx-auto my-8 bg-linear-to-r from-(--color-gold) to-[#f2d06b] text-black text-base sm:text-lg font-bold border-none rounded-lg py-4 px-10 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(237,202,105,0.4)] active:translate-y-0" onClick={() => navigate('/dashboard')}>
           Back to Dashboard
         </button>
 
-        <footer className="user-guide-footer">
+        <footer className="mt-12 pt-6 border-t border-[#333] text-center text-gray-500 text-sm">
           <p>© 2025 RichFlow.</p>
-          <div className="footer-links">
-            <span>About Us</span> - <span>Privacy Policy</span> - <span>Contact Support</span>
+          <div className="mt-2">
+            <span className="text-(--color-gold) cursor-pointer transition-colors hover:text-[#f2d06b] hover:underline">About Us</span> - <span className="text-(--color-gold) cursor-pointer transition-colors hover:text-[#f2d06b] hover:underline">Privacy Policy</span> - <span className="text-(--color-gold) cursor-pointer transition-colors hover:text-[#f2d06b] hover:underline">Contact Support</span>
           </div>
         </footer>
       </div>

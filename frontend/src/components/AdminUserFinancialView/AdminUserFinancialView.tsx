@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../utils/api';
 import { Currency } from '../../types/currency.types';
 import { formatCurrency } from '../../utils/currency.utils';
-import './AdminUserFinancialView.css';
 
 interface AdminUserFinancialViewProps {
   userId: number;
@@ -106,10 +105,10 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
 
   if (loading) {
     return (
-      <div className="admin-financial-view">
-        <div className="admin-financial-header">
-          <button className="back-button" onClick={onBack}>← Back to Users</button>
-          <h2>Loading financial data...</h2>
+      <div className="w-full p-5 pb-16 min-h-screen bg-black text-white">
+        <div className="mb-8">
+          <button className="inline-flex items-center gap-2 mb-4 py-2 px-4 rounded-lg cursor-pointer transition-all border-none bg-linear-to-br from-(--color-purple) to-[#9d6dd4] text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(115,69,175,0.4)]" onClick={onBack}>← Back to Users</button>
+          <h2 className="text-xl font-bold text-(--color-gold)">Loading financial data...</h2>
         </div>
       </div>
     );
@@ -117,22 +116,22 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
 
   if (error) {
     return (
-      <div className="admin-financial-view">
-        <div className="admin-financial-header">
-          <button className="back-button" onClick={onBack}>← Back to Users</button>
-          <h2>Error Loading Data</h2>
+      <div className="w-full p-5 pb-16 min-h-screen bg-black text-white">
+        <div className="mb-8">
+          <button className="inline-flex items-center gap-2 mb-4 py-2 px-4 rounded-lg cursor-pointer transition-all border-none bg-linear-to-br from-(--color-purple) to-[#9d6dd4] text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(115,69,175,0.4)]" onClick={onBack}>← Back to Users</button>
+          <h2 className="text-xl font-bold text-(--color-gold)">Error Loading Data</h2>
         </div>
-        <div className="error-box">{error}</div>
+        <div className="bg-red-900/30 border border-red-500 text-red-300 p-4 rounded-lg">{error}</div>
       </div>
     );
   }
 
   if (!financialData) {
     return (
-      <div className="admin-financial-view">
-        <div className="admin-financial-header">
-          <button className="back-button" onClick={onBack}>← Back to Users</button>
-          <h2>No Data Available</h2>
+      <div className="w-full p-5 pb-16 min-h-screen bg-black text-white">
+        <div className="mb-8">
+          <button className="inline-flex items-center gap-2 mb-4 py-2 px-4 rounded-lg cursor-pointer transition-all border-none bg-linear-to-br from-(--color-purple) to-[#9d6dd4] text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(115,69,175,0.4)]" onClick={onBack}>← Back to Users</button>
+          <h2 className="text-xl font-bold text-(--color-gold)">No Data Available</h2>
         </div>
       </div>
     );
@@ -159,26 +158,26 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
   const cashSavings = financialData.cashSavings?.amount || 0;
 
   return (
-    <div className="admin-financial-view">
+    <div className="w-full p-5 pb-16 min-h-screen bg-black text-white">
       {/* Header with back button and user info */}
-      <div className="admin-financial-header">
-        <button className="back-button" onClick={onBack}>← Back to Users</button>
-        <div className="user-info-row">
-          <div className="user-info-item">
-            <span className="info-label">Name:</span>
-            <span className="info-value">{userName}</span>
+      <div className="mb-8">
+        <button className="inline-flex items-center gap-2 mb-4 py-2 px-4 rounded-lg cursor-pointer transition-all border-none bg-linear-to-br from-(--color-purple) to-[#9d6dd4] text-white text-sm font-semibold hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(115,69,175,0.4)]" onClick={onBack}>← Back to Users</button>
+        <div className="flex flex-wrap gap-6 p-4 bg-(--color-card) rounded-lg border border-(--color-border)">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-gray-400 uppercase tracking-wider">Name</span>
+            <span className="text-base font-semibold text-(--color-gold)">{userName}</span>
           </div>
-          <div className="user-info-item">
-            <span className="info-label">Email:</span>
-            <span className="info-value">{financialData.user.email}</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-gray-400 uppercase tracking-wider">Email</span>
+            <span className="text-base font-semibold text-white">{financialData.user.email}</span>
           </div>
-          <div className="user-info-item">
-            <span className="info-label">Created:</span>
-            <span className="info-value">{new Date(financialData.user.createdAt).toLocaleDateString()}</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-gray-400 uppercase tracking-wider">Created</span>
+            <span className="text-base font-semibold text-white">{new Date(financialData.user.createdAt).toLocaleDateString()}</span>
           </div>
-          <div className="user-info-item">
-            <span className="info-label">Last Login:</span>
-            <span className="info-value">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-gray-400 uppercase tracking-wider">Last Login</span>
+            <span className="text-base font-semibold text-white">
               {financialData.user.lastLogin ? new Date(financialData.user.lastLogin).toLocaleDateString() : 'Never'}
             </span>
           </div>
@@ -186,39 +185,39 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
       </div>
 
       {/* Summary Cards */}
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="card-label">Total Income</div>
-          <div className="card-value income-value">{formatCurrency(totalIncome, userCurrency)}</div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+          <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Total Income</div>
+          <div className="text-xl font-bold text-green-400">{formatCurrency(totalIncome, userCurrency)}</div>
         </div>
-        <div className="summary-card">
-          <div className="card-label">Total Expenses</div>
-          <div className="card-value expense-value">{formatCurrency(totalExpenses, userCurrency)}</div>
+        <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+          <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Total Expenses</div>
+          <div className="text-xl font-bold text-red-400">{formatCurrency(totalExpenses, userCurrency)}</div>
         </div>
-        <div className="summary-card">
-          <div className="card-label">Cashflow</div>
-          <div className={`card-value ${cashflow >= 0 ? 'positive-value' : 'negative-value'}`}>
+        <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+          <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Cashflow</div>
+          <div className={`text-xl font-bold ${cashflow >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {formatCurrency(Math.abs(cashflow), userCurrency)}
             {cashflow < 0 && ' (deficit)'}
           </div>
         </div>
-        <div className="summary-card">
-          <div className="card-label">Cash/Savings</div>
-          <div className="card-value">{formatCurrency(cashSavings, userCurrency)}</div>
+        <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+          <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Cash/Savings</div>
+          <div className="text-xl font-bold text-(--color-gold)">{formatCurrency(cashSavings, userCurrency)}</div>
         </div>
         {financialData.balanceSheet && (
           <>
-            <div className="summary-card">
-              <div className="card-label">Total Assets</div>
-              <div className="card-value asset-value">{formatCurrency(totalAssets, userCurrency)}</div>
+            <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Total Assets</div>
+              <div className="text-xl font-bold text-(--color-purple)">{formatCurrency(totalAssets, userCurrency)}</div>
             </div>
-            <div className="summary-card">
-              <div className="card-label">Total Liabilities</div>
-              <div className="card-value liability-value">{formatCurrency(totalLiabilities, userCurrency)}</div>
+            <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Total Liabilities</div>
+              <div className="text-xl font-bold text-orange-400">{formatCurrency(totalLiabilities, userCurrency)}</div>
             </div>
-            <div className="summary-card">
-              <div className="card-label">Net Worth</div>
-              <div className={`card-value ${netWorth >= 0 ? 'positive-value' : 'negative-value'}`}>
+            <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(115,69,175,0.2)]">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Net Worth</div>
+              <div className={`text-xl font-bold ${netWorth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatCurrency(Math.abs(netWorth), userCurrency)}
                 {netWorth < 0 && ' (negative)'}
               </div>
@@ -228,204 +227,204 @@ const AdminUserFinancialView: React.FC<AdminUserFinancialViewProps> = ({ userId,
       </div>
 
       {/* Data Tables */}
-      <div className="data-section">
-        <h3>Income Breakdown</h3>
-        <div className="table-grid">
-          <div className="data-table-container">
-            <h4>Earned Income</h4>
+      <div className="mb-8">
+        <h3 className="text-lg font-bold text-(--color-gold) mb-4 pb-2 border-b border-(--color-border)">Income Breakdown</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
+            <h4 className="text-base font-semibold text-(--color-purple) mb-3">Earned Income</h4>
             {earnedIncome.length > 0 ? (
-              <table className="data-table">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Amount</th>
+                  <tr className="border-b border-(--color-border)">
+                    <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                    <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {earnedIncome.map((income) => (
-                    <tr key={income.id}>
-                      <td>{income.name}</td>
-                      <td>{formatCurrency(income.amount, userCurrency)}</td>
+                    <tr key={income.id} className="border-b border-(--color-border)/50">
+                      <td className="py-2 px-3 text-sm text-white">{income.name}</td>
+                      <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr>
-                    <td>Total</td>
-                    <td>{formatCurrency(totalEarnedIncome, userCurrency)}</td>
+                  <tr className="bg-(--color-dark)">
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total</td>
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalEarnedIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
             ) : (
-              <p className="no-data-text">No earned income recorded</p>
+              <p className="text-sm text-gray-500 italic">No earned income recorded</p>
             )}
           </div>
 
-          <div className="data-table-container">
-            <h4>Portfolio Income</h4>
+          <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
+            <h4 className="text-base font-semibold text-(--color-purple) mb-3">Portfolio Income</h4>
             {portfolioIncome.length > 0 ? (
-              <table className="data-table">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Amount</th>
+                  <tr className="border-b border-(--color-border)">
+                    <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                    <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {portfolioIncome.map((income) => (
-                    <tr key={income.id}>
-                      <td>{income.name}</td>
-                      <td>{formatCurrency(income.amount, userCurrency)}</td>
+                    <tr key={income.id} className="border-b border-(--color-border)/50">
+                      <td className="py-2 px-3 text-sm text-white">{income.name}</td>
+                      <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr>
-                    <td>Total</td>
-                    <td>{formatCurrency(totalPortfolioIncome, userCurrency)}</td>
+                  <tr className="bg-(--color-dark)">
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total</td>
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalPortfolioIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
             ) : (
-              <p className="no-data-text">No portfolio income recorded</p>
+              <p className="text-sm text-gray-500 italic">No portfolio income recorded</p>
             )}
           </div>
 
-          <div className="data-table-container">
-            <h4>Passive Income</h4>
+          <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
+            <h4 className="text-base font-semibold text-(--color-purple) mb-3">Passive Income</h4>
             {passiveIncome.length > 0 ? (
-              <table className="data-table">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Amount</th>
+                  <tr className="border-b border-(--color-border)">
+                    <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                    <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {passiveIncome.map((income) => (
-                    <tr key={income.id}>
-                      <td>{income.name}</td>
-                      <td>{formatCurrency(income.amount, userCurrency)}</td>
+                    <tr key={income.id} className="border-b border-(--color-border)/50">
+                      <td className="py-2 px-3 text-sm text-white">{income.name}</td>
+                      <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(income.amount, userCurrency)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr>
-                    <td>Total</td>
-                    <td>{formatCurrency(totalPassiveIncome, userCurrency)}</td>
+                  <tr className="bg-(--color-dark)">
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total</td>
+                    <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalPassiveIncome, userCurrency)}</td>
                   </tr>
                 </tfoot>
               </table>
             ) : (
-              <p className="no-data-text">No passive income recorded</p>
+              <p className="text-sm text-gray-500 italic">No passive income recorded</p>
             )}
           </div>
         </div>
       </div>
 
-      <div className="data-section">
-        <h3>Expenses</h3>
-        <div className="full-width-table">
+      <div className="mb-8">
+        <h3 className="text-lg font-bold text-(--color-gold) mb-4 pb-2 border-b border-(--color-border)">Expenses</h3>
+        <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
           {expenses.length > 0 ? (
-            <table className="data-table">
+            <table className="w-full border-collapse">
               <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Amount</th>
+                <tr className="border-b border-(--color-border)">
+                  <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                  <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Amount</th>
                 </tr>
               </thead>
               <tbody>
                 {expenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{expense.name}</td>
-                    <td>{formatCurrency(expense.amount, userCurrency)}</td>
+                  <tr key={expense.id} className="border-b border-(--color-border)/50">
+                    <td className="py-2 px-3 text-sm text-white">{expense.name}</td>
+                    <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(expense.amount, userCurrency)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr>
-                  <td>Total</td>
-                  <td>{formatCurrency(totalExpenses, userCurrency)}</td>
+                <tr className="bg-(--color-dark)">
+                  <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total</td>
+                  <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalExpenses, userCurrency)}</td>
                 </tr>
               </tfoot>
             </table>
           ) : (
-            <p className="no-data-text">No expenses recorded</p>
+            <p className="text-sm text-gray-500 italic">No expenses recorded</p>
           )}
         </div>
       </div>
 
       {/* Balance Sheet Section */}
       {financialData.balanceSheet ? (
-        <div className="data-section">
-          <h3>Balance Sheet</h3>
-          <div className="table-grid-two">
-            <div className="data-table-container">
-              <h4>Assets</h4>
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-(--color-gold) mb-4 pb-2 border-b border-(--color-border)">Balance Sheet</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
+              <h4 className="text-base font-semibold text-(--color-purple) mb-3">Assets</h4>
               {financialData.balanceSheet.assets.length > 0 ? (
-                <table className="data-table">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Value</th>
+                    <tr className="border-b border-(--color-border)">
+                      <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                      <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {financialData.balanceSheet.assets.map((asset) => (
-                      <tr key={asset.id}>
-                        <td>{asset.name}</td>
-                        <td>{formatCurrency(asset.value, userCurrency)}</td>
+                      <tr key={asset.id} className="border-b border-(--color-border)/50">
+                        <td className="py-2 px-3 text-sm text-white">{asset.name}</td>
+                        <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(asset.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr>
-                      <td>Total Assets</td>
-                      <td>{formatCurrency(totalAssets, userCurrency)}</td>
+                    <tr className="bg-(--color-dark)">
+                      <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total Assets</td>
+                      <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalAssets, userCurrency)}</td>
                     </tr>
                   </tfoot>
                 </table>
               ) : (
-                <p className="no-data-text">No assets recorded</p>
+                <p className="text-sm text-gray-500 italic">No assets recorded</p>
               )}
             </div>
 
-            <div className="data-table-container">
-              <h4>Liabilities</h4>
+            <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-4">
+              <h4 className="text-base font-semibold text-(--color-purple) mb-3">Liabilities</h4>
               {financialData.balanceSheet.liabilities.length > 0 ? (
-                <table className="data-table">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Value</th>
+                    <tr className="border-b border-(--color-border)">
+                      <th className="py-2 px-3 text-left text-xs text-gray-400 uppercase">Name</th>
+                      <th className="py-2 px-3 text-right text-xs text-gray-400 uppercase">Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {financialData.balanceSheet.liabilities.map((liability) => (
-                      <tr key={liability.id}>
-                        <td>{liability.name}</td>
-                        <td>{formatCurrency(liability.value, userCurrency)}</td>
+                      <tr key={liability.id} className="border-b border-(--color-border)/50">
+                        <td className="py-2 px-3 text-sm text-white">{liability.name}</td>
+                        <td className="py-2 px-3 text-sm text-white text-right">{formatCurrency(liability.value, userCurrency)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr>
-                      <td>Total Liabilities</td>
-                      <td>{formatCurrency(totalLiabilities, userCurrency)}</td>
+                    <tr className="bg-(--color-dark)">
+                      <td className="py-2 px-3 text-sm font-semibold text-(--color-gold)">Total Liabilities</td>
+                      <td className="py-2 px-3 text-sm font-semibold text-(--color-gold) text-right">{formatCurrency(totalLiabilities, userCurrency)}</td>
                     </tr>
                   </tfoot>
                 </table>
               ) : (
-                <p className="no-data-text">No liabilities recorded</p>
+                <p className="text-sm text-gray-500 italic">No liabilities recorded</p>
               )}
             </div>
           </div>
         </div>
       ) : (
-        <div className="data-section">
-          <h3>Balance Sheet</h3>
-          <div className="no-balance-sheet-notice">
-            <p>This user has not created a balance sheet yet.</p>
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-(--color-gold) mb-4 pb-2 border-b border-(--color-border)">Balance Sheet</h3>
+          <div className="bg-(--color-card) border border-(--color-border) rounded-xl p-6 text-center">
+            <p className="text-gray-400">This user has not created a balance sheet yet.</p>
           </div>
         </div>
       )}

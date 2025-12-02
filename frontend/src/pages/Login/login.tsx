@@ -39,37 +39,25 @@ const Login: React.FC = () => {
   // Show loading while checking session
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}>
-        <div className="text-gold text-2xl">Loading...</div>
+      <div className="rf-auth-page">
+        <div className="text-(--color-gold) text-2xl">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div 
-      className="text-white w-screen h-screen flex items-center justify-center px-4" 
-      style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
-    >
-      <div 
-        className="bg-opacity-60 backdrop-blur-sm rounded-lg flex items-center justify-center flex-col gap-7 p-8 w-full max-w-md mx-auto" 
-        style={{ 
-          backgroundColor: '#171717',
-          minHeight: '500px',
-          boxSizing: 'border-box'
-        }}
-      >
-        <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-dark rounded-full flex items-center justify-center">
+    <div className="rf-auth-page">
+      <div className="rf-auth-card">
+        <div className="rf-auth-logo">
+          <div className="rf-auth-logo-icon">
             <img src="/assets/richflow.png" alt="RichFlow Logo" />
           </div>
-          <span className="text-3xl sm:text-5xl font-bold text-gold">RichFlow</span>
+          <span className="rf-auth-logo-text">RichFlow</span>
         </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col items-center justify-center gap-5 w-full max-w-md">
+        <form onSubmit={handleLogin} className="rf-auth-form">
           {error && (
-            <div className="w-full p-3 bg-red-500 bg-opacity-20 text-red-300 rounded-lg text-center">
-              {error}
-            </div>
+            <div className="rf-auth-error">{error}</div>
           )}
           
           <input 
@@ -77,7 +65,7 @@ const Login: React.FC = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-[50px] px-6 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
+            className="rf-auth-input"
             required
           />
 
@@ -86,16 +74,14 @@ const Login: React.FC = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-[50px] px-4 py-3 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
+            className="rf-auth-input"
             required
           />
 
           <button 
             type="submit"
             disabled={isLoading}
-            className={`bg-purple w-full sm:w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect ${
-              isLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className="rf-auth-btn"
           >
             {isLoading ? 'Loading...' : 'Log in'}
           </button>

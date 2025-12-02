@@ -1,6 +1,5 @@
 import React from 'react';
 import { IncomeLine } from '../../types/income.types';
-import './IncomeSection.css';
 
 interface Props {
   incomeLines: IncomeLine[];

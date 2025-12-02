@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FinancialDataProvider } from '../../context/FinancialDataContext';
 import { balanceSheetAPI } from '../../utils/api';
 import Header from '../../components/Header/Header';
 import Sidebar from '../../components/Sidebar/Sidebar';
@@ -11,7 +10,6 @@ import SummarySection from '../../components/SummarySection/SummarySection';
 import ExpensesSection from '../../components/ExpensesSection/ExpensesSection';
 import AssetsSection from '../../components/AssetsSection/AssetsSection';
 import LiabilitiesSection from '../../components/LiabilitiesSection/LiabilitiesSection';
-import './Dashboard.css';
 import RightSidePanel from '../../components/RightSidePanel/RightSidePanel';
 import SakiAssistant from '../../components/RightSidePanel/SakiAssistant';
 
@@ -30,8 +28,6 @@ const Dashboard: React.FC = () => {
     }
   });
   const [balanceSheetExists, setBalanceSheetExists] = useState(false);
-  const [totalAssets, setTotalAssets] = useState<number>(0);
-  const [totalLiabilities, setTotalLiabilities] = useState<number>(0);
 
   useEffect(() => {
     // Only redirect if loading is complete and user is not authenticated
@@ -72,8 +68,8 @@ const Dashboard: React.FC = () => {
   // Show loading while checking authentication
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#000000' }}>
-        <div className="text-gold text-2xl">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-(--color-gold) text-2xl">Loading...</div>
       </div>
     );
   }
@@ -103,55 +99,49 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <FinancialDataProvider>
-      <div className="dashboard-container">
-        <Header 
-          onAddBalanceSheet={handleAddBalanceSheet} 
-          onToggleBalanceSheet={handleToggleBalanceSheet} 
-          balanceSheetExists={balanceSheetExists} 
-          balanceSheetVisible={showBalanceSheet}
+    <div className="rf-dashboard">
+      <Header 
+        onAddBalanceSheet={handleAddBalanceSheet} 
+        onToggleBalanceSheet={handleToggleBalanceSheet} 
+        balanceSheetExists={balanceSheetExists} 
+        balanceSheetVisible={showBalanceSheet}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        sidebarOpen={sidebarOpen}
+      />
+      <div className="rf-dashboard-main">
+        <Sidebar 
+          onOpenAssistant={() => setPanelOpen(true)} 
+          mobileOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          sidebarOpen={sidebarOpen}
         />
-        <div className="dashboard-main">
-          <Sidebar 
-            onOpenAssistant={() => setPanelOpen(true)} 
-            mobileOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          />
-          <main className="dashboard-content" style={{ backgroundColor: '#000000' }}>
-            <div className="dashboard-grid">
-              <div className="grid-left">
-                <IncomeSection />
+        <main className="rf-dashboard-content bg-black">
+          <div className="rf-dashboard-grid">
+            <div className="flex flex-col min-h-0">
+              <IncomeSection />
+            </div>
+            <div className="flex flex-col gap-8 min-h-0">
+              <div className="flex-1 min-h-[300px]">
+                <SummarySection
+                  balanceSheetVisible={showBalanceSheet}
+                />
               </div>
-              <div className="grid-right">
-                <div className="grid-right-top">
-                  <SummarySection
-                    balanceSheetVisible={showBalanceSheet}
-                    totalAssetsProp={totalAssets}
-                    totalLiabilitiesProp={totalLiabilities}
-                  />
-                </div>
-                <div className="grid-right-bottom">
-                  <ExpensesSection />
-                </div>
+              <div className="flex-1 min-h-[300px]">
+                <ExpensesSection />
               </div>
             </div>
-            {showBalanceSheet && balanceSheetExists && (
-              <div className="balance-sheet-section">
-                <div className="balance-sheet-grid">
-                  <AssetsSection onTotalsChange={(t: number) => setTotalAssets(t)} />
-                  <LiabilitiesSection onTotalsChange={(t: number) => setTotalLiabilities(t)} />
-                </div>
-              </div>
-            )}
-          </main>
-        </div>
-        <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
-          <SakiAssistant isOpen={panelOpen} includeBalanceSheet={showBalanceSheet} />
-        </RightSidePanel>
+          </div>
+          {showBalanceSheet && balanceSheetExists && (
+            <div className="rf-balance-sheet">
+              <AssetsSection />
+              <LiabilitiesSection />
+            </div>
+          )}
+        </main>
       </div>
-    </FinancialDataProvider>
+      <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
+        <SakiAssistant isOpen={panelOpen} includeBalanceSheet={showBalanceSheet} />
+      </RightSidePanel>
+    </div>
   );
 };
 

@@ -9,7 +9,6 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
   AreaChart, Area, LineChart, Line, Bar, XAxis, YAxis, CartesianGrid, ReferenceLine, ComposedChart, ReferenceDot
 } from 'recharts';
-import './Analysis.css';
 
 type SnapshotData = {
   date: string;

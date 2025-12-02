@@ -1,4 +1,3 @@
-import './RightSidePanel.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { aiAPI } from '../../utils/api';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -123,7 +122,7 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
       <div className="saki-header">
         <h2 className="saki-title">Financial Insights</h2>
         <button className="saki-refresh-btn" onClick={loadAnalysis} disabled={loading} aria-label="Refresh analysis">
-          {loading ? '⟳ Loading…' : '⟳ Refresh'}
+          {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
 
@@ -136,11 +135,11 @@ const SakiAssistant: React.FC<Props> = ({ isOpen = false, includeBalanceSheet = 
             <div key={index} className="saki-category">
               <h3 className="saki-category-title">{category.title}</h3>
               <div className="saki-insight">
-                <span className="saki-label">💡 Insight:</span>
+                <span className="saki-label">Insight</span>
                 <p className="saki-text">{category.insight}</p>
               </div>
               <div className="saki-tip">
-                <span className="saki-label">✨ Suggested Action:</span>
+                <span className="saki-label">Suggested Action</span>
                 <p className="saki-text">{category.tip}</p>
               </div>
             </div>

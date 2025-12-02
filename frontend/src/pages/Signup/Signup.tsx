@@ -83,84 +83,66 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div 
-      className="text-white w-screen h-screen flex items-center justify-center px-4" 
-      style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
-    >
-      <div 
-        className="bg-opacity-60 backdrop-blur-sm rounded-lg flex items-center justify-center flex-col gap-7 p-6 sm:p-8 w-full max-w-md mx-auto" 
-        style={{ 
-          backgroundColor: '#171717',
-          minHeight: '600px',
-          boxSizing: 'border-box'
-        }}
-      >
-        {/* Box */}
-        <form onSubmit={handleSubmit} className="bg-opacity-60 w-full flex items-center justify-center flex-col gap-5 backdrop-blur-sm p-4 sm:p-8 rounded bg-#171717">
-          <div className="flex items-center gap-3 mb-4 sm:mb-8 justify-center">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-dark rounded-full flex items-center justify-center">
-              <img src="/assets/richflow.png" alt="RichFlow Logo" />
-            </div>
-            <span className="text-3xl sm:text-5xl font-bold text-gold">RichFlow</span>
+    <div className="rf-auth-page">
+      <div className="rf-auth-card" style={{ minHeight: '600px' }}>
+        <div className="rf-auth-logo">
+          <div className="rf-auth-logo-icon">
+            <img src="/assets/richflow.png" alt="RichFlow Logo" />
           </div>
-          
-          {/* Error Message */}
+          <span className="rf-auth-logo-text">RichFlow</span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="rf-auth-form">
           {error && (
-            <div className="w-full p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-300 text-sm">
-              {error}
-            </div>
+            <div className="rf-auth-error">{error}</div>
           )}
           
-          {/* Input Fields */}
-          <div className="flex flex-col items-center justify-center gap-5 w-full max-w-md">
-            <input 
-              type="text" 
-              name="username"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full h-[50px] px-6 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
-            />
-            
-            <input 
-              type="email" 
-              name="email"
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full h-[50px] px-6 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
-              required
-            />
-            
-            <input 
-              type="password" 
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full h-[50px] px-6 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
-              required
-            />
-            
-            <input 
-              type="password" 
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full h-[50px] px-6 rounded-lg bg-gray-300 text-gray-700 placeholder-gray-600 font-bold focus:outline-none focus:ring-2 focus:ring-purple input"
-              required
-            />
-            
-            {/* Button */}
-            <button 
-              type="submit"
-              disabled={loading}
-              className="bg-purple w-full sm:w-[150px] h-[50px] text-gold px-8 py-3 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition btn-hover-effect disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating...' : 'Sign Up'}
-            </button>
-          </div>
+          <input 
+            type="text" 
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            className="rf-auth-input"
+          />
+          
+          <input 
+            type="email" 
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            className="rf-auth-input"
+            required
+          />
+          
+          <input 
+            type="password" 
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="rf-auth-input"
+            required
+          />
+          
+          <input 
+            type="password" 
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="rf-auth-input"
+            required
+          />
+          
+          <button 
+            type="submit"
+            disabled={loading}
+            className="rf-auth-btn"
+          >
+            {loading ? 'Creating...' : 'Sign Up'}
+          </button>
         </form>
       </div>
     </div>

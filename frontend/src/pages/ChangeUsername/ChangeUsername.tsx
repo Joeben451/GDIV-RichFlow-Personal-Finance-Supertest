@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import './ChangeUsername.css';
 
 const ChangeUsername: React.FC = () => {
   const { user, updateUsername } = useAuth();
@@ -54,17 +53,17 @@ const ChangeUsername: React.FC = () => {
   };
 
   return (
-    <div className="change-username-page">
-      <div className="change-username-card">
-        <button type="button" className="change-username-back-button" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+    <div className="rf-settings-page">
+      <div className="rf-settings-card">
+        <button type="button" className="rf-settings-back-btn" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
         <h2>Change Username</h2>
-        <p className="change-username-small-note">Your current username: <strong>{user?.name || '—'}</strong></p>
+        <p className="rf-settings-note">Your current username: <strong>{user?.name || '—'}</strong></p>
 
-        <form className="change-username-form" onSubmit={handleSubmit}>
-          {error && <div className="change-username-error">{error}</div>}
-          {success && <div className="change-username-success">{success}</div>}
+        <form className="rf-settings-form" onSubmit={handleSubmit}>
+          {error && <div className="rf-settings-error">{error}</div>}
+          {success && <div className="rf-settings-success">{success}</div>}
 
-          <label className="full">
+          <label>
             Confirm current username
             <input
               type="text"
@@ -97,7 +96,7 @@ const ChangeUsername: React.FC = () => {
             />
           </label>
 
-          <button className="full" type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Change Username'}</button>
+          <button type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Change Username'}</button>
         </form>
       </div>
     </div>

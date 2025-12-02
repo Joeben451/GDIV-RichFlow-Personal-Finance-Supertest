@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import CurrencySelector from '../CurrencySelector/CurrencySelector';
-import './Sidebar.css';
 
 type Props = {
   onOpenAssistant?: () => void;
@@ -51,135 +50,123 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
     <>
       {/* Mobile Overlay */}
       <div 
-        className={`sidebar-overlay ${mobileOpen ? 'active' : ''}`}
+        className={`rf-sidebar-overlay ${mobileOpen ? 'active' : ''}`}
         onClick={closeSidebar}
       ></div>
 
       <aside 
-        className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
+        className={`rf-sidebar ${mobileOpen ? 'open' : ''}`}
       >
       
       {/* User Info Section */}
-      <div className="sidebar-user-info">
-        <div className="sidebar-user-avatar">
-          <img src="/assets/richflow.png" alt="RichFlow Logo" className="sidebar-user-logo" />
+      <div className="rf-sidebar-user">
+        <div className="rf-sidebar-avatar">
+          <img src="/assets/richflow.png" alt="RichFlow Logo" />
         </div>
-        <div className="sidebar-user-details">
-          <span className="sidebar-user-name">{user?.name}</span>
-          <span className="sidebar-user-email">{user?.email}</span>
+        <div className="rf-sidebar-user-details">
+          <span className="rf-sidebar-user-name">{user?.name}</span>
+          <span className="rf-sidebar-user-email">{user?.email}</span>
         </div>
       </div>
 
       {/* Home Button */}
-      <div className="sidebar-section">
+      <div className="rf-sidebar-section">
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate("/"); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text home"> Home </span>
+          <span className="rf-sidebar-text home"> Home </span>
         </button>
       </div>
 
       {/* General Section */}
-      <div className="sidebar-section">
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> General </span>
+      <div className="rf-sidebar-section">
+        <button className="rf-sidebar-label">
+          <span> General </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate("/user-guide"); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> User Guide </span>
+          <span className="rf-sidebar-text"> User Guide </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => setShowCurrencyModal(true)}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Currency </span>
+          <span className="rf-sidebar-text"> Change Currency </span>
         </button>
 
         {!isAnalysisPage && (
           <button 
-            className="selection large"
+            className="rf-sidebar-btn"
             onClick={handleAssistantClick}
           > 
-            <div className="sidebar-button large"></div>
-            <span className="sidebar-text"> Saki Assistant </span>
+            <span className="rf-sidebar-text"> Saki Assistant </span>
           </button>
         )}
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate('/event-log'); closeSidebar(); }}
         >
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> View Event Log </span>
+          <span className="rf-sidebar-text"> View Event Log </span>
         </button> 
         
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate(dynamicPageRoute); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> {dynamicPageLabel} </span>
+          <span className="rf-sidebar-text"> {dynamicPageLabel} </span>
         </button>
       </div>
 
       {/* Settings Section */}
-      <div className="sidebar-section">
-        <button className="selection small">
-          <div className="sidebar-button small"></div>
-          <span className="sidebar-text"> Settings </span>
+      <div className="rf-sidebar-section">
+        <button className="rf-sidebar-label">
+          <span> Settings </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate('/change-username'); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Username </span>
+          <span className="rf-sidebar-text"> Change Username </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate('/change-email'); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Email </span>
+          <span className="rf-sidebar-text"> Change Email </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { navigate('/change-password'); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Change Password </span>
+          <span className="rf-sidebar-text"> Change Password </span>
         </button>
 
         <button 
-          className="selection large" 
+          className="rf-sidebar-btn" 
           onClick={() => { handleLogout(); closeSidebar(); }}
         > 
-          <div className="sidebar-button large"></div>
-          <span className="sidebar-text"> Log Out </span>
+          <span className="rf-sidebar-text"> Log Out </span>
         </button>
       </div>
 
       {/* Currency Selection Modal */}
       {showCurrencyModal && (
-        <div className="currency-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
-          <div className="currency-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="currency-modal-header">
-              <h2>Select Currency</h2>
-              <button className="currency-modal-close" onClick={() => setShowCurrencyModal(false)}>×</button>
+        <div className="rf-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
+          <div className="rf-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="rf-modal-header">
+              <h2 className="rf-modal-title">Select Currency</h2>
+              <button className="rf-modal-close" onClick={() => setShowCurrencyModal(false)}>×</button>
             </div>
-            <div className="currency-modal-body">
+            <div className="flex justify-center">
               <CurrencySelector onCurrencyChange={() => setShowCurrencyModal(false)} />
             </div>
           </div>

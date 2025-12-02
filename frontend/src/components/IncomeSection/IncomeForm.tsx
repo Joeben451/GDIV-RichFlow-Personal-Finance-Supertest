@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { IncomeLine } from '../../types/income.types';
-import './IncomeSection.css';
 
 interface Props {
   income?: IncomeLine | null;

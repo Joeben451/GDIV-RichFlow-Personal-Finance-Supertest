@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
-import { useExpenses } from '../../hooks/useExpenses';
-import { useAuth } from '../../context/AuthContext';
+import { useUnifiedFinancialData } from '../../hooks/useFinancialData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
-import './ExpensesSection.css';
 
 const ExpenseSection: React.FC = () => {
-  const { user } = useAuth();
   const { currency } = useCurrency();
-  const { expenses, loading, error, addExpense: addExpenseToHook, deleteExpense: deleteExpenseFromHook, updateExpense } = useExpenses();
+  
+  // Use the unified financial data hook
+  const { 
+    expenses, 
+    loading, 
+    error, 
+    initialized,
+    addExpense: addExpenseToHook, 
+    deleteExpense: deleteExpenseFromHook, 
+    updateExpense 
+  } = useUnifiedFinancialData();
+  
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleAddExpense = async () => {
     if (!name.trim() || !amount.trim() || isAdding) return;
 
     try {
       setIsAdding(true);
+      setLocalError(null);
       await addExpenseToHook(name, parseFloat(amount));
       setName('');
       setAmount('');
-    } catch (err: any) {
-      // Error is handled in hook
+    } catch (err: unknown) {
+      setLocalError('Failed to add expense');
     } finally {
       setIsAdding(false);
     }
@@ -42,12 +52,13 @@ const ExpenseSection: React.FC = () => {
 
     try {
       setIsUpdating(editingId);
+      setLocalError(null);
       await updateExpense(editingId, name, parseFloat(amount));
       setEditingId(null);
       setName('');
       setAmount('');
-    } catch (err: any) {
-      // Error is handled in hook
+    } catch (err: unknown) {
+      setLocalError('Failed to update expense');
     } finally {
       setIsUpdating(null);
     }
@@ -64,63 +75,70 @@ const ExpenseSection: React.FC = () => {
     
     try {
       setIsDeleting(id);
+      setLocalError(null);
       await deleteExpenseFromHook(id);
-    } catch (err: any) {
-      // Error is handled in hook
+    } catch (err: unknown) {
+      setLocalError('Failed to delete expense');
     } finally {
       setIsDeleting(null);
     }
   };
 
-  return (
-    <div className="expense-container">
-      <h1 className="expense-header">Expenses</h1>
+  const displayError = localError || error;
 
-      <div className="expense-card">
-        {loading ? (
+  return (
+    <div className="bg-transparent h-full flex flex-col text-white font-sans">
+      <h1 className="rf-section-header">Expenses</h1>
+
+      <div className="rf-card flex-1 flex flex-col">
+        {loading && !initialized ? (
           <p>Loading expenses...</p>
-        ) : error ? (
-          <p className="error-message">{error}</p>
+        ) : displayError ? (
+          <p className="rf-error">{displayError}</p>
         ) : !Array.isArray(expenses) ? (
-          <p className="error-message">Error loading expenses</p>
+          <p className="rf-error">Error loading expenses</p>
         ) : expenses.length === 0 ? (
-          <p className="expense-empty">No expenses added yet.</p>
+          <p className="rf-empty">No expenses added yet.</p>
         ) : (
-          expenses.map((item) => (
-            <div key={item.id} className="expense-item">
-              <span>{item.name}</span>
-              <span className="expense-amount">
-                {formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}
-              </span>
-              <div className="expense-item-actions">
-                <button
-                  className="edit-btn"
-                  onClick={() => handleEditExpense(item.id, item.name, item.amount)}
-                  disabled={editingId !== null || isDeleting !== null}
-                  title="Edit"
-                >
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteExpense(item.id)}
-                  disabled={isDeleting === item.id || editingId !== null}
-                >
-                  {isDeleting === item.id ? '...' : '✕'}
-                </button>
+          <div className="rf-scroll-list max-h-[250px]">
+            {expenses.map((item) => (
+              <div key={item.id} className="rf-list-item">
+                <span className="rf-list-item-name text-white">{item.name}</span>
+                <span className="rf-list-item-amount mx-3">
+                  {formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}
+                </span>
+                <div className="rf-list-item-actions">
+                  <button
+                    className="rf-btn-edit"
+                    onClick={() => handleEditExpense(item.id, item.name, item.amount)}
+                    disabled={editingId !== null || isDeleting !== null}
+                    title="Edit"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="rf-btn-delete"
+                    onClick={() => handleDeleteExpense(item.id)}
+                    disabled={isDeleting === item.id || editingId !== null}
+                  >
+                    {isDeleting === item.id ? '...' : '✕'}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
 
-        <div className="expense-inputs">
+        <div className="rf-input-row">
           <input
+            className="rf-input"
             type="text"
             placeholder="Expense name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
+            className="rf-input"
             type="number"
             placeholder="Amount"
             value={amount}
@@ -129,16 +147,16 @@ const ExpenseSection: React.FC = () => {
         </div>
 
         {editingId !== null ? (
-          <div className="expense-edit-actions">
+          <div className="rf-edit-actions">
             <button 
-              className="save-btn" 
+              className="rf-btn-save" 
               onClick={handleUpdateExpense}
               disabled={isUpdating !== null || !name.trim() || !amount.trim()}
             >
               {isUpdating === editingId ? 'Saving...' : 'Save'}
             </button>
             <button 
-              className="cancel-btn" 
+              className="rf-btn-cancel" 
               onClick={handleCancelEdit}
               disabled={isUpdating !== null}
             >
@@ -147,7 +165,7 @@ const ExpenseSection: React.FC = () => {
           </div>
         ) : (
           <button 
-            className="add-expense-btn" 
+            className="rf-btn-primary" 
             onClick={handleAddExpense}
             disabled={isAdding || !name.trim() || !amount.trim()}
           >
