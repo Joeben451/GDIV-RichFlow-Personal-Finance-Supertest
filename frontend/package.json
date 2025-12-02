@@ -2,16 +2,16 @@
   "name": "frontend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "webpack serve --mode development",
-    "build": "webpack --mode production",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@ramonak/react-progress-bar": "^5.4.0",
     "react": "^19.2.0",
@@ -20,27 +20,16 @@
     "recharts": "^3.4.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/preset-env": "^7.28.5",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.21",
-    "babel-loader": "^10.0.0",
-    "copy-webpack-plugin": "^13.0.1",
-    "css-loader": "^7.1.2",
-    "html-webpack-plugin": "^5.6.4",
     "postcss": "^8.5.6",
-    "postcss-loader": "^8.2.0",
-    "style-loader": "^4.0.0",
     "tailwindcss": "^4.1.16",
-    "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
-    "webpack": "^5.102.1",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "vite": "^7.2.6",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
