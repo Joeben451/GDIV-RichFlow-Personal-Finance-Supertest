@@ -1,5 +1,5 @@
 import prisma from '../config/database.config';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../generated/prisma/client';
 import {
   CreateEventParams,
   EventQueryParams,
