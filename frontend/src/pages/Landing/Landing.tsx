@@ -21,10 +21,10 @@ const Landing: React.FC = () => {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex gap-4">
-            <button onClick={() => navigate('/login')} className="bg-(--color-purple) text-(--color-gold) px-6 sm:px-8 py-2 sm:py-3 rounded-2xl font-bold text-base sm:text-xl hover:bg-opacity-90 transition hover:-translate-y-0.5 hover:shadow-lg">
+            <button onClick={() => navigate('/login')} className="btn-shimmer bg-(--color-purple) text-(--color-gold) px-6 sm:px-8 py-2 sm:py-3 rounded-2xl font-bold text-base sm:text-xl transition hover:-translate-y-0.5 hover:shadow-lg">
               { isAuthenticated ? 'Dashboard' : 'Log in'}
             </button>
-            <button onClick={() => navigate('/signup')} className="bg-(--color-purple) text-(--color-gold) px-6 sm:px-8 py-2 sm:py-3 rounded-2xl font-bold text-base sm:text-xl hover:bg-opacity-90 transition hover:-translate-y-0.5 hover:shadow-lg">
+            <button onClick={() => navigate('/signup')} className="btn-shimmer bg-(--color-purple) text-(--color-gold) px-6 sm:px-8 py-2 sm:py-3 rounded-2xl font-bold text-base sm:text-xl transition hover:-translate-y-0.5 hover:shadow-lg">
               Sign up
             </button>
           </nav>
@@ -48,13 +48,13 @@ const Landing: React.FC = () => {
             <nav className="absolute top-full left-4 right-4 bg-(--color-dark) border border-[#3a3a3a] rounded-xl p-4 flex flex-col gap-3 z-50 shadow-xl animate-[fadeIn_0.2s_ease]">
               <button 
                 onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} 
-                className="bg-(--color-purple) text-(--color-gold) px-6 py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition w-full"
+                className="btn-shimmer bg-(--color-purple) text-(--color-gold) px-6 py-3 rounded-xl font-bold text-lg transition w-full"
               >
                 { isAuthenticated ? 'Dashboard' : 'Log in'}
               </button>
               <button 
                 onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }} 
-                className="bg-(--color-purple) text-(--color-gold) px-6 py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition w-full"
+                className="btn-shimmer bg-(--color-purple) text-(--color-gold) px-6 py-3 rounded-xl font-bold text-lg transition w-full"
               >
                 Sign up
               </button>
@@ -78,7 +78,7 @@ const Landing: React.FC = () => {
           
           {/* CTA Button */}
             <button onClick={() => navigate('/signup')}
-            className="text-(--color-gold) px-6 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 rounded-2xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold hover:bg-opacity-80 transition shadow-lg hover:-translate-y-0.5 hover:shadow-xl"
+            className="btn-shimmer text-(--color-gold) px-6 sm:px-10 md:px-12 py-3 sm:py-4 md:py-5 rounded-2xl text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold transition shadow-lg hover:-translate-y-0.5 hover:shadow-xl"
             style={{ background: 'linear-gradient(to bottom right, #7345AF, #7345AF, #1E1E1E, #000000)' }}
             >
             Get Started

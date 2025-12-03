@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -11,23 +12,26 @@ if (!process.env.DATABASE_URL) {
 /**
  * Prisma Client Singleton
  * Prevents multiple instances of Prisma Client in development
+ * 
+ * Prisma 7 Migration: Uses driver adapters for database connections.
+ * The @prisma/adapter-pg adapter handles PostgreSQL connections.
  */
 let prisma: PrismaClient;
 
+const createPrismaClient = () => {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  return new PrismaClient({ adapter });
+};
+
 if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
+  prisma = createPrismaClient();
 } else {
   // In development, use a global variable to preserve the client across module reloads
-  if (!(global as any).prisma) {
-    (global as any).prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL
-        }
-      }
-    });
+  const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
   }
-  prisma = (global as any).prisma;
+  prisma = globalForPrisma.prisma;
 }
 
 export default prisma;

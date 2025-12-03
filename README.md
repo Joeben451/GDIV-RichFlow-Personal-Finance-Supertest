@@ -106,11 +106,11 @@ Your personal AI-powered financial advisor that analyzes your current income, ex
 ### Backend
 
 | Technology | Version | Purpose |
-|------------|---------|---------|
-| **Node.js** | 16+ | Runtime Environment |
+|------------|---------|----------|
+| **Node.js** | 20+ | Runtime Environment |
 | **Express** | 5.1.0 | Web Framework |
 | **TypeScript** | 5.9.3 | Type Safety |
-| **Prisma** | 6.19.0 | ORM & Database Toolkit |
+| **Prisma** | 7.0.1 | ORM & Database Toolkit |
 | **PostgreSQL** | Latest | Primary Database |
 | **bcrypt** | 6.0.0 | Password Hashing |
 | **jsonwebtoken** | 9.0.2 | JWT Authentication |
@@ -119,9 +119,9 @@ Your personal AI-powered financial advisor that analyzes your current income, ex
 ### Development Tools
 
 | Tool | Purpose |
-|------|---------|
+|------|----------|
 | **Nodemon** | Auto-restart during development |
-| **ts-node** | TypeScript execution |
+| **tsx** | TypeScript execution (ESM) |
 | **PostCSS** | CSS processing |
 | **Autoprefixer** | CSS vendor prefixing |
 
@@ -131,7 +131,7 @@ Your personal AI-powered financial advisor that analyzes your current income, ex
 
 ### Prerequisites
 
-- **Node.js** v16 or higher
+- **Node.js** v20.19.0 or higher (required for Prisma 7)
 - **PostgreSQL** database
 - **npm** or **yarn** package manager
 
@@ -161,7 +161,10 @@ Configure your `.env` file:
 
 ```env
 # Database
+# For local PostgreSQL:
 DATABASE_URL="postgresql://username:password@localhost:5432/richflow_db"
+# For cloud PostgreSQL (e.g., Supabase, Neon), add sslmode:
+# DATABASE_URL="postgresql://username:password@host:5432/database?sslmode=require"
 
 # JWT Secrets (Change these to random secure strings in production!)
 JWT_SECRET="your-jwt-secret-change-in-production"
@@ -180,11 +183,11 @@ NODE_ENV=development
 Run database synchronization:
 
 ```bash
-# Pull database schema
-npx prisma db pull
-
-# Generate Prisma client
+# Generate Prisma client (uses prisma.config.ts for configuration)
 npx prisma generate
+
+# Push schema to database (development)
+npx prisma db push
 
 # (Optional) Seed the database
 npm run seed-currency
@@ -229,9 +232,13 @@ npm run dev
 GDIV-RichFlow-Personal-Finance/
 │
 ├── 📁 backend/
+│   ├── 📄 prisma.config.ts        # Prisma 7 CLI configuration
+│   ├── 📁 generated/
+│   │   └── 📁 prisma/             # Generated Prisma client
+│   │
 │   ├── 📁 prisma/
 │   │   ├── schema.prisma          # Database schema
-│   │   └── seed.*.ts              # Database seeders
+│   │   └── 📁 seed-files/         # Database seeders
 │   │
 │   └── 📁 src/
 │       ├── server.ts              # Entry point
@@ -502,13 +509,16 @@ npm run build                  # Type-check and build for production (Vite/Rollu
 npm run preview                # Preview the production build locally
 ```
 
-### Database
+### Database (Prisma 7)
 
 ```bash
-npx prisma db pull              # Pull database schema from Prisma
-npx prisma generate            # Generate Prisma client
-npx prisma studio              # Open Prisma Studio
+npx prisma generate            # Generate Prisma client (uses prisma.config.ts)
+npx prisma db push             # Push schema to database (development)
+npx prisma studio              # Open Prisma Studio (database GUI)
+npx prisma migrate dev         # Create and apply migrations (if needed)
 ```
+
+> **Note:** Prisma 7 uses a driver adapter architecture. The `@prisma/adapter-pg` is used for PostgreSQL connections with SSL support for cloud databases.
 
 ---
 
