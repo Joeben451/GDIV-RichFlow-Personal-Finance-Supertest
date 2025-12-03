@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { addExpense, getExpenses, updateExpense, deleteExpense } from '../services/expense.service';
+import { addExpense, getExpenses, updateExpense, deleteExpense } from '../services/expense.service.js';
 
 /**
  * Get all expenses for the authenticated user

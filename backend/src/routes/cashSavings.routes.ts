@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getCashSavingsHandler, updateCashSavingsHandler } from '../controllers/cashSavings.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+import { getCashSavingsHandler, updateCashSavingsHandler } from '../controllers/cashSavings.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

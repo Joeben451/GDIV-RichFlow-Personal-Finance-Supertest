@@ -1,6 +1,6 @@
 import express from 'express';
-import * as currencyController from '../controllers/currency.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+import * as currencyController from '../controllers/currency.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 

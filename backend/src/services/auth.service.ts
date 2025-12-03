@@ -1,8 +1,8 @@
-import prisma from '../config/database.config';
-import { Prisma } from '../../generated/prisma/client';
-import { hashPassword, comparePassword } from '../utils/password.utils';
-import { generateRefreshToken, getRefreshTokenExpiration } from '../utils/jwt.utils';
-import { ActionType, EntityType } from '../types/event.types';
+import prisma from '../config/database.config.js';
+import { Prisma } from '../../generated/prisma/client.js';
+import { hashPassword, comparePassword } from '../utils/password.utils.js';
+import { generateRefreshToken, getRefreshTokenExpiration } from '../utils/jwt.utils.js';
+import { ActionType, EntityType } from '../types/event.types.js';
 
 interface CreateUserData {
   name: string;
@@ -54,7 +54,7 @@ export async function createUser(userData: CreateUserData): Promise<UserResponse
   const hashedPassword = await hashPassword(userData.password);
 
   // Use a transaction to create user, income statement, and cash savings together
-  const user = await prisma.$transaction(async (tx) => {
+  const user = await prisma.$transaction(async (tx: any) => {
     // Create the user
     const newUser = await tx.user.create({
       data: {

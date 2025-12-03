@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getFinancialSnapshot, getFinancialTrajectory, createSnapshot } from '../services/analysis.service';
+import { getFinancialSnapshot, getFinancialTrajectory, createSnapshot } from '../services/analysis.service.js';
 
 export async function getFinancialSnapshotHandler(req: Request, res: Response, next: NextFunction) {
   try {

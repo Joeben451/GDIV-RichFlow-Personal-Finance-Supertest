@@ -1,4 +1,4 @@
-import prisma from '../config/database.config';
+import prisma from '../config/database.config.js';
 
 /**
  * Get all users from the database

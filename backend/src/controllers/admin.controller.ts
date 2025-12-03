@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getAllUsers, getUserById, deleteUserById, getUserFinancialData } from '../services/admin.service';
+import { getAllUsers, getUserById, deleteUserById, getUserFinancialData } from '../services/admin.service.js';
 
 /**
  * Get all users

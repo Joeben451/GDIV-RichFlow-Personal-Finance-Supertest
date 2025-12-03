@@ -4,8 +4,8 @@ import {
   getEntityEventsHandler,
   blockEventUpdate,
   blockEventDelete
-} from '../controllers/event.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+} from '../controllers/event.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

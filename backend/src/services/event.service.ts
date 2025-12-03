@@ -1,12 +1,12 @@
-import prisma from '../config/database.config';
-import { Prisma } from '../../generated/prisma/client';
+import prisma from '../config/database.config.js';
+import { Prisma } from '../../generated/prisma/client.js';
 import {
   CreateEventParams,
   EventQueryParams,
   ActionType,
   EntityType,
   EventData
-} from '../types/event.types';
+} from '../types/event.types.js';
 
 /**
  * Create an immutable event log

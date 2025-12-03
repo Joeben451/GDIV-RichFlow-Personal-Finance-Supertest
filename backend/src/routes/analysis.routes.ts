@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth.middleware';
-import { getFinancialSnapshotHandler, getFinancialTrajectoryHandler, createSnapshotHandler } from '../controllers/analysis.controller';
+import { authenticateToken } from '../middleware/auth.middleware.js';
+import { getFinancialSnapshotHandler, getFinancialTrajectoryHandler, createSnapshotHandler } from '../controllers/analysis.controller.js';
 
 const router = Router();
 

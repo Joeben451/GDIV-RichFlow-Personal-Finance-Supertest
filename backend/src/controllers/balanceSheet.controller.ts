@@ -10,7 +10,7 @@ import {
   addLiability,
   updateLiability,
   deleteLiability
-} from '../services/balanceSheet.service';
+} from '../services/balanceSheet.service.js';
 
 /**
  * Get balance sheet for the authenticated user

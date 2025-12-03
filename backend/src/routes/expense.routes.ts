@@ -4,8 +4,8 @@ import {
   addExpenseHandler,
   updateExpenseHandler,
   deleteExpenseHandler
-} from '../controllers/expense.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+} from '../controllers/expense.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

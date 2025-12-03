@@ -4,8 +4,8 @@ import {
   addIncomeLineHandler,
   updateIncomeLineHandler,
   deleteIncomeLineHandler
-} from '../controllers/income.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+} from '../controllers/income.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

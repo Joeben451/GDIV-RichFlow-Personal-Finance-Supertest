@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { analyzeFinance } from '../services/ai.service';
+import { analyzeFinance } from '../services/ai.service.js';
 
 export async function analyzeFinanceController(req: Request, res: Response, next: NextFunction) {
     try {

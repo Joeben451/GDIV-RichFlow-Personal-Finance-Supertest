@@ -1,7 +1,7 @@
-import { getIncomeLines } from './income.service';
-import { getExpenses } from './expense.service';
-import { getCashSavings } from './cashSavings.service';
-import { getBalanceSheet } from './balanceSheet.service';
+import { getIncomeLines } from './income.service.js';
+import { getExpenses } from './expense.service.js';
+import { getCashSavings } from './cashSavings.service.js';
+import { getBalanceSheet } from './balanceSheet.service.js';
 import { GoogleGenAI } from '@google/genai';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;

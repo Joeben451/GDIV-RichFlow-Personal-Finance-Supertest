@@ -1,6 +1,6 @@
-import prisma from '../config/database.config';
-import { logUserEvent } from './event.service';
-import { ActionType } from '../types/event.types';
+import prisma from '../config/database.config.js';
+import { logUserEvent } from './event.service.js';
+import { ActionType } from '../types/event.types.js';
 
 /**
  * Get all available currencies

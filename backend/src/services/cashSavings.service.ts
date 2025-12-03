@@ -1,6 +1,6 @@
-import prisma from '../config/database.config';
-import { logCashSavingsEvent } from './event.service';
-import { ActionType } from '../types/event.types';
+import prisma from '../config/database.config.js';
+import { logCashSavingsEvent } from './event.service.js';
+import { ActionType } from '../types/event.types.js';
 
 /**
  * Get cash savings for a specific user

@@ -1,7 +1,7 @@
-import prisma from '../config/database.config';
-import { createEmptyQuadrantTotals, determineIncomeQuadrant } from '../utils/incomeQuadrant.utils';
-import { getEventsByUser } from './event.service';
-import { EntityType, ActionType, Event } from '../types/event.types';
+import prisma from '../config/database.config.js';
+import { createEmptyQuadrantTotals, determineIncomeQuadrant } from '../utils/incomeQuadrant.utils.js';
+import { getEventsByUser } from './event.service.js';
+import { EntityType, ActionType, Event } from '../types/event.types.js';
 
 /**
  * Represents the reconstructed financial state at a point in time
@@ -67,7 +67,7 @@ function getFirstOfMonth(date: Date): Date {
  */
 function isSameMonth(date1: Date, date2: Date): boolean {
   return date1.getUTCFullYear() === date2.getUTCFullYear() &&
-         date1.getUTCMonth() === date2.getUTCMonth();
+    date1.getUTCMonth() === date2.getUTCMonth();
 }
 
 /**
@@ -112,9 +112,9 @@ export async function ensureMonthlyCheckpoints(userId: number): Promise<void> {
     where: { userId },
     select: { date: true }
   });
-  
+
   const existingSnapshotMonths = new Set(
-    existingSnapshots.map(s => {
+    existingSnapshots.map((s: any) => {
       const d = new Date(s.date);
       return `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
     })
@@ -149,7 +149,7 @@ export async function ensureMonthlyCheckpoints(userId: number): Promise<void> {
   // 6. Fetch all events for this user (needed for reconstruction)
   const events = await getEventsByUser({ userId, limit: 100000 });
   const typedEvents = events as unknown as Event[];
-  
+
   // Sort events chronologically
   typedEvents.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -196,7 +196,7 @@ export async function ensureMonthlyCheckpoints(userId: number): Promise<void> {
   if (baseSnapshot) {
     state = hydrateStateFromSnapshot(baseSnapshot.data);
     const snapshotDate = new Date(baseSnapshot.date);
-    
+
     // Find first event after the base snapshot
     eventIndex = typedEvents.findIndex(e => new Date(e.timestamp) > snapshotDate);
     if (eventIndex === -1) eventIndex = typedEvents.length;
@@ -716,10 +716,10 @@ async function getCurrentFinancialSnapshot(userId: number) {
 
   // Construct Current FinancialState object for Health Calculation
   const currentState: FinancialState = {
-    assets: new Map(balanceSheet?.Asset.map(a => [a.id, { id: a.id, name: a.name, value: a.value }]) || []),
-    liabilities: new Map(balanceSheet?.Liability.map(l => [l.id, { id: l.id, name: l.name, value: l.value }]) || []),
-    incomeLines: new Map(incomeStatement?.IncomeLine.map(i => [i.id, { id: i.id, name: i.name, amount: i.amount, type: i.type, quadrant: i.quadrant }]) || []),
-    expenses: new Map(incomeStatement?.Expense.map(e => [e.id, { id: e.id, name: e.name, amount: e.amount }]) || []),
+    assets: new Map(balanceSheet?.Asset.map((a: any) => [a.id, { id: a.id, name: a.name, value: a.value }]) || []),
+    liabilities: new Map(balanceSheet?.Liability.map((l: any) => [l.id, { id: l.id, name: l.name, value: l.value }]) || []),
+    incomeLines: new Map(incomeStatement?.IncomeLine.map((i: any) => [i.id, { id: i.id, name: i.name, amount: i.amount, type: i.type, quadrant: i.quadrant }]) || []),
+    expenses: new Map(incomeStatement?.Expense.map((e: any) => [e.id, { id: e.id, name: e.name, amount: e.amount }]) || []),
     cashSavings: cashSavings?.amount || 0,
     currency
   };
@@ -739,18 +739,18 @@ async function getCurrentFinancialSnapshot(userId: number) {
   const financialHealth = calculateFinancialHealth(currentState, prevMonthState, sixMonthAgoState);
 
   // Calculate balance sheet totals
-  const totalAssets = balanceSheet?.Asset.reduce((sum, asset) => sum + Number(asset.value), 0) || 0;
-  const totalLiabilities = balanceSheet?.Liability.reduce((sum, liability) => sum + Number(liability.value), 0) || 0;
+  const totalAssets = balanceSheet?.Asset.reduce((sum: number, asset: any) => sum + Number(asset.value), 0) || 0;
+  const totalLiabilities = balanceSheet?.Liability.reduce((sum: number, liability: any) => sum + Number(liability.value), 0) || 0;
   const totalCashBalance = Number(cashSavings?.amount) || 0;
   const netWorth = totalAssets - totalLiabilities + totalCashBalance;
 
   // Income by type (case-insensitive matching)
-  const earnedIncome = incomeStatement?.IncomeLine.filter(i => i.type.toUpperCase() === 'EARNED').reduce((sum, i) => sum + Number(i.amount), 0) || 0;
-  const passiveIncome = incomeStatement?.IncomeLine.filter(i => i.type.toUpperCase() === 'PASSIVE').reduce((sum, i) => sum + Number(i.amount), 0) || 0;
-  const portfolioIncome = incomeStatement?.IncomeLine.filter(i => i.type.toUpperCase() === 'PORTFOLIO').reduce((sum, i) => sum + Number(i.amount), 0) || 0;
+  const earnedIncome = incomeStatement?.IncomeLine.filter((i: any) => i.type.toUpperCase() === 'EARNED').reduce((sum: number, i: any) => sum + Number(i.amount), 0) || 0;
+  const passiveIncome = incomeStatement?.IncomeLine.filter((i: any) => i.type.toUpperCase() === 'PASSIVE').reduce((sum: number, i: any) => sum + Number(i.amount), 0) || 0;
+  const portfolioIncome = incomeStatement?.IncomeLine.filter((i: any) => i.type.toUpperCase() === 'PORTFOLIO').reduce((sum: number, i: any) => sum + Number(i.amount), 0) || 0;
   const totalIncome = earnedIncome + passiveIncome + portfolioIncome;
 
-  const totalExpenses = incomeStatement?.Expense.reduce((sum, expense) => sum + Number(expense.amount), 0) || 0;
+  const totalExpenses = incomeStatement?.Expense.reduce((sum: number, expense: any) => sum + Number(expense.amount), 0) || 0;
   const netCashflow = totalIncome - totalExpenses;
 
   // Combined passive income (passive + portfolio) for freedom calculations

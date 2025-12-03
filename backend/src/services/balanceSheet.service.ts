@@ -1,6 +1,6 @@
-import prisma from '../config/database.config';
-import { logAssetEvent, logLiabilityEvent } from './event.service';
-import { ActionType } from '../types/event.types';
+import prisma from '../config/database.config.js';
+import { logAssetEvent, logLiabilityEvent } from './event.service.js';
+import { ActionType } from '../types/event.types.js';
 
 interface AssetData {
   name: string;

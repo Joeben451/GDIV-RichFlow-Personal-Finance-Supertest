@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { addIncomeLine, getIncomeLines, updateIncomeLine, deleteIncomeLine } from '../services/income.service';
-import { EARNED_QUADRANTS } from '../utils/incomeQuadrant.utils';
+import { addIncomeLine, getIncomeLines, updateIncomeLine, deleteIncomeLine } from '../services/income.service.js';
+import { EARNED_QUADRANTS } from '../utils/incomeQuadrant.utils.js';
 
 /**
  * Get all income lines for the authenticated user

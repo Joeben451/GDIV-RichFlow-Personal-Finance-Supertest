@@ -1,7 +1,7 @@
-import prisma from '../config/database.config';
-import { logIncomeEvent } from './event.service';
-import { ActionType } from '../types/event.types';
-import { determineIncomeQuadrant, IncomeQuadrant } from '../utils/incomeQuadrant.utils';
+import prisma from '../config/database.config.js';
+import { logIncomeEvent } from './event.service.js';
+import { ActionType } from '../types/event.types.js';
+import { determineIncomeQuadrant, IncomeQuadrant } from '../utils/incomeQuadrant.utils.js';
 
 interface IncomeLineData {
   name: string;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as currencyService from '../services/currency.service';
+import * as currencyService from '../services/currency.service.js';
 
 /**
  * Get all available currencies

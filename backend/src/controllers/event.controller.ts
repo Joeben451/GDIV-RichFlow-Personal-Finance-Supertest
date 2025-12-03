@@ -3,8 +3,8 @@ import {
   getEventsByUser,
   getEventsByEntity,
   getEventCount
-} from '../services/event.service';
-import { EntityType } from '../types/event.types';
+} from '../services/event.service.js';
+import { EntityType } from '../types/event.types.js';
 
 /**
  * Get all events for the authenticated user

@@ -7,13 +7,13 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "ES2023",
     // For nodejs:
     "lib": ["ES2023"],
 
     // Other Outputs
-    "moduleResolution": "bundler",
+    "moduleResolution": "NodeNext",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

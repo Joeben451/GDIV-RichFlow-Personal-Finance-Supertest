@@ -3,18 +3,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import * as path from 'path';
-import routes from './routes';
-import authRoutes from './routes/auth.routes';
-import cashSavingsRoutes from './routes/cashSavings.routes';
-import incomeRoutes from './routes/income.routes';
-import expenseRoutes from './routes/expense.routes';
-import aiRoutes from './routes/ai.routes';
-import balanceSheetRoutes from './routes/balanceSheet.routes';
-import adminRoutes from './routes/admin.routes';
-import currencyRoutes from './routes/currency.routes';
-import eventRoutes from './routes/event.routes';
-import analysisRoutes from './routes/analysis.routes';
-import { errorHandler } from './middleware/errorHandler.middleware';
+import routes from './routes/index.js';
+import authRoutes from './routes/auth.routes.js';
+import cashSavingsRoutes from './routes/cashSavings.routes.js';
+import incomeRoutes from './routes/income.routes.js';
+import expenseRoutes from './routes/expense.routes.js';
+import aiRoutes from './routes/ai.routes.js';
+import balanceSheetRoutes from './routes/balanceSheet.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import currencyRoutes from './routes/currency.routes.js';
+import eventRoutes from './routes/event.routes.js';
+import analysisRoutes from './routes/analysis.routes.js';
+import { errorHandler } from './middleware/errorHandler.middleware.js';
 
 // Load environment variables from .env file
 dotenv.config({ 

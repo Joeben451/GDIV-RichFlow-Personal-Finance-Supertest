@@ -8,10 +8,10 @@ import {
   invalidateSession,
   invalidateAllUserSessions
   , updateUsername
-} from '../services/auth.service';
-import { updateEmail, updatePassword } from '../services/auth.service';
-import { generateAccessToken } from '../utils/jwt.utils';
-import prisma from '../config/database.config';
+} from '../services/auth.service.js';
+import { updateEmail, updatePassword } from '../services/auth.service.js';
+import { generateAccessToken } from '../utils/jwt.utils.js';
+import prisma from '../config/database.config.js';
 
 /**
  * Handle user signup

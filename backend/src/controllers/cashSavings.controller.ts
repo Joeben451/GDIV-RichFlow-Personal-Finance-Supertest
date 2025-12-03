@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCashSavings, updateCashSavings } from '../services/cashSavings.service';
+import { getCashSavings, updateCashSavings } from '../services/cashSavings.service.js';
 
 /**
  * Get cash savings for the authenticated user

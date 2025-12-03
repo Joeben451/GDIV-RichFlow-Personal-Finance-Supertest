@@ -5,7 +5,7 @@ import {
   validateName,
   validateEmail,
   validatePassword
-} from '../utils/validation.utils';
+} from '../utils/validation.utils.js';
 
 /**
  * Middleware to validate login request data

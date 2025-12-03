@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyAccessToken } from '../utils/jwt.utils';
-import prisma from '../config/database.config';
+import { verifyAccessToken } from '../utils/jwt.utils.js';
+import prisma from '../config/database.config.js';
 
 // Extend Express Request to include user data
 declare global {

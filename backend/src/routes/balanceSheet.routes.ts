@@ -10,8 +10,8 @@ import {
   addLiabilityHandler,
   updateLiabilityHandler,
   deleteLiabilityHandler
-} from '../controllers/balanceSheet.controller';
-import { authenticateToken } from '../middleware/auth.middleware';
+} from '../controllers/balanceSheet.controller.js';
+import { authenticateToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
