@@ -1,4 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import pkg from '@prisma/client';
+import type { PrismaClient as PrismaClientType } from '@prisma/client';
+
+const { PrismaClient } = pkg;
 import { PrismaPg } from '@prisma/adapter-pg';
 import dotenv from 'dotenv';
 
@@ -16,7 +19,7 @@ if (!process.env.DATABASE_URL) {
  * Prisma 7 Migration: Uses driver adapters for database connections.
  * The @prisma/adapter-pg adapter handles PostgreSQL connections.
  */
-let prisma: PrismaClient;
+let prisma: PrismaClientType;
 
 const createPrismaClient = () => {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -27,7 +30,7 @@ if (process.env.NODE_ENV === 'production') {
   prisma = createPrismaClient();
 } else {
   // In development, use a global variable to preserve the client across module reloads
-  const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+  const globalForPrisma = globalThis as unknown as { prisma: PrismaClientType };
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = createPrismaClient();
   }
