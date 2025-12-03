@@ -1,5 +1,5 @@
 import prisma from '../config/database.config.js';
-import { Prisma } from '../../generated/prisma/client.js';
+import { Prisma } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/password.utils.js';
 import { generateRefreshToken, getRefreshTokenExpiration } from '../utils/jwt.utils.js';
 import { ActionType, EntityType } from '../types/event.types.js';

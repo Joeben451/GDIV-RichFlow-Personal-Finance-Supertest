@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "devStart": "nodemon --exec tsx ./backend/server.ts",
-    "build": "npx tsc --build",
+    "build": "npx prisma generate && npx tsc --build",
     "start": "node ./dist/src/server.js",
     "dev": "nodemon --exec tsx ./src/server.ts"
   },
