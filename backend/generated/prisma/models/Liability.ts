@@ -28,27 +28,27 @@ export type AggregateLiability = {
 
 export type LiabilityAvgAggregateOutputType = {
   id: number | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type LiabilitySumAggregateOutputType = {
   id: number | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type LiabilityMinAggregateOutputType = {
   id: number | null
   name: string | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type LiabilityMaxAggregateOutputType = {
   id: number | null
   name: string | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
@@ -184,7 +184,7 @@ export type LiabilityGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type LiabilityGroupByOutputType = {
   id: number
   name: string
-  value: number
+  value: runtime.Decimal
   bsId: number
   _count: LiabilityCountAggregateOutputType | null
   _avg: LiabilityAvgAggregateOutputType | null
@@ -214,7 +214,7 @@ export type LiabilityWhereInput = {
   NOT?: Prisma.LiabilityWhereInput | Prisma.LiabilityWhereInput[]
   id?: Prisma.IntFilter<"Liability"> | number
   name?: Prisma.StringFilter<"Liability"> | string
-  value?: Prisma.FloatFilter<"Liability"> | number
+  value?: Prisma.DecimalFilter<"Liability"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Liability"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
 }
@@ -233,7 +233,7 @@ export type LiabilityWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.LiabilityWhereInput[]
   NOT?: Prisma.LiabilityWhereInput | Prisma.LiabilityWhereInput[]
   name?: Prisma.StringFilter<"Liability"> | string
-  value?: Prisma.FloatFilter<"Liability"> | number
+  value?: Prisma.DecimalFilter<"Liability"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Liability"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
 }, "id">
@@ -256,52 +256,52 @@ export type LiabilityScalarWhereWithAggregatesInput = {
   NOT?: Prisma.LiabilityScalarWhereWithAggregatesInput | Prisma.LiabilityScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Liability"> | number
   name?: Prisma.StringWithAggregatesFilter<"Liability"> | string
-  value?: Prisma.FloatWithAggregatesFilter<"Liability"> | number
+  value?: Prisma.DecimalWithAggregatesFilter<"Liability"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntWithAggregatesFilter<"Liability"> | number
 }
 
 export type LiabilityCreateInput = {
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet: Prisma.BalanceSheetCreateNestedOneWithoutLiabilityInput
 }
 
 export type LiabilityUncheckedCreateInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId: number
 }
 
 export type LiabilityUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet?: Prisma.BalanceSheetUpdateOneRequiredWithoutLiabilityNestedInput
 }
 
 export type LiabilityUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type LiabilityCreateManyInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId: number
 }
 
 export type LiabilityUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -392,13 +392,13 @@ export type LiabilityUncheckedUpdateManyWithoutBalanceSheetNestedInput = {
 
 export type LiabilityCreateWithoutBalanceSheetInput = {
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityUncheckedCreateWithoutBalanceSheetInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityCreateOrConnectWithoutBalanceSheetInput = {
@@ -433,31 +433,31 @@ export type LiabilityScalarWhereInput = {
   NOT?: Prisma.LiabilityScalarWhereInput | Prisma.LiabilityScalarWhereInput[]
   id?: Prisma.IntFilter<"Liability"> | number
   name?: Prisma.StringFilter<"Liability"> | string
-  value?: Prisma.FloatFilter<"Liability"> | number
+  value?: Prisma.DecimalFilter<"Liability"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Liability"> | number
 }
 
 export type LiabilityCreateManyBalanceSheetInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityUpdateWithoutBalanceSheetInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityUncheckedUpdateWithoutBalanceSheetInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type LiabilityUncheckedUpdateManyWithoutBalanceSheetInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 
@@ -512,7 +512,7 @@ export type $LiabilityPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
-    value: number
+    value: runtime.Decimal
     bsId: number
   }, ExtArgs["result"]["liability"]>
   composites: {}
@@ -940,7 +940,7 @@ export interface Prisma__LiabilityClient<T, Null = never, ExtArgs extends runtim
 export interface LiabilityFieldRefs {
   readonly id: Prisma.FieldRef<"Liability", 'Int'>
   readonly name: Prisma.FieldRef<"Liability", 'String'>
-  readonly value: Prisma.FieldRef<"Liability", 'Float'>
+  readonly value: Prisma.FieldRef<"Liability", 'Decimal'>
   readonly bsId: Prisma.FieldRef<"Liability", 'Int'>
 }
     

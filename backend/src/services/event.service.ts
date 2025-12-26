@@ -7,6 +7,7 @@ import {
   EntityType,
   EventData
 } from '../types/event.types.js';
+import { validateEventPayload } from '../domain/schemas/event.schema.js';
 
 // Transaction client type for use in prisma.$transaction
 export type TransactionClient = Omit<
@@ -25,7 +26,7 @@ export async function createEvent(
   tx?: TransactionClient
 ) {
   const db = tx ?? prisma;
-  
+
   try {
     const {
       actionType,
@@ -36,6 +37,14 @@ export async function createEvent(
       userId,
       entityId
     } = params;
+
+    // Validate payloads against Zod schemas
+    if (beforeValue !== null && beforeValue !== undefined) {
+      validateEventPayload(entityType, beforeValue);
+    }
+    if (afterValue !== null && afterValue !== undefined) {
+      validateEventPayload(entityType, afterValue);
+    }
 
     const event = await db.event.create({
       data: {
@@ -52,7 +61,7 @@ export async function createEvent(
     return event;
   } catch (error) {
     console.error('Error creating event:', error);
-    throw new Error('Failed to create event log');
+    throw error instanceof Error ? error : new Error('Failed to create event log');
   }
 }
 

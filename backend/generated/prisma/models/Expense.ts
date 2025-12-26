@@ -28,27 +28,27 @@ export type AggregateExpense = {
 
 export type ExpenseAvgAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
 export type ExpenseSumAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
 export type ExpenseMinAggregateOutputType = {
   id: number | null
   name: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
 export type ExpenseMaxAggregateOutputType = {
   id: number | null
   name: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
@@ -184,7 +184,7 @@ export type ExpenseGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type ExpenseGroupByOutputType = {
   id: number
   name: string
-  amount: number
+  amount: runtime.Decimal
   isId: number
   _count: ExpenseCountAggregateOutputType | null
   _avg: ExpenseAvgAggregateOutputType | null
@@ -214,7 +214,7 @@ export type ExpenseWhereInput = {
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   id?: Prisma.IntFilter<"Expense"> | number
   name?: Prisma.StringFilter<"Expense"> | string
-  amount?: Prisma.FloatFilter<"Expense"> | number
+  amount?: Prisma.DecimalFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntFilter<"Expense"> | number
   IncomeStatement?: Prisma.XOR<Prisma.IncomeStatementScalarRelationFilter, Prisma.IncomeStatementWhereInput>
 }
@@ -233,7 +233,7 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ExpenseWhereInput[]
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   name?: Prisma.StringFilter<"Expense"> | string
-  amount?: Prisma.FloatFilter<"Expense"> | number
+  amount?: Prisma.DecimalFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntFilter<"Expense"> | number
   IncomeStatement?: Prisma.XOR<Prisma.IncomeStatementScalarRelationFilter, Prisma.IncomeStatementWhereInput>
 }, "id">
@@ -256,52 +256,52 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ExpenseScalarWhereWithAggregatesInput | Prisma.ExpenseScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Expense"> | number
   name?: Prisma.StringWithAggregatesFilter<"Expense"> | string
-  amount?: Prisma.FloatWithAggregatesFilter<"Expense"> | number
+  amount?: Prisma.DecimalWithAggregatesFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntWithAggregatesFilter<"Expense"> | number
 }
 
 export type ExpenseCreateInput = {
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   IncomeStatement: Prisma.IncomeStatementCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   isId: number
 }
 
 export type ExpenseUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   IncomeStatement?: Prisma.IncomeStatementUpdateOneRequiredWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ExpenseCreateManyInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   isId: number
 }
 
 export type ExpenseUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -348,12 +348,12 @@ export type ExpenseOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
+export type DecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseCreateNestedManyWithoutIncomeStatementInput = {
@@ -400,13 +400,13 @@ export type ExpenseUncheckedUpdateManyWithoutIncomeStatementNestedInput = {
 
 export type ExpenseCreateWithoutIncomeStatementInput = {
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseUncheckedCreateWithoutIncomeStatementInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseCreateOrConnectWithoutIncomeStatementInput = {
@@ -441,31 +441,31 @@ export type ExpenseScalarWhereInput = {
   NOT?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[]
   id?: Prisma.IntFilter<"Expense"> | number
   name?: Prisma.StringFilter<"Expense"> | string
-  amount?: Prisma.FloatFilter<"Expense"> | number
+  amount?: Prisma.DecimalFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isId?: Prisma.IntFilter<"Expense"> | number
 }
 
 export type ExpenseCreateManyIncomeStatementInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseUpdateWithoutIncomeStatementInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseUncheckedUpdateWithoutIncomeStatementInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ExpenseUncheckedUpdateManyWithoutIncomeStatementInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 
@@ -520,7 +520,7 @@ export type $ExpensePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
-    amount: number
+    amount: runtime.Decimal
     isId: number
   }, ExtArgs["result"]["expense"]>
   composites: {}
@@ -948,7 +948,7 @@ export interface Prisma__ExpenseClient<T, Null = never, ExtArgs extends runtime.
 export interface ExpenseFieldRefs {
   readonly id: Prisma.FieldRef<"Expense", 'Int'>
   readonly name: Prisma.FieldRef<"Expense", 'String'>
-  readonly amount: Prisma.FieldRef<"Expense", 'Float'>
+  readonly amount: Prisma.FieldRef<"Expense", 'Decimal'>
   readonly isId: Prisma.FieldRef<"Expense", 'Int'>
 }
     

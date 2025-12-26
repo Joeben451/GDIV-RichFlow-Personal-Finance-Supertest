@@ -28,20 +28,20 @@ export type AggregateIncomeLine = {
 
 export type IncomeLineAvgAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
 export type IncomeLineSumAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   isId: number | null
 }
 
 export type IncomeLineMinAggregateOutputType = {
   id: number | null
   name: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   type: string | null
   isId: number | null
   quadrant: string | null
@@ -50,7 +50,7 @@ export type IncomeLineMinAggregateOutputType = {
 export type IncomeLineMaxAggregateOutputType = {
   id: number | null
   name: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   type: string | null
   isId: number | null
   quadrant: string | null
@@ -196,7 +196,7 @@ export type IncomeLineGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type IncomeLineGroupByOutputType = {
   id: number
   name: string
-  amount: number
+  amount: runtime.Decimal
   type: string
   isId: number
   quadrant: string | null
@@ -228,7 +228,7 @@ export type IncomeLineWhereInput = {
   NOT?: Prisma.IncomeLineWhereInput | Prisma.IncomeLineWhereInput[]
   id?: Prisma.IntFilter<"IncomeLine"> | number
   name?: Prisma.StringFilter<"IncomeLine"> | string
-  amount?: Prisma.FloatFilter<"IncomeLine"> | number
+  amount?: Prisma.DecimalFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFilter<"IncomeLine"> | string
   isId?: Prisma.IntFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
@@ -251,7 +251,7 @@ export type IncomeLineWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.IncomeLineWhereInput[]
   NOT?: Prisma.IncomeLineWhereInput | Prisma.IncomeLineWhereInput[]
   name?: Prisma.StringFilter<"IncomeLine"> | string
-  amount?: Prisma.FloatFilter<"IncomeLine"> | number
+  amount?: Prisma.DecimalFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFilter<"IncomeLine"> | string
   isId?: Prisma.IntFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
@@ -278,7 +278,7 @@ export type IncomeLineScalarWhereWithAggregatesInput = {
   NOT?: Prisma.IncomeLineScalarWhereWithAggregatesInput | Prisma.IncomeLineScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"IncomeLine"> | number
   name?: Prisma.StringWithAggregatesFilter<"IncomeLine"> | string
-  amount?: Prisma.FloatWithAggregatesFilter<"IncomeLine"> | number
+  amount?: Prisma.DecimalWithAggregatesFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringWithAggregatesFilter<"IncomeLine"> | string
   isId?: Prisma.IntWithAggregatesFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableWithAggregatesFilter<"IncomeLine"> | string | null
@@ -286,7 +286,7 @@ export type IncomeLineScalarWhereWithAggregatesInput = {
 
 export type IncomeLineCreateInput = {
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
   IncomeStatement: Prisma.IncomeStatementCreateNestedOneWithoutIncomeLineInput
@@ -295,7 +295,7 @@ export type IncomeLineCreateInput = {
 export type IncomeLineUncheckedCreateInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   isId: number
   quadrant?: string | null
@@ -303,7 +303,7 @@ export type IncomeLineUncheckedCreateInput = {
 
 export type IncomeLineUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   IncomeStatement?: Prisma.IncomeStatementUpdateOneRequiredWithoutIncomeLineNestedInput
@@ -312,7 +312,7 @@ export type IncomeLineUpdateInput = {
 export type IncomeLineUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -321,7 +321,7 @@ export type IncomeLineUncheckedUpdateInput = {
 export type IncomeLineCreateManyInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   isId: number
   quadrant?: string | null
@@ -329,7 +329,7 @@ export type IncomeLineCreateManyInput = {
 
 export type IncomeLineUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -337,7 +337,7 @@ export type IncomeLineUpdateManyMutationInput = {
 export type IncomeLineUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   isId?: Prisma.IntFieldUpdateOperationsInput | number
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -440,7 +440,7 @@ export type IncomeLineUncheckedUpdateManyWithoutIncomeStatementNestedInput = {
 
 export type IncomeLineCreateWithoutIncomeStatementInput = {
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
 }
@@ -448,7 +448,7 @@ export type IncomeLineCreateWithoutIncomeStatementInput = {
 export type IncomeLineUncheckedCreateWithoutIncomeStatementInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
 }
@@ -485,7 +485,7 @@ export type IncomeLineScalarWhereInput = {
   NOT?: Prisma.IncomeLineScalarWhereInput | Prisma.IncomeLineScalarWhereInput[]
   id?: Prisma.IntFilter<"IncomeLine"> | number
   name?: Prisma.StringFilter<"IncomeLine"> | string
-  amount?: Prisma.FloatFilter<"IncomeLine"> | number
+  amount?: Prisma.DecimalFilter<"IncomeLine"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFilter<"IncomeLine"> | string
   isId?: Prisma.IntFilter<"IncomeLine"> | number
   quadrant?: Prisma.StringNullableFilter<"IncomeLine"> | string | null
@@ -494,14 +494,14 @@ export type IncomeLineScalarWhereInput = {
 export type IncomeLineCreateManyIncomeStatementInput = {
   id?: number
   name: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   type: string
   quadrant?: string | null
 }
 
 export type IncomeLineUpdateWithoutIncomeStatementInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -509,7 +509,7 @@ export type IncomeLineUpdateWithoutIncomeStatementInput = {
 export type IncomeLineUncheckedUpdateWithoutIncomeStatementInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -517,7 +517,7 @@ export type IncomeLineUncheckedUpdateWithoutIncomeStatementInput = {
 export type IncomeLineUncheckedUpdateManyWithoutIncomeStatementInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   quadrant?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
@@ -582,7 +582,7 @@ export type $IncomeLinePayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
-    amount: number
+    amount: runtime.Decimal
     type: string
     isId: number
     quadrant: string | null
@@ -1012,7 +1012,7 @@ export interface Prisma__IncomeLineClient<T, Null = never, ExtArgs extends runti
 export interface IncomeLineFieldRefs {
   readonly id: Prisma.FieldRef<"IncomeLine", 'Int'>
   readonly name: Prisma.FieldRef<"IncomeLine", 'String'>
-  readonly amount: Prisma.FieldRef<"IncomeLine", 'Float'>
+  readonly amount: Prisma.FieldRef<"IncomeLine", 'Decimal'>
   readonly type: Prisma.FieldRef<"IncomeLine", 'String'>
   readonly isId: Prisma.FieldRef<"IncomeLine", 'Int'>
   readonly quadrant: Prisma.FieldRef<"IncomeLine", 'String'>

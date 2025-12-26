@@ -39,7 +39,7 @@ model Session {
 model Expense {
   id              Int             @id @default(autoincrement())
   name            String
-  amount          Float
+  amount          Decimal @db.Decimal(15, 2)
   isId            Int
   IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)
 }
@@ -47,7 +47,7 @@ model Expense {
 model Asset {
   id           Int          @id @default(autoincrement())
   name         String
-  value        Float
+  value        Decimal @db.Decimal(15, 2)
   bsId         Int
   BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
 }
@@ -55,7 +55,7 @@ model Asset {
 model Liability {
   id           Int          @id @default(autoincrement())
   name         String
-  value        Float
+  value        Decimal @db.Decimal(15, 2)
   bsId         Int
   BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)
 }
@@ -71,7 +71,7 @@ model BalanceSheet {
 model IncomeLine {
   id              Int             @id @default(autoincrement())
   name            String
-  amount          Float
+  amount          Decimal @db.Decimal(15, 2)
   type            String
   isId            Int
   quadrant        String?
@@ -88,7 +88,7 @@ model IncomeStatement {
 
 model CashSavings {
   id     Int   @id @default(autoincrement())
-  amount Float @default(0)
+  amount Decimal @default(0) @db.Decimal(15, 2)
   userId Int   @unique
   User   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

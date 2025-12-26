@@ -250,11 +250,11 @@ async function getCurrentFinancialSnapshot(userId: number) {
 
   // Construct Current FinancialState object for Health Calculation
   const currentState: FinancialState = {
-    assets: new Map(balanceSheet?.Asset.map((a: any) => [a.id, { id: a.id, name: a.name, value: a.value }]) || []),
-    liabilities: new Map(balanceSheet?.Liability.map((l: any) => [l.id, { id: l.id, name: l.name, value: l.value }]) || []),
-    incomeLines: new Map(incomeStatement?.IncomeLine.map((i: any) => [i.id, { id: i.id, name: i.name, amount: i.amount, type: i.type, quadrant: i.quadrant }]) || []),
-    expenses: new Map(incomeStatement?.Expense.map((e: any) => [e.id, { id: e.id, name: e.name, amount: e.amount }]) || []),
-    cashSavings: cashSavings?.amount || 0,
+    assets: new Map(balanceSheet?.Asset.map((a: any) => [a.id, { id: a.id, name: a.name, value: Number(a.value) }]) || []),
+    liabilities: new Map(balanceSheet?.Liability.map((l: any) => [l.id, { id: l.id, name: l.name, value: Number(l.value) }]) || []),
+    incomeLines: new Map(incomeStatement?.IncomeLine.map((i: any) => [i.id, { id: i.id, name: i.name, amount: Number(i.amount), type: i.type, quadrant: i.quadrant }]) || []),
+    expenses: new Map(incomeStatement?.Expense.map((e: any) => [e.id, { id: e.id, name: e.name, amount: Number(e.amount) }]) || []),
+    cashSavings: Number(cashSavings?.amount) || 0,
     currency
   };
 
