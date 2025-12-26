@@ -1,6 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -14,9 +16,6 @@ import Dashboard from './pages/Dashboard/Dashboard';
 
 // Lazy-loaded components (reduce initial bundle size)
 const UserGuide = lazy(() => import('./pages/UserGuide/UserGuide'));
-const ChangeUsername = lazy(() => import('./pages/ChangeUsername/ChangeUsername'));
-const ChangeEmail = lazy(() => import('./pages/ChangeEmail/ChangeEmail'));
-const ChangePassword = lazy(() => import('./pages/ChangePassword/ChangePassword'));
 const Admin = lazy(() => import('./pages/Admin/Admin'));
 const EventLog = lazy(() => import('./pages/EventLog/EventLog'));
 const Analysis = lazy(() => import('./pages/Analysis/Analysis'));
@@ -61,71 +60,49 @@ if (!container) {
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <CurrencyProvider>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              {/* Eager-loaded routes (critical path) */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              
-              {/* Lazy-loaded routes */}
-              <Route 
-                path="/analysis" 
-                element={
-                  <ProtectedRoute>
-                    <Analysis />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/user-guide" 
-                element={
-                  <ProtectedRoute>
-                    <UserGuide />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route
-                path="/change-username"
-                element={
-                  <ProtectedRoute>
-                    <ChangeUsername />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/change-email"
-                element={
-                  <ProtectedRoute>
-                    <ChangeEmail />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/change-password"
-                element={
-                  <ProtectedRoute>
-                    <ChangePassword />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/admin" element={<Admin />} />
-              <Route
-                path="/event-log"
-                element={
-                  <ProtectedRoute>
-                    <EventLog />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </Suspense>
-        </CurrencyProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <CurrencyProvider>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                {/* Eager-loaded routes (critical path) */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                
+                {/* Lazy-loaded routes */}
+                <Route 
+                  path="/analysis" 
+                  element={
+                    <ProtectedRoute>
+                      <Analysis />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/user-guide" 
+                  element={
+                    <ProtectedRoute>
+                      <UserGuide />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="/admin" element={<Admin />} />
+                <Route
+                  path="/event-log"
+                  element={
+                    <ProtectedRoute>
+                      <EventLog />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </CurrencyProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </React.StrictMode>
 );

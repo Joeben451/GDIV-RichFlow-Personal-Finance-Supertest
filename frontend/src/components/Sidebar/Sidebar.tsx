@@ -2,15 +2,21 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import CurrencySelector from '../CurrencySelector/CurrencySelector';
+import SettingsModal from '../SettingsModal/SettingsModal';
+
+type SettingsType = 'username' | 'email' | 'password';
 
 type Props = {
   onOpenAssistant?: () => void;
+  onOpenActivity?: () => void;
   mobileOpen?: boolean;
   onToggleSidebar?: () => void;
 };
 
-const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggleSidebar }) => {
+const Sidebar: React.FC<Props> = ({ onOpenAssistant, onOpenActivity, mobileOpen = false, onToggleSidebar }) => {
   const [showCurrencyModal, setShowCurrencyModal] = React.useState(false);
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
+  const [settingsType, setSettingsType] = React.useState<SettingsType>('username');
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, user } = useAuth();
@@ -29,10 +35,25 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
     }
   };
 
+  const handleActivityClick = () => {
+    if (onOpenActivity) {
+      onOpenActivity();
+      if (mobileOpen && onToggleSidebar) {
+        onToggleSidebar();
+      }
+    }
+  };
+
   const closeSidebar = () => {
     if (mobileOpen && onToggleSidebar) {
       onToggleSidebar();
     }
+  };
+
+  const openSettingsModal = (type: SettingsType) => {
+    setSettingsType(type);
+    setShowSettingsModal(true);
+    closeSidebar();
   };
 
   const handleLogout = async () => {
@@ -108,6 +129,15 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
           </button>
         )}
 
+        {!isAnalysisPage && (
+          <button 
+            className="rf-sidebar-btn"
+            onClick={handleActivityClick}
+          > 
+            <span className="rf-sidebar-text"> Recent Activity </span>
+          </button>
+        )}
+
         <button 
           className="rf-sidebar-btn" 
           onClick={() => { navigate('/event-log'); closeSidebar(); }}
@@ -131,21 +161,21 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
 
         <button 
           className="rf-sidebar-btn" 
-          onClick={() => { navigate('/change-username'); closeSidebar(); }}
+          onClick={() => openSettingsModal('username')}
         > 
           <span className="rf-sidebar-text"> Change Username </span>
         </button>
 
         <button 
           className="rf-sidebar-btn" 
-          onClick={() => { navigate('/change-email'); closeSidebar(); }}
+          onClick={() => openSettingsModal('email')}
         > 
           <span className="rf-sidebar-text"> Change Email </span>
         </button>
 
         <button 
           className="rf-sidebar-btn" 
-          onClick={() => { navigate('/change-password'); closeSidebar(); }}
+          onClick={() => openSettingsModal('password')}
         > 
           <span className="rf-sidebar-text"> Change Password </span>
         </button>
@@ -158,7 +188,9 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
         </button>
       </div>
 
-      {/* Currency Selection Modal */}
+      </aside>
+
+      {/* Currency Selection Modal - outside aside to avoid stacking context issues */}
       {showCurrencyModal && (
         <div className="rf-modal-overlay" onClick={() => setShowCurrencyModal(false)}>
           <div className="rf-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -173,7 +205,12 @@ const Sidebar: React.FC<Props> = ({ onOpenAssistant, mobileOpen = false, onToggl
         </div>
       )}
 
-      </aside>
+      {/* Settings Modal - outside aside to avoid stacking context issues */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        initialType={settingsType}
+      />
     </>
   );
 };

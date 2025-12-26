@@ -12,12 +12,16 @@ import AssetsSection from '../../components/AssetsSection/AssetsSection';
 import LiabilitiesSection from '../../components/LiabilitiesSection/LiabilitiesSection';
 import RightSidePanel from '../../components/RightSidePanel/RightSidePanel';
 import SakiAssistant from '../../components/RightSidePanel/SakiAssistant';
+import ActivityFeed from '../../components/Dashboard/ActivityFeed';
+
+type PanelContent = 'assistant' | 'activity';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 
   const [panelOpen, setPanelOpen] = useState<boolean>(false);
+  const [panelContent, setPanelContent] = useState<PanelContent>('assistant');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [showBalanceSheet, setShowBalanceSheet] = useState<boolean>(() => {
     try {
@@ -98,6 +102,27 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleOpenAssistant = () => {
+    setPanelContent('assistant');
+    setPanelOpen(true);
+  };
+
+  const handleOpenActivity = () => {
+    setPanelContent('activity');
+    setPanelOpen(true);
+  };
+
+  const getPanelTitle = () => {
+    switch (panelContent) {
+      case 'assistant':
+        return 'Saki Assistant';
+      case 'activity':
+        return 'Recent Activity';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="rf-dashboard">
       <Header 
@@ -110,7 +135,8 @@ const Dashboard: React.FC = () => {
       />
       <div className="rf-dashboard-main">
         <Sidebar 
-          onOpenAssistant={() => setPanelOpen(true)} 
+          onOpenAssistant={handleOpenAssistant}
+          onOpenActivity={handleOpenActivity}
           mobileOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
@@ -138,8 +164,13 @@ const Dashboard: React.FC = () => {
           )}
         </main>
       </div>
-      <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title="Saki Assistant">
-        <SakiAssistant isOpen={panelOpen} includeBalanceSheet={showBalanceSheet} />
+      <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title={getPanelTitle()}>
+        {panelContent === 'assistant' && (
+          <SakiAssistant isOpen={panelOpen} includeBalanceSheet={showBalanceSheet} />
+        )}
+        {panelContent === 'activity' && (
+          <ActivityFeed limit={10} showTitle={false} />
+        )}
       </RightSidePanel>
     </div>
   );

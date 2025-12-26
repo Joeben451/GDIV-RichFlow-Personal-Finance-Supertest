@@ -1766,6 +1766,66 @@ html, body {
   text-align: center;
 }
 
+/* Settings Modal */
+.rf-settings-modal-content {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  max-width: 480px;
+  width: 90%;
+  max-height: 85vh;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease;
+}
+
+.rf-settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rf-settings-tab {
+  flex: 1;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-dark-bg);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rf-settings-tab:hover:not(.active) {
+  background-color: rgba(115, 69, 175, 0.1);
+  border-color: var(--color-purple-light);
+  color: var(--color-text);
+}
+
+.rf-settings-tab.active {
+  background: linear-gradient(135deg, var(--color-purple) 0%, var(--color-purple-light) 100%);
+  border-color: var(--color-purple-light);
+  color: white;
+}
+
+.rf-settings-modal-content .rf-settings-note {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.rf-settings-modal-content .rf-settings-form {
+  gap: 0.875rem;
+}
+
+.rf-settings-modal-content .rf-settings-form button[type="submit"] {
+  margin-top: 0.5rem;
+}
+
 /* ========================
    EVENT LOG PAGE
    ======================== */
