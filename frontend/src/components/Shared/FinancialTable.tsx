@@ -52,6 +52,8 @@ export interface FinancialTableProps<T extends { id: number | string }> {
   compactHeader?: boolean;
   /** Optional custom class name for the container */
   className?: string;
+  /** If true, does not render the rf-card wrapper (for embedding inside another card) */
+  noCard?: boolean;
 }
 
 /**
@@ -74,6 +76,7 @@ function FinancialTable<T extends { id: number | string }>({
   deletingId = null,
   compactHeader = false,
   className = '',
+  noCard = false,
 }: FinancialTableProps<T>): React.ReactElement {
   const hasActions = Boolean(onEdit || onDelete);
   const isAnyOperationInProgress = editingId !== null || deletingId !== null;
@@ -108,11 +111,13 @@ function FinancialTable<T extends { id: number | string }>({
   };
 
   return (
-    <div className={`rf-card ${className}`.trim()}>
+    <div className={`${noCard ? '' : 'rf-card'} ${className}`.trim()}>
       {/* Table Header */}
-      <div className={compactHeader ? 'rf-section-header-sm' : 'rf-section-header'}>
-        {title}
-      </div>
+      {title && (
+        <div className={compactHeader ? 'rf-section-header-sm' : 'rf-section-header'}>
+          {title}
+        </div>
+      )}
 
       {/* Empty State */}
       {data.length === 0 ? (

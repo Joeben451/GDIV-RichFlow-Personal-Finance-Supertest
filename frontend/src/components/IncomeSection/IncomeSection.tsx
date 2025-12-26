@@ -160,56 +160,25 @@ const IncomeSection: React.FC = () => {
       },
     ];
 
-    // Calculate total for footer
-    const total = items.reduce((sum, item) => sum + item.amount, 0);
-
     // Determine which item is being deleted (for loading state)
-    const deletingId = deleteIncomeMutation.isPending && deleteIncomeMutation.variables?.id;
+    const deletingId = deleteIncomeMutation.isPending ? deleteIncomeMutation.variables?.id : null;
 
     return (
       <div className="rf-card">
         <div className="rf-section-header-sm">{title}</div>
 
         {/* Use FinancialTable for the list display */}
-        {items.length === 0 ? (
-          <p className="rf-empty">No {title.toLowerCase()} added yet.</p>
-        ) : (
-          <div className="rf-scroll-list">
-            {items.map((item) => (
-              <div key={item.id} className="rf-list-item">
-                <span className="rf-list-item-name">{item.name}</span>
-                <span className="rf-list-item-amount">
-                  {formatCurrency(typeof item.amount === 'number' ? item.amount : 0, currency)}
-                </span>
-                <div className="rf-list-item-actions">
-                  <button
-                    className="rf-btn-edit"
-                    onClick={() => handleEdit(item)}
-                    disabled={updateIncomeMutation.isPending || deleteIncomeMutation.isPending || editingItem !== null}
-                    title="Edit"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="rf-btn-delete"
-                    onClick={() => handleDeleteItem(item)}
-                    disabled={deletingId === item.id || editingItem !== null}
-                  >
-                    {deletingId === item.id ? '...' : '✕'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Total display */}
-        {items.length > 0 && (
-          <div className="rf-list-item" style={{ borderBottom: 'none', marginTop: '0.5rem' }}>
-            <span className="rf-list-item-name font-bold">Total</span>
-            <span className="rf-list-item-amount font-bold">{formatCurrency(total, currency)}</span>
-          </div>
-        )}
+        <FinancialTable
+          title=""
+          data={items}
+          columns={columns}
+          emptyMessage={`No ${title.toLowerCase()} added yet.`}
+          onEdit={handleEdit}
+          onDelete={handleDeleteItem}
+          editingId={editingItem?.id ?? null}
+          deletingId={deletingId ?? null}
+          noCard={true}
+        />
 
         {/* Input row */}
         <div className="rf-input-row">
