@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useUnifiedFinancialData } from '../../hooks/useFinancialData';
+import { useFinancialSummary } from '../../hooks/queries/useFinancialSummary';
+import { useCashSavingsQuery, useUpdateCashSavingsMutation } from '../../hooks/queries/useCashSavings';
 import { useCurrency } from '../../context/CurrencyContext';
 import { formatCurrency } from '../../utils/currency.utils';
 
@@ -7,31 +8,48 @@ type Props = {
   balanceSheetVisible?: boolean;
 };
 
+/**
+ * Skeleton component for loading states
+ */
+const Skeleton: React.FC<{ width?: string; height?: string; className?: string }> = ({
+  width = '100%',
+  height = '1.2em',
+  className = '',
+}) => (
+  <span
+    className={`inline-block bg-white/10 rounded animate-pulse ${className}`}
+    style={{ width, height, verticalAlign: 'middle' }}
+    aria-hidden="true"
+  />
+);
+
 const SummarySection: React.FC<Props> = ({
   balanceSheetVisible = false,
 }) => {
   const { currency } = useCurrency();
   
-  // Use the unified financial data hook - replaces store subscriptions and API calls
+  // Use the new React Query hooks
   const {
-    cashSavings,
-    incomeTotals,
+    totalIncome,
     totalExpenses,
-    totalAssets,
-    totalLiabilities,
     cashflow,
     netWorth,
+    totalAssets,
+    totalLiabilities,
     passiveAndPortfolioIncome,
     progressPercent,
-    loading,
+    cashSavings,
+    isLoading,
+    isError,
     error,
-    initialized,
-    updateCashSavings,
-  } = useUnifiedFinancialData();
+  } = useFinancialSummary();
+
+  // Cash savings query and mutation for editing
+  const { isLoading: cashSavingsLoading } = useCashSavingsQuery();
+  const updateCashSavingsMutation = useUpdateCashSavingsMutation();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>('0');
-  const [saving, setSaving] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleEditClick = () => {
@@ -54,14 +72,11 @@ const SummarySection: React.FC<Props> = ({
     }
 
     try {
-      setSaving(true);
       setLocalError(null);
-      await updateCashSavings(numValue);
+      await updateCashSavingsMutation.mutateAsync({ amount: numValue });
       setIsEditing(false);
     } catch (err: unknown) {
       setLocalError('Failed to update cash savings');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -78,10 +93,10 @@ const SummarySection: React.FC<Props> = ({
     }
   };
   
-  // Use computed values from the unified hook
-  const totalIncomeLive = incomeTotals.total;
+  // Computed display values
   const shouldShowNetWorth = balanceSheetVisible && (totalAssets > 0 || totalLiabilities > 0);
-  const displayError = localError || error;
+  const displayError = localError || (isError && error instanceof Error ? error.message : null);
+  const saving = updateCashSavingsMutation.isPending;
 
   return (
     <section className="flex flex-col h-full min-h-0 overflow-hidden">
@@ -107,7 +122,7 @@ const SummarySection: React.FC<Props> = ({
           <div className="flex justify-between items-center text-[#e8e8f0] text-[0.95rem] font-semibold">
             <span className="opacity-90">Passive + Portfolio Income</span>
             <span className="bg-white/5 py-1 px-2.5 rounded-full font-bold text-white text-[0.95rem]">
-              {formatCurrency(passiveAndPortfolioIncome, currency)}
+              {isLoading ? <Skeleton width="80px" /> : formatCurrency(passiveAndPortfolioIncome, currency)}
             </span>
           </div>
 
@@ -121,15 +136,17 @@ const SummarySection: React.FC<Props> = ({
           >
             <div
               className="rf-progress-fill"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${isLoading ? 0 : progressPercent}%` }}
               aria-hidden="true"
             />
           </div>
 
           <div className="flex justify-between text-[0.85rem] items-center">
-            <span className="font-bold text-white">{progressPercent}%</span>
+            <span className="font-bold text-white">
+              {isLoading ? <Skeleton width="30px" /> : `${progressPercent}%`}
+            </span>
             <span style={{ color: 'var(--color-gold)' }}>
-              of {formatCurrency(totalExpenses, currency)} (Total Expenses)
+              of {isLoading ? <Skeleton width="60px" /> : formatCurrency(totalExpenses, currency)} (Total Expenses)
             </span>
           </div>
         </div>
@@ -142,15 +159,17 @@ const SummarySection: React.FC<Props> = ({
               <div
                 className="rf-hbar-track"
                 role="img"
-                aria-label={`Total income ${totalIncomeLive}`}
+                aria-label={`Total income ${totalIncome}`}
               >
                 <div
                   className="rf-hbar-fill rf-hbar-fill-income"
-                  style={{ width: `${totalIncomeLive > 0 ? 100 : 0}%` }}
+                  style={{ width: `${totalIncome > 0 ? 100 : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <div className="rf-hbar-value">{formatCurrency(totalIncomeLive, currency)}</div>
+              <div className="rf-hbar-value">
+                {isLoading ? <Skeleton width="70px" /> : formatCurrency(totalIncome, currency)}
+              </div>
             </div>
 
             <div className="rf-hbar">
@@ -162,11 +181,13 @@ const SummarySection: React.FC<Props> = ({
               >
                 <div
                   className="rf-hbar-fill rf-hbar-fill-expense"
-                  style={{ width: `${totalExpenses > 0 ? Math.min(100, (totalExpenses / Math.max(totalIncomeLive, totalExpenses, 1)) * 100) : 0}%` }}
+                  style={{ width: `${totalExpenses > 0 ? Math.min(100, (totalExpenses / Math.max(totalIncome, totalExpenses, 1)) * 100) : 0}%` }}
                   aria-hidden="true"
                 />
               </div>
-              <div className="rf-hbar-value">{formatCurrency(totalExpenses, currency)}</div>
+              <div className="rf-hbar-value">
+                {isLoading ? <Skeleton width="70px" /> : formatCurrency(totalExpenses, currency)}
+              </div>
             </div>
           </div>
 
@@ -176,8 +197,14 @@ const SummarySection: React.FC<Props> = ({
           >
             <div className="rf-total-label">Cashflow</div>
             <div className="rf-total-amount">
-              {formatCurrency(Math.abs(cashflow), currency)}
-              {cashflow < 0 && ' (deficit)'}
+              {isLoading ? (
+                <Skeleton width="80px" />
+              ) : (
+                <>
+                  {formatCurrency(Math.abs(cashflow), currency)}
+                  {cashflow < 0 && ' (deficit)'}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -200,7 +227,9 @@ const SummarySection: React.FC<Props> = ({
                     aria-hidden="true"
                   />
                 </div>
-                <div className="rf-hbar-value">{loading ? '...' : formatCurrency(totalAssets, currency)}</div>
+                <div className="rf-hbar-value">
+                  {isLoading ? <Skeleton width="70px" /> : formatCurrency(totalAssets, currency)}
+                </div>
               </div>
 
               <div className="rf-hbar">
@@ -216,7 +245,9 @@ const SummarySection: React.FC<Props> = ({
                     aria-hidden="true"
                   />
                 </div>
-                <div className="rf-hbar-value">{loading ? '...' : formatCurrency(totalLiabilities, currency)}</div>
+                <div className="rf-hbar-value">
+                  {isLoading ? <Skeleton width="70px" /> : formatCurrency(totalLiabilities, currency)}
+                </div>
               </div>
             </div>
 
@@ -232,8 +263,14 @@ const SummarySection: React.FC<Props> = ({
                 Net Worth
               </div>
               <div className="rf-total-amount bg-white/5 py-1.5 px-3 rounded-md">
-                {loading ? '...' : formatCurrency(Math.abs(netWorth), currency)}
-                {netWorth < 0 && ' (negative)'}
+                {isLoading ? (
+                  <Skeleton width="80px" />
+                ) : (
+                  <>
+                    {formatCurrency(Math.abs(netWorth), currency)}
+                    {netWorth < 0 && ' (negative)'}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -247,9 +284,9 @@ const SummarySection: React.FC<Props> = ({
           {!isEditing ? (
             <>
               <span className="rf-savings-amount">
-                {loading ? 'Loading...' : formatCurrency(cashSavings, currency)}
+                {cashSavingsLoading ? <Skeleton width="80px" /> : formatCurrency(cashSavings, currency)}
               </span>
-              {!loading && (
+              {!cashSavingsLoading && (
                 <button 
                   className="bg-white/5 border border-white/10 text-[#c69df7] py-1.5 px-2 rounded cursor-pointer text-[0.9rem] transition-all duration-200 hover:bg-white/10 hover:scale-105" 
                   onClick={handleEditClick}

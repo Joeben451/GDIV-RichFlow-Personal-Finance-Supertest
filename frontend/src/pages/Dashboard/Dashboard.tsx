@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { balanceSheetAPI } from '../../utils/api';
 import Header from '../../components/Header/Header';
@@ -13,6 +14,7 @@ import LiabilitiesSection from '../../components/LiabilitiesSection/LiabilitiesS
 import RightSidePanel from '../../components/RightSidePanel/RightSidePanel';
 import SakiAssistant from '../../components/RightSidePanel/SakiAssistant';
 import ActivityFeed from '../../components/Dashboard/ActivityFeed';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 
 type PanelContent = 'assistant' | 'activity';
 
@@ -141,27 +143,55 @@ const Dashboard: React.FC = () => {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
         <main className="rf-dashboard-content bg-black">
-          <div className="rf-dashboard-grid">
-            <div className="flex flex-col min-h-0">
-              <IncomeSection />
-            </div>
-            <div className="flex flex-col gap-8 min-h-0">
-              <div className="flex-1 min-h-[300px]">
-                <SummarySection
-                  balanceSheetVisible={showBalanceSheet}
-                />
-              </div>
-              <div className="flex-1 min-h-[300px]">
-                <ExpensesSection />
-              </div>
-            </div>
-          </div>
-          {showBalanceSheet && balanceSheetExists && (
-            <div className="rf-balance-sheet">
-              <AssetsSection />
-              <LiabilitiesSection />
-            </div>
-          )}
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary, error }) => (
+                  <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+                    <div className="text-red-400 text-xl mb-4">
+                      There was an error loading your financial data.
+                    </div>
+                    <p className="text-gray-400 mb-6 max-w-md">
+                      {error?.message || 'An unexpected error occurred. Please try again.'}
+                    </p>
+                    <button
+                      onClick={() => resetErrorBoundary()}
+                      className="px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 hover:scale-105"
+                      style={{
+                        background: 'linear-gradient(135deg, var(--color-purple) 0%, var(--color-purple-light) 100%)',
+                        boxShadow: '0 2px 8px rgba(115, 69, 175, 0.3)',
+                      }}
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+              >
+                <div className="rf-dashboard-grid">
+                  <div className="flex flex-col min-h-0">
+                    <IncomeSection />
+                  </div>
+                  <div className="flex flex-col gap-8 min-h-0">
+                    <div className="flex-1 min-h-[300px]">
+                      <SummarySection
+                        balanceSheetVisible={showBalanceSheet}
+                      />
+                    </div>
+                    <div className="flex-1 min-h-[300px]">
+                      <ExpensesSection />
+                    </div>
+                  </div>
+                </div>
+                {showBalanceSheet && balanceSheetExists && (
+                  <div className="rf-balance-sheet">
+                    <AssetsSection />
+                    <LiabilitiesSection />
+                  </div>
+                )}
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </main>
       </div>
       <RightSidePanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} title={getPanelTitle()}>
