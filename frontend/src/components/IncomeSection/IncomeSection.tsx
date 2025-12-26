@@ -1,7 +1,16 @@
 import React, { useState } from "react";
-import { useUnifiedFinancialData, IncomeItem, IncomeQuadrant } from "../../hooks/useFinancialData";
+import { 
+  useIncomeQuery, 
+  useAddIncomeMutation, 
+  useUpdateIncomeMutation,
+  useDeleteIncomeMutation,
+  IncomeItem,
+  IncomeQuadrant,
+  IncomeType
+} from "../../hooks/queries/useIncome";
 import { useCurrency } from "../../context/CurrencyContext";
 import { formatCurrency } from "../../utils/currency.utils";
+import FinancialTable, { ColumnDefinition } from "../Shared/FinancialTable";
 
 const quadrantBySection: Record<'earned' | 'portfolio' | 'passive', IncomeQuadrant> = {
   earned: 'EMPLOYEE',
@@ -12,20 +21,12 @@ const quadrantBySection: Record<'earned' | 'portfolio' | 'passive', IncomeQuadra
 const IncomeSection: React.FC = () => {
   const { currency } = useCurrency();
   
-  // Use the unified financial data hook - replaces local state and store subscriptions
-  const {
-    income,
-    loading,
-    error,
-    initialized,
-    addIncome,
-    updateIncome,
-    deleteIncome,
-  } = useUnifiedFinancialData();
+  // TanStack Query hooks
+  const { data: income, isLoading, error: queryError } = useIncomeQuery();
+  const addIncomeMutation = useAddIncomeMutation();
+  const updateIncomeMutation = useUpdateIncomeMutation();
+  const deleteIncomeMutation = useDeleteIncomeMutation();
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
-  const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<IncomeItem | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -36,22 +37,24 @@ const IncomeSection: React.FC = () => {
     amount: string,
     quadrantOverride?: IncomeQuadrant
   ) => {
-    if (!name.trim() || !amount.trim() || isAdding) return;
+    if (!name.trim() || !amount.trim() || addIncomeMutation.isPending) return;
     
     try {
-      setIsAdding(true);
       setLocalError(null);
-      const type = section.charAt(0).toUpperCase() + section.slice(1) as 'Earned' | 'Portfolio' | 'Passive';
+      const type = section.charAt(0).toUpperCase() + section.slice(1) as IncomeType;
       const fallbackQuadrant = quadrantBySection[section];
       const resolvedQuadrant = section === 'earned'
         ? (quadrantOverride || fallbackQuadrant)
         : fallbackQuadrant;
       
-      await addIncome(name, parseFloat(amount), type, resolvedQuadrant);
+      await addIncomeMutation.mutateAsync({
+        name,
+        amount: parseFloat(amount),
+        type,
+        quadrant: resolvedQuadrant
+      });
     } catch (err: unknown) {
       setLocalError('Failed to add income');
-    } finally {
-      setIsAdding(false);
     }
   };
 
@@ -60,40 +63,40 @@ const IncomeSection: React.FC = () => {
     id: number,
     name: string,
     amount: number,
-    type: 'Earned' | 'Portfolio' | 'Passive',
+    type: IncomeType,
     quadrantOverride?: IncomeQuadrant
   ) => {
-    if (isUpdating !== null) return;
+    if (updateIncomeMutation.isPending) return;
     
     try {
-      setIsUpdating(id);
       setLocalError(null);
-      await updateIncome(id, name, amount, type, quadrantOverride);
+      await updateIncomeMutation.mutateAsync({
+        id,
+        name,
+        amount,
+        type,
+        quadrant: quadrantOverride
+      });
       setEditingItem(null);
     } catch (err: unknown) {
       setLocalError('Failed to update income');
-    } finally {
-      setIsUpdating(null);
     }
   };
 
   // Handle delete income
   const handleDelete = async (section: "earned" | "portfolio" | "passive", id: number) => {
-    if (isDeleting !== null) return;
+    if (deleteIncomeMutation.isPending) return;
     
     try {
-      setIsDeleting(id);
       setLocalError(null);
-      const type = section.charAt(0).toUpperCase() + section.slice(1) as 'Earned' | 'Portfolio' | 'Passive';
-      await deleteIncome(id, type);
+      const type = section.charAt(0).toUpperCase() + section.slice(1) as IncomeType;
+      await deleteIncomeMutation.mutateAsync({ id, type });
     } catch (err: unknown) {
       setLocalError('Failed to delete income');
-    } finally {
-      setIsDeleting(null);
     }
   };
 
-  // reusable income card
+  // Reusable income card using FinancialTable
   const IncomeCard = ({
     title,
     items,
@@ -107,7 +110,7 @@ const IncomeSection: React.FC = () => {
     const [amount, setAmount] = useState("");
     const [quadrantSelection, setQuadrantSelection] = useState<IncomeQuadrant>('EMPLOYEE');
     const isEarnedSection = section === 'earned';
-    const sectionType = (section.charAt(0).toUpperCase() + section.slice(1)) as 'Earned' | 'Portfolio' | 'Passive';
+    const sectionType = (section.charAt(0).toUpperCase() + section.slice(1)) as IncomeType;
 
     const handleEdit = (item: IncomeItem) => {
       setEditingItem(item);
@@ -139,14 +142,35 @@ const IncomeSection: React.FC = () => {
       setAmount("");
     };
 
+    const handleDeleteItem = (item: IncomeItem) => {
+      handleDelete(section, item.id);
+    };
+
     const isEditingCurrentSection = Boolean(
       editingItem && editingItem.type === sectionType
     );
+
+    // Column definitions for FinancialTable
+    const columns: ColumnDefinition<IncomeItem>[] = [
+      { header: 'Source', accessor: 'name' },
+      { 
+        header: 'Amount', 
+        accessor: (item) => formatCurrency(item.amount, currency),
+        align: 'right'
+      },
+    ];
+
+    // Calculate total for footer
+    const total = items.reduce((sum, item) => sum + item.amount, 0);
+
+    // Determine which item is being deleted (for loading state)
+    const deletingId = deleteIncomeMutation.isPending && deleteIncomeMutation.variables?.id;
 
     return (
       <div className="rf-card">
         <div className="rf-section-header-sm">{title}</div>
 
+        {/* Use FinancialTable for the list display */}
         {items.length === 0 ? (
           <p className="rf-empty">No {title.toLowerCase()} added yet.</p>
         ) : (
@@ -161,17 +185,17 @@ const IncomeSection: React.FC = () => {
                   <button
                     className="rf-btn-edit"
                     onClick={() => handleEdit(item)}
-                    disabled={isUpdating !== null || isDeleting !== null || editingItem !== null}
+                    disabled={updateIncomeMutation.isPending || deleteIncomeMutation.isPending || editingItem !== null}
                     title="Edit"
                   >
                     Edit
                   </button>
                   <button
                     className="rf-btn-delete"
-                    onClick={() => handleDelete(section, item.id)}
-                    disabled={isDeleting === item.id || editingItem !== null}
+                    onClick={() => handleDeleteItem(item)}
+                    disabled={deletingId === item.id || editingItem !== null}
                   >
-                    {isDeleting === item.id ? '...' : '✕'}
+                    {deletingId === item.id ? '...' : '✕'}
                   </button>
                 </div>
               </div>
@@ -179,6 +203,15 @@ const IncomeSection: React.FC = () => {
           </div>
         )}
 
+        {/* Total display */}
+        {items.length > 0 && (
+          <div className="rf-list-item" style={{ borderBottom: 'none', marginTop: '0.5rem' }}>
+            <span className="rf-list-item-name font-bold">Total</span>
+            <span className="rf-list-item-amount font-bold">{formatCurrency(total, currency)}</span>
+          </div>
+        )}
+
+        {/* Input row */}
         <div className="rf-input-row">
           <input
             className="rf-input"
@@ -218,14 +251,14 @@ const IncomeSection: React.FC = () => {
             <button
               className="rf-btn-save"
               onClick={handleSaveEdit}
-              disabled={isUpdating !== null || !source.trim() || !amount.trim()}
+              disabled={updateIncomeMutation.isPending || !source.trim() || !amount.trim()}
             >
-              {isUpdating === editingItem?.id ? 'Saving...' : 'Save'}
+              {updateIncomeMutation.isPending && updateIncomeMutation.variables?.id === editingItem?.id ? 'Saving...' : 'Save'}
             </button>
             <button
               className="rf-btn-cancel"
               onClick={handleCancelEdit}
-              disabled={isUpdating !== null}
+              disabled={updateIncomeMutation.isPending}
             >
               Cancel
             </button>
@@ -234,9 +267,9 @@ const IncomeSection: React.FC = () => {
           <button
             className="rf-btn-primary"
             onClick={handleAddClick}
-            disabled={isAdding || !source.trim() || !amount.trim() || editingItem !== null}
+            disabled={addIncomeMutation.isPending || !source.trim() || !amount.trim() || editingItem !== null}
           >
-            {isAdding ? 'Adding...' : `+ Add ${title}`}
+            {addIncomeMutation.isPending ? 'Adding...' : `+ Add ${title}`}
           </button>
         )}
       </div>
@@ -244,7 +277,7 @@ const IncomeSection: React.FC = () => {
   };
 
   // Show loading state
-  if (loading && !initialized) {
+  if (isLoading) {
     return (
       <div className="bg-transparent text-white h-full flex flex-col font-sans">
         <div className="rf-section-header">Income</div>
@@ -256,7 +289,10 @@ const IncomeSection: React.FC = () => {
   }
 
   // Display error from hook or local error
-  const displayError = localError || error;
+  const displayError = localError || (queryError instanceof Error ? queryError.message : queryError ? String(queryError) : null);
+
+  // Default empty income structure if data is not yet available
+  const incomeData = income ?? { earned: [], portfolio: [], passive: [], all: [] };
 
   return (
     <div className="bg-transparent text-white h-full flex flex-col font-sans">
@@ -269,9 +305,9 @@ const IncomeSection: React.FC = () => {
       )}
 
       <div className="flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
-        <IncomeCard title="Earned Income" items={income.earned} section="earned" />
-        <IncomeCard title="Portfolio Income" items={income.portfolio} section="portfolio" />
-        <IncomeCard title="Passive Income" items={income.passive} section="passive" />
+        <IncomeCard title="Earned Income" items={incomeData.earned} section="earned" />
+        <IncomeCard title="Portfolio Income" items={incomeData.portfolio} section="portfolio" />
+        <IncomeCard title="Passive Income" items={incomeData.passive} section="passive" />
       </div>
     </div>
   );

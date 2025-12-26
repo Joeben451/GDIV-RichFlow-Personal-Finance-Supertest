@@ -1,14 +1,12 @@
 import React from 'react';
 import AdminHeader from '../../components/AdminHeader/AdminHeader';
-import AdminSidebar from '../../components/AdminSidebar/AdminSidebar';
 import AdminPanel from '../../components/AdminPanel/AdminPanel';
 
 const Admin: React.FC = () => {
   return (
-    <div className="dashboard-container">
+    <div className="rf-dashboard">
       <AdminHeader />
-      <div className="dashboard-main">
-        <AdminSidebar />
+      <div className="rf-dashboard-main">
         <AdminPanel />
       </div>
     </div>

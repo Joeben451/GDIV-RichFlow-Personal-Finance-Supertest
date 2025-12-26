@@ -8,8 +8,17 @@ interface User {
   id: number;
   name: string;
   email: string;
+  isAdmin: boolean;
   lastLogin: string | null;
   createdAt: string;
+  updatedAt: string;
+}
+
+interface Stats {
+  totalUsers: number;
+  activeToday: number;
+  newThisWeek: number;
+  admins: number;
 }
 
 const AdminPanel: React.FC = () => {
@@ -21,10 +30,24 @@ const AdminPanel: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [selectedUserName, setSelectedUserName] = useState<string>('');
+  const [stats, setStats] = useState<Stats>({ totalUsers: 0, activeToday: 0, newThisWeek: 0, admins: 0 });
+
+  // Calculate statistics from users
+  const calculateStats = (userList: User[]): Stats => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    return {
+      totalUsers: userList.length,
+      activeToday: userList.filter(u => u.lastLogin && new Date(u.lastLogin) >= today).length,
+      newThisWeek: userList.filter(u => new Date(u.createdAt) >= weekAgo).length,
+      admins: userList.filter(u => u.isAdmin).length,
+    };
+  };
 
   // Fetch users from the database
   useEffect(() => {
-    // Wait for auth to finish loading before fetching users
     if (authLoading || !isAuthenticated) {
       return;
     }
@@ -34,18 +57,20 @@ const AdminPanel: React.FC = () => {
         setLoading(true);
         setError(null);
         const response = await adminAPI.getUsers();
-        
-        // Transform the API response to match the User interface
+
         const transformedUsers = response.users.map((user: any) => ({
           id: user.id,
           name: user.name,
           email: user.email,
+          isAdmin: user.isAdmin || false,
           lastLogin: user.lastLogin,
           createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
         }));
-        
+
         setUsers(transformedUsers);
         setFilteredUsers(transformedUsers);
+        setStats(calculateStats(transformedUsers));
       } catch (err) {
         setError('Failed to load users. Please try again.');
       } finally {
@@ -62,7 +87,7 @@ const AdminPanel: React.FC = () => {
       setFilteredUsers(users);
     } else {
       const query = searchQuery.toLowerCase();
-      const filtered = users.filter(user => 
+      const filtered = users.filter(user =>
         user.name.toLowerCase().includes(query) ||
         user.email.toLowerCase().includes(query) ||
         user.id.toString().includes(query)
@@ -75,27 +100,22 @@ const AdminPanel: React.FC = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleEdit = (userId: number) => {
-    // Add your edit logic here
-  };
-
   const handleDelete = async (userId: number) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
 
     try {
       await adminAPI.deleteUser(userId);
-      // Remove the deleted user from the state
       const updatedUsers = users.filter(user => user.id !== userId);
       setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers.filter(user => 
-        !searchQuery.trim() || 
+      setFilteredUsers(updatedUsers.filter(user =>
+        !searchQuery.trim() ||
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.id.toString().includes(searchQuery)
       ));
-      alert('User deleted successfully');
+      setStats(calculateStats(updatedUsers));
     } catch (err) {
       alert('Failed to delete user. Please try again.');
     }
@@ -114,47 +134,97 @@ const AdminPanel: React.FC = () => {
   // If a user is selected, show their financial data
   if (selectedUserId !== null) {
     return (
-      <section className="flex flex-col h-full flex-1 mx-8 my-4 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-[#0f0f0f] scrollbar-thumb-purple-gold max-lg:mx-6 max-md:mx-4 max-md:my-3 max-sm:mx-2 max-sm:my-2">
+      <main className="rf-dashboard-content">
         <AdminUserFinancialView
           userId={selectedUserId}
           userName={selectedUserName}
           onBack={handleBackToUserList}
         />
-      </section>
+      </main>
     );
   }
 
   return (
-    <section className="flex flex-col h-full flex-1 mx-8 my-4 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-[#0f0f0f] scrollbar-thumb-purple-gold max-lg:mx-6 max-md:mx-4 max-md:my-3 max-sm:mx-2 max-sm:my-2">
-      <div className="bg-linear-to-r from-(--color-purple) to-[#9d6dd4] py-4 px-8 rounded-t-lg flex justify-between items-center gap-8 relative max-lg:px-6 max-lg:gap-6 max-md:px-4 max-md:gap-4 max-md:flex-col max-sm:px-3 max-sm:gap-3">
-        <h2 className="m-0 text-[1.8rem] font-bold text-white text-center shrink-0 absolute left-1/2 -translate-x-1/2 max-lg:text-[1.6rem] max-md:text-2xl max-md:w-full max-md:static max-md:transform-none max-sm:text-xl">Users</h2>
-        <div className="flex-1 max-w-[400px] ml-auto max-lg:max-w-[300px] max-lg:ml-0 max-md:max-w-full max-md:w-full">
-          <input
-            type="text"
-            className="w-full py-2.5 px-4 border-2 border-white/20 rounded-md bg-white/10 text-white text-[0.95rem] transition-all duration-300 min-h-44px placeholder:text-white/60 focus:outline-none focus:border-white/50 focus:bg-white/15 max-sm:text-sm max-sm:py-2 max-sm:px-3"
-            placeholder="Search by name, email, or ID..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
+    <main className="rf-dashboard-content">
+      {/* Statistics Cards */}
+      {!loading && !error && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="rf-card flex flex-col">
+            <span className="text-xs uppercase tracking-wider text-(--color-text-muted) mb-1">Total Users</span>
+            <span className="text-2xl font-bold text-(--color-gold)">{stats.totalUsers}</span>
+          </div>
+          <div className="rf-card flex flex-col">
+            <span className="text-xs uppercase tracking-wider text-(--color-text-muted) mb-1">Active Today</span>
+            <span className="text-2xl font-bold text-(--color-success)">{stats.activeToday}</span>
+          </div>
+          <div className="rf-card flex flex-col">
+            <span className="text-xs uppercase tracking-wider text-(--color-text-muted) mb-1">New This Week</span>
+            <span className="text-2xl font-bold text-(--color-purple-light)">{stats.newThisWeek}</span>
+          </div>
+          <div className="rf-card flex flex-col">
+            <span className="text-xs uppercase tracking-wider text-(--color-text-muted) mb-1">Administrators</span>
+            <span className="text-2xl font-bold text-(--color-purple)">{stats.admins}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Header Card with Title and Search */}
+      <div className="rf-card mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-bold text-(--color-gold) m-0">User Directory</h2>
+            <span className="text-sm text-(--color-text-muted)">
+              {!loading && !error && (
+                searchQuery 
+                  ? `${filteredUsers.length} result${filteredUsers.length !== 1 ? 's' : ''} found`
+                  : 'Click on a user to view their financial details'
+              )}
+            </span>
+          </div>
+          <div className="w-full sm:w-auto sm:min-w-[280px] sm:max-w-[400px]">
+            <input
+              type="text"
+              className="rf-input w-full"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 bg-(--color-dark)">
+      {/* Users List */}
+      <div className="rf-card p-0 overflow-hidden">
         {authLoading || loading ? (
-          <div className="text-white text-center p-8 text-lg">Loading users...</div>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-10 h-10 border-3 border-(--color-border) border-t-(--color-purple) rounded-full animate-spin"></div>
+            <span className="text-sm text-(--color-text-muted)">Loading users...</span>
+          </div>
         ) : error ? (
-          <div className="text-red-500 text-center p-8">{error}</div>
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <span className="text-4xl">⚠️</span>
+            <span className="text-sm text-(--color-error)">{error}</span>
+            <button className="rf-btn-primary w-auto px-6 py-2 text-sm" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <span className="text-4xl opacity-40">👤</span>
+            <span className="text-sm text-(--color-text-dim)">
+              {searchQuery ? 'No users match your search' : 'No users found'}
+            </span>
+          </div>
         ) : (
-          <UserList 
+          <UserList
             users={filteredUsers}
             currentUserId={user?.id ? Number(user.id) : undefined}
-            onEdit={handleEdit}
             onDelete={handleDelete}
             onUserClick={handleUserClick}
           />
         )}
       </div>
-    </section>
+    </main>
   );
 };
 

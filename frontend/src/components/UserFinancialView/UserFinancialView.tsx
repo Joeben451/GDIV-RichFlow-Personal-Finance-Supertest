@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { adminAPI } from '../../utils/api';
 import { Currency } from '../../types/currency.types';
 import { formatCurrency } from '../../utils/currency.utils';
+import FinancialTable, { ColumnDefinition } from '../Shared/FinancialTable';
+import FinancialProgressBar from '../Shared/FinancialProgressBar';
 
 interface UserFinancialViewProps {
   userId: number;
@@ -216,91 +218,43 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
           <h3>Income</h3>
           <div className="income-content">
             <div className="income-group">
-              <h4>Earned Income</h4>
-              {earnedIncome.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {earnedIncome.map((income) => (
-                      <tr key={income.id}>
-                        <td>{income.name}</td>
-                        <td>{formatCurrency(income.amount, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total</strong></td>
-                      <td><strong>{formatCurrency(totalEarnedIncome, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No earned income</p>
-              )}
+              <FinancialTable<Income>
+                title="Earned Income"
+                data={earnedIncome}
+                columns={[
+                  { header: 'Name', accessor: 'name' },
+                  { header: 'Amount', accessor: (item) => formatCurrency(item.amount, userCurrency), align: 'right' },
+                ]}
+                footer={{ label: 'Total', value: formatCurrency(totalEarnedIncome, userCurrency) }}
+                emptyMessage="No earned income"
+                compactHeader
+              />
             </div>
             <div className="income-group">
-              <h4>Portfolio Income</h4>
-              {portfolioIncome.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {portfolioIncome.map((income) => (
-                      <tr key={income.id}>
-                        <td>{income.name}</td>
-                        <td>{formatCurrency(income.amount, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total</strong></td>
-                      <td><strong>{formatCurrency(totalPortfolioIncome, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No portfolio income</p>
-              )}
+              <FinancialTable<Income>
+                title="Portfolio Income"
+                data={portfolioIncome}
+                columns={[
+                  { header: 'Name', accessor: 'name' },
+                  { header: 'Amount', accessor: (item) => formatCurrency(item.amount, userCurrency), align: 'right' },
+                ]}
+                footer={{ label: 'Total', value: formatCurrency(totalPortfolioIncome, userCurrency) }}
+                emptyMessage="No portfolio income"
+                compactHeader
+              />
             </div>
             <div className="income-group">
-              <h4>Passive Income</h4>
-              {passiveIncome.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {passiveIncome.map((income) => (
-                      <tr key={income.id}>
-                        <td>{income.name}</td>
-                        <td>{formatCurrency(income.amount, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total</strong></td>
-                      <td><strong>{formatCurrency(totalPassiveIncome, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No passive income</p>
-              )}
+              <FinancialTable<Income>
+                title="Passive Income"
+                data={passiveIncome}
+                columns={[
+                  { header: 'Name', accessor: 'name' },
+                  { header: 'Amount', accessor: (item) => formatCurrency(item.amount, userCurrency), align: 'right' },
+                ]}
+                footer={{ label: 'Total', value: formatCurrency(totalPassiveIncome, userCurrency) }}
+                emptyMessage="No passive income"
+                compactHeader
+              />
             </div>
             <div className="total-income">
               <strong>Total Income: {formatCurrency(totalIncome, userCurrency)}</strong>
@@ -313,30 +267,15 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
           <h3>Summary</h3>
           <div className="summary-content">
             {/* Progress bar for Passive + Portfolio Income */}
-            <div className="progress-container">
-              <div className="progress-header">
-                <span className="progress-label">Passive + Portfolio Income</span>
-                <span className="progress-amount">
-                  {formatCurrency(totalPassiveIncome + totalPortfolioIncome, userCurrency)}
-                </span>
-              </div>
-              <div className="progress-track">
-                <div
-                  className="progress-fill"
-                  style={{ 
-                    width: `${totalExpenses > 0 ? Math.min(100, ((totalPassiveIncome + totalPortfolioIncome) / totalExpenses) * 100) : 0}%` 
-                  }}
-                />
-              </div>
-              <div className="progress-footer">
-                <span className="progress-percent">
-                  {totalExpenses > 0 ? Math.round(((totalPassiveIncome + totalPortfolioIncome) / totalExpenses) * 100) : 0}%
-                </span>
-                <span className="progress-target">
-                  of {formatCurrency(totalExpenses, userCurrency)} (Total Expenses)
-                </span>
-              </div>
-            </div>
+            <FinancialProgressBar
+              label="Passive + Portfolio Income"
+              currentValue={totalPassiveIncome + totalPortfolioIncome}
+              totalValue={totalExpenses}
+              formattedCurrentValue={formatCurrency(totalPassiveIncome + totalPortfolioIncome, userCurrency)}
+              formattedTotalValue={formatCurrency(totalExpenses, userCurrency)}
+              targetLabel="of"
+              variant="gold"
+            />
 
             {/* Bar chart for Total Income and Expenses */}
             <div className="graph-card">
@@ -424,34 +363,17 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
         <div className="financial-section expenses-section">
           <h3>Expenses</h3>
           <div className="expenses-content">
-            <div className="expense-group">
-              {expenses.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expenses.map((expense) => (
-                      <tr key={expense.id}>
-                        <td>{expense.name}</td>
-                        <td>{formatCurrency(expense.amount, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total</strong></td>
-                      <td><strong>{formatCurrency(totalExpenses, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No expenses</p>
-              )}
-            </div>
+            <FinancialTable<Expense>
+              title="Monthly Expenses"
+              data={expenses}
+              columns={[
+                { header: 'Name', accessor: 'name' },
+                { header: 'Amount', accessor: (item) => formatCurrency(item.amount, userCurrency), align: 'right' },
+              ]}
+              footer={{ label: 'Total', value: formatCurrency(totalExpenses, userCurrency) }}
+              emptyMessage="No expenses"
+              compactHeader
+            />
           </div>
         </div>
       </div>
@@ -462,62 +384,30 @@ const UserFinancialView: React.FC<UserFinancialViewProps> = ({ userId, userName,
           <h3>Balance Sheet</h3>
           <div className="balance-sheet-grid">
             <div className="financial-section assets-section">
-              <h4>Assets</h4>
-              {financialData.balanceSheet.assets.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {financialData.balanceSheet.assets.map((asset) => (
-                      <tr key={asset.id}>
-                        <td>{asset.name}</td>
-                        <td>{formatCurrency(asset.value, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total Assets</strong></td>
-                      <td><strong>{formatCurrency(totalAssets, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No assets</p>
-              )}
+              <FinancialTable<Asset>
+                title="Assets"
+                data={financialData.balanceSheet.assets}
+                columns={[
+                  { header: 'Name', accessor: 'name' },
+                  { header: 'Value', accessor: (item) => formatCurrency(item.value, userCurrency), align: 'right' },
+                ]}
+                footer={{ label: 'Total Assets', value: formatCurrency(totalAssets, userCurrency) }}
+                emptyMessage="No assets"
+                compactHeader
+              />
             </div>
             <div className="financial-section liabilities-section">
-              <h4>Liabilities</h4>
-              {financialData.balanceSheet.liabilities.length > 0 ? (
-                <table className="financial-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {financialData.balanceSheet.liabilities.map((liability) => (
-                      <tr key={liability.id}>
-                        <td>{liability.name}</td>
-                        <td>{formatCurrency(liability.value, userCurrency)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td><strong>Total Liabilities</strong></td>
-                      <td><strong>{formatCurrency(totalLiabilities, userCurrency)}</strong></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              ) : (
-                <p className="no-data">No liabilities</p>
-              )}
+              <FinancialTable<Liability>
+                title="Liabilities"
+                data={financialData.balanceSheet.liabilities}
+                columns={[
+                  { header: 'Name', accessor: 'name' },
+                  { header: 'Value', accessor: (item) => formatCurrency(item.value, userCurrency), align: 'right' },
+                ]}
+                footer={{ label: 'Total Liabilities', value: formatCurrency(totalLiabilities, userCurrency) }}
+                emptyMessage="No liabilities"
+                compactHeader
+              />
             </div>
           </div>
         </div>
