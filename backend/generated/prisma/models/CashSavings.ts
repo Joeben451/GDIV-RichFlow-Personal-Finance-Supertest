@@ -28,25 +28,25 @@ export type AggregateCashSavings = {
 
 export type CashSavingsAvgAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   userId: number | null
 }
 
 export type CashSavingsSumAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   userId: number | null
 }
 
 export type CashSavingsMinAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   userId: number | null
 }
 
 export type CashSavingsMaxAggregateOutputType = {
   id: number | null
-  amount: number | null
+  amount: runtime.Decimal | null
   userId: number | null
 }
 
@@ -177,7 +177,7 @@ export type CashSavingsGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 
 export type CashSavingsGroupByOutputType = {
   id: number
-  amount: number
+  amount: runtime.Decimal
   userId: number
   _count: CashSavingsCountAggregateOutputType | null
   _avg: CashSavingsAvgAggregateOutputType | null
@@ -206,7 +206,7 @@ export type CashSavingsWhereInput = {
   OR?: Prisma.CashSavingsWhereInput[]
   NOT?: Prisma.CashSavingsWhereInput | Prisma.CashSavingsWhereInput[]
   id?: Prisma.IntFilter<"CashSavings"> | number
-  amount?: Prisma.FloatFilter<"CashSavings"> | number
+  amount?: Prisma.DecimalFilter<"CashSavings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   userId?: Prisma.IntFilter<"CashSavings"> | number
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -224,7 +224,7 @@ export type CashSavingsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.CashSavingsWhereInput | Prisma.CashSavingsWhereInput[]
   OR?: Prisma.CashSavingsWhereInput[]
   NOT?: Prisma.CashSavingsWhereInput | Prisma.CashSavingsWhereInput[]
-  amount?: Prisma.FloatFilter<"CashSavings"> | number
+  amount?: Prisma.DecimalFilter<"CashSavings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "userId">
 
@@ -244,45 +244,45 @@ export type CashSavingsScalarWhereWithAggregatesInput = {
   OR?: Prisma.CashSavingsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CashSavingsScalarWhereWithAggregatesInput | Prisma.CashSavingsScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"CashSavings"> | number
-  amount?: Prisma.FloatWithAggregatesFilter<"CashSavings"> | number
+  amount?: Prisma.DecimalWithAggregatesFilter<"CashSavings"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   userId?: Prisma.IntWithAggregatesFilter<"CashSavings"> | number
 }
 
 export type CashSavingsCreateInput = {
-  amount?: number
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   User: Prisma.UserCreateNestedOneWithoutCashSavingsInput
 }
 
 export type CashSavingsUncheckedCreateInput = {
   id?: number
-  amount?: number
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   userId: number
 }
 
 export type CashSavingsUpdateInput = {
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   User?: Prisma.UserUpdateOneRequiredWithoutCashSavingsNestedInput
 }
 
 export type CashSavingsUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   userId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type CashSavingsCreateManyInput = {
   id?: number
-  amount?: number
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   userId: number
 }
 
 export type CashSavingsUpdateManyMutationInput = {
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type CashSavingsUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   userId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -354,12 +354,12 @@ export type CashSavingsUncheckedUpdateOneWithoutUserNestedInput = {
 }
 
 export type CashSavingsCreateWithoutUserInput = {
-  amount?: number
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type CashSavingsUncheckedCreateWithoutUserInput = {
   id?: number
-  amount?: number
+  amount?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type CashSavingsCreateOrConnectWithoutUserInput = {
@@ -379,12 +379,12 @@ export type CashSavingsUpdateToOneWithWhereWithoutUserInput = {
 }
 
 export type CashSavingsUpdateWithoutUserInput = {
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type CashSavingsUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 
@@ -434,7 +434,7 @@ export type $CashSavingsPayload<ExtArgs extends runtime.Types.Extensions.Interna
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    amount: number
+    amount: runtime.Decimal
     userId: number
   }, ExtArgs["result"]["cashSavings"]>
   composites: {}
@@ -861,7 +861,7 @@ export interface Prisma__CashSavingsClient<T, Null = never, ExtArgs extends runt
  */
 export interface CashSavingsFieldRefs {
   readonly id: Prisma.FieldRef<"CashSavings", 'Int'>
-  readonly amount: Prisma.FieldRef<"CashSavings", 'Float'>
+  readonly amount: Prisma.FieldRef<"CashSavings", 'Decimal'>
   readonly userId: Prisma.FieldRef<"CashSavings", 'Int'>
 }
     

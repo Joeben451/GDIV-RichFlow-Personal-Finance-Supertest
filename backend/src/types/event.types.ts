@@ -4,6 +4,15 @@
  * These types define immutable financial action events
  */
 
+/**
+ * Interface compatible with Prisma's Decimal type
+ * Used to avoid direct import of Prisma runtime modules
+ */
+export interface DecimalLike {
+  toNumber(): number;
+  toString(): string;
+}
+
 export enum ActionType {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
@@ -27,8 +36,8 @@ export enum IncomeSubtype {
 
 export interface EventData {
   name?: string;
-  amount?: number;
-  value?: number;
+  amount?: number | DecimalLike;
+  value?: number | DecimalLike;
   type?: string;
   [key: string]: any;
 }

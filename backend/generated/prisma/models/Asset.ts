@@ -28,27 +28,27 @@ export type AggregateAsset = {
 
 export type AssetAvgAggregateOutputType = {
   id: number | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type AssetSumAggregateOutputType = {
   id: number | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type AssetMinAggregateOutputType = {
   id: number | null
   name: string | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
 export type AssetMaxAggregateOutputType = {
   id: number | null
   name: string | null
-  value: number | null
+  value: runtime.Decimal | null
   bsId: number | null
 }
 
@@ -184,7 +184,7 @@ export type AssetGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type AssetGroupByOutputType = {
   id: number
   name: string
-  value: number
+  value: runtime.Decimal
   bsId: number
   _count: AssetCountAggregateOutputType | null
   _avg: AssetAvgAggregateOutputType | null
@@ -214,7 +214,7 @@ export type AssetWhereInput = {
   NOT?: Prisma.AssetWhereInput | Prisma.AssetWhereInput[]
   id?: Prisma.IntFilter<"Asset"> | number
   name?: Prisma.StringFilter<"Asset"> | string
-  value?: Prisma.FloatFilter<"Asset"> | number
+  value?: Prisma.DecimalFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Asset"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
 }
@@ -233,7 +233,7 @@ export type AssetWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.AssetWhereInput[]
   NOT?: Prisma.AssetWhereInput | Prisma.AssetWhereInput[]
   name?: Prisma.StringFilter<"Asset"> | string
-  value?: Prisma.FloatFilter<"Asset"> | number
+  value?: Prisma.DecimalFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Asset"> | number
   BalanceSheet?: Prisma.XOR<Prisma.BalanceSheetScalarRelationFilter, Prisma.BalanceSheetWhereInput>
 }, "id">
@@ -256,52 +256,52 @@ export type AssetScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AssetScalarWhereWithAggregatesInput | Prisma.AssetScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Asset"> | number
   name?: Prisma.StringWithAggregatesFilter<"Asset"> | string
-  value?: Prisma.FloatWithAggregatesFilter<"Asset"> | number
+  value?: Prisma.DecimalWithAggregatesFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntWithAggregatesFilter<"Asset"> | number
 }
 
 export type AssetCreateInput = {
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet: Prisma.BalanceSheetCreateNestedOneWithoutAssetInput
 }
 
 export type AssetUncheckedCreateInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId: number
 }
 
 export type AssetUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   BalanceSheet?: Prisma.BalanceSheetUpdateOneRequiredWithoutAssetNestedInput
 }
 
 export type AssetUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type AssetCreateManyInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId: number
 }
 
 export type AssetUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
@@ -392,13 +392,13 @@ export type AssetUncheckedUpdateManyWithoutBalanceSheetNestedInput = {
 
 export type AssetCreateWithoutBalanceSheetInput = {
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetUncheckedCreateWithoutBalanceSheetInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetCreateOrConnectWithoutBalanceSheetInput = {
@@ -433,31 +433,31 @@ export type AssetScalarWhereInput = {
   NOT?: Prisma.AssetScalarWhereInput | Prisma.AssetScalarWhereInput[]
   id?: Prisma.IntFilter<"Asset"> | number
   name?: Prisma.StringFilter<"Asset"> | string
-  value?: Prisma.FloatFilter<"Asset"> | number
+  value?: Prisma.DecimalFilter<"Asset"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   bsId?: Prisma.IntFilter<"Asset"> | number
 }
 
 export type AssetCreateManyBalanceSheetInput = {
   id?: number
   name: string
-  value: number
+  value: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetUpdateWithoutBalanceSheetInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetUncheckedUpdateWithoutBalanceSheetInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type AssetUncheckedUpdateManyWithoutBalanceSheetInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.FloatFieldUpdateOperationsInput | number
+  value?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 
@@ -512,7 +512,7 @@ export type $AssetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
-    value: number
+    value: runtime.Decimal
     bsId: number
   }, ExtArgs["result"]["asset"]>
   composites: {}
@@ -940,7 +940,7 @@ export interface Prisma__AssetClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface AssetFieldRefs {
   readonly id: Prisma.FieldRef<"Asset", 'Int'>
   readonly name: Prisma.FieldRef<"Asset", 'String'>
-  readonly value: Prisma.FieldRef<"Asset", 'Float'>
+  readonly value: Prisma.FieldRef<"Asset", 'Decimal'>
   readonly bsId: Prisma.FieldRef<"Asset", 'Int'>
 }
     
