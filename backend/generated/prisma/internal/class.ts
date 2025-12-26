@@ -12,13 +12,13 @@
  */
 
 import * as runtime from "@prisma/client/runtime/client"
-import type * as Prisma from "./prismaNamespace"
+import type * as Prisma from "./prismaNamespace.js"
 
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.0.1",
-  "engineVersion": "f09f2815f091dbba658cdcd2264306d88bb5bda6",
+  "clientVersion": "7.2.0",
+  "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
   "activeProvider": "postgresql",
   "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id                  Int                 @id @default(autoincrement())\n  name                String              @unique\n  email               String              @unique\n  password            String\n  isAdmin             Boolean             @default(false)\n  preferredCurrencyId Int                 @default(1)\n  createdAt           DateTime            @default(now())\n  updatedAt           DateTime\n  lastLogin           DateTime?\n  BalanceSheet        BalanceSheet?\n  CashSavings         CashSavings?\n  Event               Event[]\n  financialSnapshots  FinancialSnapshot[]\n  IncomeStatement     IncomeStatement?\n  Session             Session[]\n  PreferredCurrency   Currency            @relation(fields: [preferredCurrencyId], references: [id])\n}\n\nmodel Session {\n  id        Int      @id @default(autoincrement())\n  token     String\n  expiresAt DateTime\n  createdAt DateTime @default(now())\n  isValid   Boolean  @default(true)\n  userId    Int\n  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel Expense {\n  id              Int             @id @default(autoincrement())\n  name            String\n  amount          Float\n  isId            Int\n  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)\n}\n\nmodel Asset {\n  id           Int          @id @default(autoincrement())\n  name         String\n  value        Float\n  bsId         Int\n  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)\n}\n\nmodel Liability {\n  id           Int          @id @default(autoincrement())\n  name         String\n  value        Float\n  bsId         Int\n  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)\n}\n\nmodel BalanceSheet {\n  id        Int         @id @default(autoincrement())\n  userId    Int         @unique\n  Asset     Asset[]\n  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)\n  Liability Liability[]\n}\n\nmodel IncomeLine {\n  id              Int             @id @default(autoincrement())\n  name            String\n  amount          Float\n  type            String\n  isId            Int\n  quadrant        String?\n  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)\n}\n\nmodel IncomeStatement {\n  id         Int          @id @default(autoincrement())\n  userId     Int          @unique\n  Expense    Expense[]\n  IncomeLine IncomeLine[]\n  User       User         @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel CashSavings {\n  id     Int   @id @default(autoincrement())\n  amount Float @default(0)\n  userId Int   @unique\n  User   User  @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel Currency {\n  id         Int    @id @default(autoincrement())\n  cur_symbol String\n  cur_name   String\n  User       User[]\n}\n\nmodel Event {\n  id            Int      @id @default(autoincrement())\n  timestamp     DateTime @default(now())\n  actionType    String\n  entityType    String\n  entitySubtype String?\n  userId        Int\n  entityId      Int\n  beforeValue   Json?\n  afterValue    Json?\n  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n  @@index([entityType])\n  @@index([entityId])\n  @@index([userId, timestamp])\n}\n\nmodel FinancialSnapshot {\n  id        String   @id @default(uuid())\n  userId    Int\n  date      DateTime\n  data      Json\n  createdAt DateTime @default(now())\n  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId, date])\n}\n",
   "runtimeDataModel": {
@@ -62,7 +62,7 @@ export interface PrismaClientConstructor {
    * const users = await prisma.user.findMany()
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+   * Read more in our [docs](https://pris.ly/d/client).
    */
 
   new <
@@ -84,7 +84,7 @@ export interface PrismaClientConstructor {
  * const users = await prisma.user.findMany()
  * ```
  * 
- * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+ * Read more in our [docs](https://pris.ly/d/client).
  */
 
 export interface PrismaClient<
@@ -113,7 +113,7 @@ export interface PrismaClient<
    * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -125,7 +125,7 @@ export interface PrismaClient<
    * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -136,7 +136,7 @@ export interface PrismaClient<
    * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
 
@@ -148,7 +148,7 @@ export interface PrismaClient<
    * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
 
