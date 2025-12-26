@@ -37,7 +37,7 @@ export async function createEvent(params: CreateEventParams) {
         afterValue: afterValue ?? Prisma.DbNull,
         userId,
         entityId
-      }
+      } as any
     });
 
     return event;
