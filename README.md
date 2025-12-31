@@ -99,8 +99,7 @@ Your personal AI-powered financial advisor that analyzes your current income, ex
 | **React** | 19.2.0 | UI Library |
 | **TypeScript** | 5.9.3 | Type Safety |
 | **React Router DOM** | 6.30.1 | Client-side Routing |
-| **Recharts** | 3.4.1 | Data Visualization |
-| **Tailwind CSS** | 4.1.16 | Component Styling (Exclusive) |
+| **Recharts** | 3.4.1 | Data Visualization || **TanStack React Query** | 5.90.12 | Server State Management || **Tailwind CSS** | 4.1.16 | Component Styling (Exclusive) |
 | **Vite** | 7.2.6 | Build Tool & Dev Server |
 
 ### Backend
@@ -110,10 +109,11 @@ Your personal AI-powered financial advisor that analyzes your current income, ex
 | **Node.js** | 20+ | Runtime Environment |
 | **Express** | 5.1.0 | Web Framework |
 | **TypeScript** | 5.9.3 | Type Safety |
-| **Prisma** | 7.0.1 | ORM & Database Toolkit |
+| **Prisma** | 7.2.0 | ORM & Database Toolkit |
 | **PostgreSQL** | Latest | Primary Database |
 | **bcrypt** | 6.0.0 | Password Hashing |
 | **jsonwebtoken** | 9.0.2 | JWT Authentication |
+| **Zod** | 4.2.1 | Schema Validation |
 | **Google GenAI** | 1.29.0 | AI Assistant Integration |
 
 ### Development Tools
@@ -238,12 +238,14 @@ GDIV-RichFlow-Personal-Finance/
 │   │
 │   ├── 📁 prisma/
 │   │   ├── schema.prisma          # Database schema
+│   │   ├── 📁 migrations/         # Database migrations
 │   │   └── 📁 seed-files/         # Database seeders
 │   │
 │   └── 📁 src/
 │       ├── server.ts              # Entry point
 │       ├── 📁 config/             # Configuration
 │       ├── 📁 controllers/        # Request handlers
+│       ├── 📁 domain/             # Domain logic (financial, schemas)
 │       ├── 📁 services/           # Business logic
 │       ├── 📁 routes/             # API routes
 │       ├── 📁 middleware/         # Express middleware
@@ -255,18 +257,20 @@ GDIV-RichFlow-Personal-Finance/
 │   │   └── 📁 assets/             # Static assets & logo
 │   │
 │   └── 📁 src/
-│       ├── index.tsx              # Entry point
+│       ├── main.tsx               # Entry point
 │       ├── 📁 pages/              # Page components
 │       ├── 📁 components/         # Reusable components
-│       ├── 📁 context/            # React contexts
+│       ├── 📁 context/            # React contexts (Auth, Currency)
 │       ├── 📁 hooks/              # Custom hooks
-│       ├── 📁 state/              # State management
+│       ├── 📁 lib/                # Library utilities
 │       ├── 📁 types/              # TypeScript types
 │       ├── 📁 utils/              # Utility functions
 │       └── 📁 styles/             # Global styles
 │
 └── 📁 docs/                       # Documentation
+    ├── backend-architecture-optimization.md
     ├── backend-progress.md
+    ├── frontend-architecture-optimization.md
     ├── frontend-progress.md
     ├── user-registration-and-authentication.md
     ├── financial-data-management.md
@@ -493,19 +497,16 @@ User ─────┬───── IncomeStatement ───── IncomeLin
 ### Backend
 
 ```bash
-npm run dev                    # Start development server with nodemon
-npm run seed-currency          # Seed currency data
-npm run seed-users             # Seed sample users
-npm run seed-timemachine       # Seed time machine data
-npm run seed-timemachine-freedom  # Seed financial freedom scenario
-npm run seed-timemachine-broke    # Seed financial struggle scenario
+npm run dev                    # Start development server with nodemon & tsx
+npm run build                  # Generate Prisma client, compile TypeScript, deploy migrations
+npm run start                  # Start production server from dist/
 ```
 
 ### Frontend
 
 ```bash
-npm run dev                    # Start Vite development server (port 3000)
-npm run build                  # Type-check and build for production (Vite/Rollup)
+npm run dev                    # Start Vite development server
+npm run build                  # Type-check (tsc) and build for production (Vite)
 npm run preview                # Preview the production build locally
 ```
 
