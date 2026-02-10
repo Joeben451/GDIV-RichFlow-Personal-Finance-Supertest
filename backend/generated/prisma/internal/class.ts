@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace.js"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.2.0",
-  "engineVersion": "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3",
+  "clientVersion": "7.3.0",
+  "engineVersion": "9d6ad21cbbceab97458517b147a6a09ff43aa735",
   "activeProvider": "postgresql",
   "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id                  Int                 @id @default(autoincrement())\n  name                String              @unique\n  email               String              @unique\n  password            String\n  isAdmin             Boolean             @default(false)\n  preferredCurrencyId Int                 @default(1)\n  createdAt           DateTime            @default(now())\n  updatedAt           DateTime\n  lastLogin           DateTime?\n  BalanceSheet        BalanceSheet?\n  CashSavings         CashSavings?\n  Event               Event[]\n  financialSnapshots  FinancialSnapshot[]\n  IncomeStatement     IncomeStatement?\n  Session             Session[]\n  PreferredCurrency   Currency            @relation(fields: [preferredCurrencyId], references: [id])\n}\n\nmodel Session {\n  id        Int      @id @default(autoincrement())\n  token     String\n  expiresAt DateTime\n  createdAt DateTime @default(now())\n  isValid   Boolean  @default(true)\n  userId    Int\n  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel Expense {\n  id              Int             @id @default(autoincrement())\n  name            String\n  amount          Decimal         @db.Decimal(15, 2)\n  isId            Int\n  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)\n}\n\nmodel Asset {\n  id           Int          @id @default(autoincrement())\n  name         String\n  value        Decimal      @db.Decimal(15, 2)\n  bsId         Int\n  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)\n}\n\nmodel Liability {\n  id           Int          @id @default(autoincrement())\n  name         String\n  value        Decimal      @db.Decimal(15, 2)\n  bsId         Int\n  BalanceSheet BalanceSheet @relation(fields: [bsId], references: [id], onDelete: Cascade)\n}\n\nmodel BalanceSheet {\n  id        Int         @id @default(autoincrement())\n  userId    Int         @unique\n  Asset     Asset[]\n  User      User        @relation(fields: [userId], references: [id], onDelete: Cascade)\n  Liability Liability[]\n}\n\nmodel IncomeLine {\n  id              Int             @id @default(autoincrement())\n  name            String\n  amount          Decimal         @db.Decimal(15, 2)\n  type            String\n  isId            Int\n  quadrant        String?\n  IncomeStatement IncomeStatement @relation(fields: [isId], references: [id], onDelete: Cascade)\n}\n\nmodel IncomeStatement {\n  id         Int          @id @default(autoincrement())\n  userId     Int          @unique\n  Expense    Expense[]\n  IncomeLine IncomeLine[]\n  User       User         @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel CashSavings {\n  id     Int     @id @default(autoincrement())\n  amount Decimal @default(0) @db.Decimal(15, 2)\n  userId Int     @unique\n  User   User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel Currency {\n  id         Int    @id @default(autoincrement())\n  cur_symbol String\n  cur_name   String\n  User       User[]\n}\n\nmodel Event {\n  id            Int      @id @default(autoincrement())\n  timestamp     DateTime @default(now())\n  actionType    String\n  entityType    String\n  entitySubtype String?\n  userId        Int\n  entityId      Int\n  beforeValue   Json?\n  afterValue    Json?\n  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId])\n  @@index([entityType])\n  @@index([entityId])\n  @@index([userId, timestamp])\n}\n\nmodel FinancialSnapshot {\n  id        String   @id @default(uuid())\n  userId    Int\n  date      DateTime\n  data      Json\n  createdAt DateTime @default(now())\n  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([userId, date])\n}\n",
   "runtimeDataModel": {
@@ -37,12 +37,14 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_bg.postgresql.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_bg.postgresql.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs")
     return await decodeBase64AsWasm(wasm)
-  }
+  },
+
+  importName: "./query_compiler_fast_bg.js"
 }
 
 
