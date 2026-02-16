@@ -8,8 +8,8 @@
     "build": "npx prisma generate && npx tsc --build && npx prisma migrate deploy",
     "start": "node ./dist/src/server.js",
     "dev": "nodemon --exec tsx ./src/server.ts",
-    "test:unit": "jest --testPathPatterns=\"__tests__/.*\\.test\\.ts$\" --testPathIgnorePatterns=\"integration\"",
-    "test:integration": "dotenv -e .env.test -- jest --testPathPatterns=\"__tests__/.*\\.integration\\.test\\.ts$\"",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=\"__tests__/.*\\.test\\.ts$\" --testPathIgnorePatterns=\"integration\"",
+    "test:integration": "dotenv -e .env.test -- node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=\"__tests__/.*\\.integration\\.test\\.ts$\"",
     "test": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
