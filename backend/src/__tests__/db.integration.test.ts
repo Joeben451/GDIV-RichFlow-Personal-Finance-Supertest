@@ -53,7 +53,7 @@ describe("Auth API Integration Test", () => {
             await prisma.user.create({data: {name: "Anotherme", email: "duplicate@example.com", password: "SomeSecurePassword123", preferredCurrencyId: 1, updatedAt: new Date() }});
 
             const double = {
-                name: "TestUser",
+                name: "TestUser2",
                 email: "duplicate@example.com",
                 password: "TestPass123"
             };
@@ -260,15 +260,79 @@ describe("Income API Integration Test (Protected)", () => {
         await prisma.$disconnect();
     });
 
-    it("POST /api/incomes - idk", async () => {
+    // Happy Path
+    it("POST /api/income - should post create a new income statement", async () => {
+        const incomeData = {
+            name: "Trabaho",
+            amount: 12000.00,
+            type: "Earned",
+            quadrant: "EMPLOYEE"
+        };
 
-    })
+        const response = await request(app)
+            .post("/api/income")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send(incomeData);
+
+        if (response.status !== 201) {
+            console.log("Error Response:", response.body);
+        }
+
+        // 1. Status Check
+        expect(response.status).toBe(201); 
+
+        // 2. Structure Check
+        expect(response.body).toHaveProperty("incomeLine");
+        
+        // 3. Data Integrity Check
+        expect(response.body.incomeLine.name).toBe(incomeData.name);
+        expect(Number(response.body.incomeLine.amount)).toBe(incomeData.amount);
+        expect(response.body.incomeLine.type).toBe(incomeData.type);
+        expect(response.body.incomeLine.quadrant).toBe(incomeData.quadrant);
+
+    });
+
+    // Sad Path
+    it("PUT /api/income/:id - should fail updating if amount is negative", async () => {
+        // 1. Create valid income entry 
+        const initialIncome = {
+            name: "Secret",
+            amount: 500,
+            type: "Earned",
+            quadrant: "SELF_EMPLOYED"
+        };
+
+        const response = await request(app)
+            .post("/api/income")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send(initialIncome);
+        
+        // 2. Capture the ID of the created income
+        const incomeId = response.body.incomeLine.id;
+
+        // 3. Attempt to update with an invalid negative amount
+        const updatedData = {
+            name: "Freelance",
+            amount: -1,
+            type: "Earned",
+            quadrant: "SELF_EMPLOYED"
+        };
+
+        const update = await request(app)
+            .put(`/api/income/${incomeId}`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send(updatedData);
+
+        // 4. Expect Bad Request (400)
+        expect(update.status).toBe(400);
+    });
 
     // Sad Path
     it("POST /api/income - should fail if amount is negative", async () => {
         const incomeData = {
             name: "Horse",
-            amount: -630.00
+            amount: -630.00,
+            type: "Passive"
         };
 
         const response = await request(app)
