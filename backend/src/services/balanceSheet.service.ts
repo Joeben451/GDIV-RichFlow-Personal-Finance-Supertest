@@ -1,5 +1,5 @@
 import prisma from '../config/database.config.js';
-import { Asset, Liability } from '../../generated/prisma/client.js';
+import { Asset, Liability } from '@prisma/client';
 import { logAssetEvent, logLiabilityEvent, TransactionClient } from './event.service.js';
 import { ActionType } from '../types/event.types.js';
 
