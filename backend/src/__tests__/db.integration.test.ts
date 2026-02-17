@@ -23,6 +23,7 @@ describe("Auth API Integration Test", () => {
         await prisma.$disconnect();
     });
 
+    //Happy Path
     it("POST /api/auth/signup - should create a new user via API", async () => {
         const userData = {
             name: "TestUser",
@@ -46,6 +47,26 @@ describe("Auth API Integration Test", () => {
         });
         expect(user).toBeTruthy();
     });
+
+    // Sad Path
+    it("POST /api/auth/signup - should return 409 for duplicate email", async () => {
+            await prisma.user.create({data: {name: "Anotherme", email: "duplicate@example.com", password: "SomeSecurePassword123", preferredCurrencyId: 1, updatedAt: new Date() }});
+
+            const double = {
+                name: "TestUser",
+                email: "duplicate@example.com",
+                password: "TestPass123"
+            };
+
+            const response = await request(app)
+                .post("/api/auth/signup")
+                .send(double);
+
+            expect(response.status).toBe(409);
+            expect(response.body?.error).toBe("An account with this email already exists");
+
+        });
+
 
     it("POST /api/auth/login - should authenticate the user", async () => {
         const credentials = {
@@ -182,4 +203,79 @@ describe("Expense API Integration Test (Protected)", () => {
             });
             expect(deletedExpense).toBeNull();
     });
+});
+
+describe("Income API Integration Test (Protected)", () => {
+    let authToken: string;
+
+    beforeAll(async () => {
+        await resetDatabase();
+
+        await prisma.currency.create({
+            data: {
+                id: 1,
+                cur_symbol: "$",
+                cur_name: "USD",
+            },
+        });
+
+        // 1. Create User
+        await request(app)
+            .post("/api/auth/signup")
+            .send({
+            name: "TestPerson",
+            email: "onetwo@gmail.com",
+            password: "IrohaLessthanthree3",
+            preferredCurrencyId: 1
+        })
+
+        // 2. Login & Get Token
+        const loginRes = await request(app).post("/api/auth/login")
+            .send({
+                email: "onetwo@gmail.com",
+                password: "IrohaLessthanthree3"
+            });
+        authToken = loginRes.body.accessToken
+
+        // 3. Get User ID from DB
+        const user = await prisma.user.findUnique({
+            where: { email: "onetwo@gmail.com" }
+        })
+
+        // 4. Create IncomeStatement (Required Dependency)
+        const existingStatement = await prisma.incomeStatement.findUnique({
+            where: { userId: user!.id }
+        });
+
+        if (!existingStatement) {
+            await prisma.incomeStatement.create({
+                data: {
+                    userId: user!.id
+                }
+            });
+        }
+    });
+    
+    afterAll(async () => {
+        await prisma.$disconnect();
+    });
+
+    it("POST /api/incomes - idk", async () => {
+
+    })
+
+    // Sad Path
+    it("POST /api/income - should fail if amount is negative", async () => {
+        const incomeData = {
+            name: "Horse",
+            amount: -630.00
+        };
+
+        const response = await request(app)
+            .post("/api/income")
+            .set("Authorization", `Bearer ${authToken}`)
+            .send(incomeData);
+
+        expect(response.status).toBe(400);
+    })
 });
