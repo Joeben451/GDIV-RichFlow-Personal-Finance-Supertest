@@ -2,7 +2,6 @@
 ```bash
 cd backend
 npm i
-npm i -D jest supertest @types/jest @types/supertest ts-jest dotenv
 ```
 Make a .env.test file and copy and paste the contents of your .env file to the .env.test
 ```bash
