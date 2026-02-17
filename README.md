@@ -2,7 +2,7 @@
 ```bash
 npm install -D jest supertest @types/jest @types/supertest ts-jest dotenv
 ```
-Make a .env.test file and copy and paste the contents of your .env file
+Make a .env.test file and copy and paste the contents of your .env file to the .env.test
 
 <div align="center">
   <img src="frontend/public/assets/richflow_logo.png" alt="RichFlow Logo" width="300">
