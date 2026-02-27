@@ -24,7 +24,7 @@ describe("Auth API Integration Test", () => {
         await prisma.$disconnect();
     });
 
-    //Happy Path
+    // Happy Path
     it("POST /api/auth/signup - should create a new user via API", async () => {
         const userData = {
             name: "TestUser",
@@ -68,7 +68,7 @@ describe("Auth API Integration Test", () => {
 
         });
 
-
+    // Happy Path
     it("POST /api/auth/login - should authenticate the user", async () => {
         const credentials = {
             email: "api-test@example.com",
