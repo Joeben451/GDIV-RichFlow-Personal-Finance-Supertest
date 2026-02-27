@@ -6,30 +6,19 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# ...existing code...
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # Defaults help avoid repeating working-directory
+    # 1. ADD THIS BLOCK HERE (Job-level environment variables)
+    env:
+      DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+
     defaults:
       run:
         working-directory: ./backend
-
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: testdb
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
+# ...existing code...
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -42,21 +31,15 @@ jobs:
           cache-dependency-path: backend/package.json
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
       - name: Run Database Migrations
-        env:
-          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
-        # Use 'db push' for tests to sync schema without needing migration history files
-        # Or 'migrate deploy' if you commit migration files
-        run: npx prisma db push 
+        # 2. REMOVE the 'env' block from here (it's now global)
+        run: npx prisma db push
 
       - name: Run Tests
-        env:
-          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
-          # Prisma needs this env var to know where the schema is if not standard
-          # Assuming standard location: backend/prisma/schema.prisma
+        # 3. REMOVE the 'env' block from here (it's now global)
         run: npm test
