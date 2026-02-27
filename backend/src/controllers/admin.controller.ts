@@ -29,7 +29,7 @@ export async function getUsers(req: Request, res: Response, next: NextFunction) 
  */
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = parseInt(req.params.id || '');
+    const userId = parseInt((req.params.id as string) || '');
 
     if (isNaN(userId)) {
       return res.status(400).json({
@@ -64,7 +64,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
  */
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = parseInt(req.params.id || '');
+    const userId = parseInt((req.params.id as string) || '');
 
     if (isNaN(userId)) {
       return res.status(400).json({
@@ -100,7 +100,7 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
  */
 export async function getUserFinancials(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = parseInt(req.params.id || '');
+    const userId = parseInt((req.params.id as string) || '');
 
     if (isNaN(userId)) {
       return res.status(400).json({
