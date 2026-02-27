@@ -6,19 +6,35 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# ...existing code...
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # 1. ADD THIS BLOCK HERE (Job-level environment variables)
+    # Define environment variables globally for the job
     env:
       DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
 
     defaults:
       run:
         working-directory: ./backend
-# ...existing code...
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        # This health check is critical - it makes the runner wait
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps port 5432 on service container to runner's localhost:5432
+          - 5432:5432
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -33,13 +49,21 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      # Wait for PG to be ready (Double check)
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432 -U testuser; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+        if: ${{ runner.os != 'Windows' }} 
+        # Note: pg_isready is usually available on ubuntu-latest
+
       - name: Generate Prisma Client
         run: npx prisma generate
 
       - name: Run Database Migrations
-        # 2. REMOVE the 'env' block from here (it's now global)
         run: npx prisma db push
 
       - name: Run Tests
-        # 3. REMOVE the 'env' block from here (it's now global)
         run: npm test
