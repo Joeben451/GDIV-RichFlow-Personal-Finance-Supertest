@@ -10,9 +10,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # Define environment variables globally for the job
     env:
       DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb
+      GEMINI_API_KEY: "dummy-key-for-testing"
+      GEMINI_MODEL: "gemini-pro"
 
     defaults:
       run:
