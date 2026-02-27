@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.test" });
 
+// API Testing
 describe("Auth API Integration Test", () => {
     beforeAll(async () => {
         await resetDatabase();
