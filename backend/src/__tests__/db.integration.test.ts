@@ -68,7 +68,7 @@ describe("Auth API Integration Test", () => {
 
         });
 
-
+    // Happy Path
     it("POST /api/auth/login - should authenticate the user", async () => {
         const credentials = {
             email: "api-test@example.com",
